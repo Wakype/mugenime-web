@@ -1,65 +1,133 @@
-import Image from "next/image";
+import { fetchAnime } from "@/lib/api";
+import { HomeData } from "@/lib/types";
+import AnimeCard from "@/components/anime-card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { ArrowRight, Flame, Sparkles } from "lucide-react";
 
-export default function Home() {
+// Revalidate data setiap 30 menit (ISR)
+export const revalidate = 1800;
+
+export default async function HomePage() {
+  const data = await fetchAnime<HomeData>("anime/home");
+
+  const heroAnime = data.ongoing_anime[0];
+  const ongoingList = data.ongoing_anime.slice(1, 11);
+  const completedList = data.complete_anime.slice(0, 10);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen pb-20 space-y-12">
+      {/* 1. HERO SECTION */}
+      {heroAnime && (
+        <section className="relative w-full h-[50vh] md:h-[60vh] overflow-hidden">
+          {/* Background Image Blur */}
+          <div
+            className="absolute inset-0 bg-cover bg-center blur-xs opacity-50 dark:opacity-30 scale-110"
+            style={{
+              backgroundImage: `url(/api/image-proxy?url=${encodeURIComponent(
+                heroAnime.poster
+              )})`,
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent dark:from-zinc-950 dark:via-zinc-950/60 dark:to-transparent" />
+
+          {/* Hero Content */}
+          <div className="container relative h-full flex flex-col justify-end pb-12 md:pb-20 z-10 mx-auto px-4">
+            <div className="max-w-2xl space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-full bg-indigo-600 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-indigo-600/20">
+                  Update Baru
+                </span>
+                <span className="text-zinc-600 dark:text-zinc-400 text-sm font-medium">
+                  {heroAnime.release_day}, {heroAnime.newest_release_date}
+                </span>
+              </div>
+              <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50 leading-tight">
+                {heroAnime.title}
+              </h1>
+              <div className="flex gap-3 pt-4">
+                <Button
+                  asChild
+                  size="lg"
+                  className="rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-8"
+                >
+                  <Link href={`/anime/${heroAnime.slug}`}>Tonton Sekarang</Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  className="rounded-full border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                >
+                  <Link href="/directory/ongoing">Lihat Jadwal</Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      <div className="container mx-auto px-4 space-y-16">
+        {/* 2. ONGOING SECTION */}
+        <section>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <Flame className="text-orange-500 fill-orange-500" size={24} />
+              <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+                Sedang Tayang
+              </h2>
+            </div>
+            <Button
+              variant="ghost"
+              asChild
+              className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              <Link
+                href="/directory/ongoing"
+                className="flex items-center gap-1"
+              >
+                Lihat Semua <ArrowRight size={16} />
+              </Link>
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-8">
+            {ongoingList.map((anime) => (
+              <AnimeCard key={anime.slug} anime={anime} />
+            ))}
+          </div>
+        </section>
+
+        {/* 3. COMPLETED SECTION */}
+        <section>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <Sparkles className="text-yellow-500 fill-yellow-500" size={24} />
+              <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+                Baru Tamat
+              </h2>
+            </div>
+            <Button
+              variant="ghost"
+              asChild
+              className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+              <Link
+                href="/directory/completed"
+                className="flex items-center gap-1"
+              >
+                Lihat Semua <ArrowRight size={16} />
+              </Link>
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-8">
+            {completedList.map((anime) => (
+              <AnimeCard key={anime.slug} anime={anime} />
+            ))}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

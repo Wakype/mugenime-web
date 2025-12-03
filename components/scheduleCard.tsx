@@ -53,7 +53,7 @@ export default function ScheduleCard({ anime }: { anime: ScheduleAnime }) {
           className="group relative block space-y-3"
         >
           {/* POSTER WRAPPER */}
-          <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800 shadow-sm border border-zinc-200 dark:border-zinc-800">
+          <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 shadow-sm transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1">
             {isValidPoster ? (
               <Image
                 src={imageUrl}

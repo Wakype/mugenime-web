@@ -5,16 +5,13 @@ import Image from "next/image";
 import { PlayCircle, ImageOff, Star, CalendarDays, Clock } from "lucide-react";
 import { Anime } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 
 interface AnimeCardProps {
   anime: Anime;
-  variant?: "portrait" | "landscape";
 }
 
 export default function AnimeCard({
   anime,
-  variant = "portrait",
 }: AnimeCardProps) {
   
   // --- DEFENSIVE CODING: Validasi Poster ---

@@ -11,6 +11,8 @@ export interface Anime {
   last_release_date?: string;
   genres?: Genre[];
   synopsis?: string;
+  season?: string;
+  studio?: string;
 }
 
 export interface Genre {
@@ -149,8 +151,35 @@ export interface PaginationData {
   previous_page: number | null;
 }
 
-// Struktur Data untuk Response Ongoing
 export interface OngoingResponse {
   paginationData: PaginationData;
   ongoingAnimeData: Anime[];
+}
+
+export interface CompleteAnimeResponse {
+  paginationData: PaginationData; // Kita reuse interface PaginationData yang sudah ada
+  completeAnimeData: Anime[];
+}
+
+export type GenreListResponse = Genre[];
+
+export interface GenreDetailResponse {
+  anime: Anime[];
+  pagination: PaginationData; // Perhatikan: API ini menggunakan key "pagination"
+}
+
+export interface AnimeListItem {
+  title: string;
+  animeId: string;
+  href: string;
+  otakudesuUrl: string;
+}
+
+export interface AnimeListGroup {
+  startWith: string;
+  animeList: AnimeListItem[];
+}
+
+export interface AnimeListResponse {
+  list: AnimeListGroup[];
 }

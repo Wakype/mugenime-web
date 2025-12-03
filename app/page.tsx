@@ -16,7 +16,7 @@ export default async function HomePage() {
   const completedList = data.complete_anime.slice(0, 10);
 
   return (
-    <div className="min-h-screen pb-20 space-y-12">
+    <div className="min-h-screen pb-32 space-y-12">
       {/* HERO SECTION */}
       {heroAnime && (
         <section className="relative w-full h-[50vh] md:h-[60vh] overflow-hidden">

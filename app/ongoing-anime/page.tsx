@@ -87,7 +87,7 @@ export default async function OngoingPage({ searchParams }: PageProps) {
   };
 
   return (
-    <div className="min-h-screen py-10 dark:bg-zinc-950">
+    <div className="min-h-screen pb-20 py-10 dark:bg-zinc-950">
       <div className="container mx-auto px-4 space-y-10">
         {/* --- HERO HEADER SECTION (PREMIUM) --- */}
         <div className="relative rounded-3xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-6 md:p-10 shadow-sm overflow-hidden group">

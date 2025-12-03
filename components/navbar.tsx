@@ -13,7 +13,7 @@ const navLinks = [
   { name: "Ongoing Anime", href: "/ongoing-anime" },
   { name: "Completed Anime", href: "/completed-anime" },
   { name: "List Anime", href: "/list-anime" },
-  { name: "Genre", href: "/genre" },
+  { name: "Genre", href: "/genre-anime" },
 ];
 
 export default function Navbar() {

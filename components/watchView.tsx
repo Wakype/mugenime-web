@@ -304,8 +304,8 @@ export default function WatchView({
             ))}
           </Tabs>
 
-          <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-900/50 p-3 rounded-md flex gap-3 items-start text-xs text-yellow-800 dark:text-yellow-200">
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-900/50 p-3 rounded-md flex gap-3 items-centerr text-xs text-yellow-800 dark:text-yellow-200">
+            <AlertCircle className="w-4 h-4 shrink-0" />
             <p>
               Jika video error (Hotlink/Sandboxed), coba ganti server lain atau
               gunakan tombol <b>&quot;Buka Tab Baru&quot;</b>.

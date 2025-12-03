@@ -3,6 +3,8 @@ import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/providers";
 import Navbar from "@/components/navbar";
+import Footer from "@/components/footer";
+import NextTopLoader from 'nextjs-toploader';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -34,9 +36,11 @@ export default function RootLayout({
       className={`${inter.variable} ${outfit.variable}`}
     >
       <body className="antialiased bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 font-sans">
+        <NextTopLoader color="#4f39f6"/>
         <Providers>
           <Navbar />
           <main>{children}</main>
+          <Footer/>
         </Providers>
       </body>
     </html>

@@ -59,7 +59,7 @@ export default async function HomePage() {
                   size="lg"
                   className="rounded-full border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                 >
-                  <Link href="/directory/ongoing">Lihat Jadwal</Link>
+                  <Link href="/jadwal-anime">Lihat Jadwal Anime</Link>
                 </Button>
               </div>
             </div>
@@ -83,7 +83,7 @@ export default async function HomePage() {
               className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
             >
               <Link
-                href="/directory/ongoing"
+                href="/ongoing-anime"
                 className="flex items-center gap-1"
               >
                 Lihat Semua <ArrowRight size={16} />
@@ -113,7 +113,7 @@ export default async function HomePage() {
               className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
             >
               <Link
-                href="/directory/completed"
+                href="/completed-anime"
                 className="flex items-center gap-1"
               >
                 Lihat Semua <ArrowRight size={16} />

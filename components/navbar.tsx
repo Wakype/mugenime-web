@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { name: "Home", href: "/" },
-  { name: "Sedang Tayang", href: "/directory/ongoing" },
-  { name: "Jadwal", href: "/jadwal" },
-  { name: "Tamat", href: "/directory/completed" },
-  { name: "Genre", href: "/directory/genre" },
+  { name: "Beranda", href: "/" },
+  { name: "Jadwal Anime", href: "/jadwal-anime" },
+  { name: "Ongoing Anime", href: "/ongoing-anime" },
+  { name: "Completed Anime", href: "/completed-anime" },
+  { name: "List Anime", href: "/list-anime" },
+  { name: "Genre", href: "/genre" },
 ];
 
 export default function Navbar() {
@@ -37,8 +38,8 @@ export default function Navbar() {
           <div className="bg-indigo-600 p-1.5 rounded-lg group-hover:bg-indigo-700 group-hover:text-indigo-700 transition-colors">
             <Moon className="w-5 h-5 text-white fill-white" />
           </div>
-          <span className="font-bold font-heading  text-xl tracking-tight text-indigo-600 dark:text-zinc-100">
-            Mugenime
+          <span className="font-black font-heading text-xl uppercase text-indigo-600 dark:text-zinc-100">
+            Mugenime.
           </span>
         </Link>
 

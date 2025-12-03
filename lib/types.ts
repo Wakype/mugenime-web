@@ -1,5 +1,3 @@
-// lib/types.ts
-
 export interface Anime {
   title: string;
   slug: string;
@@ -52,11 +50,10 @@ export interface DownloadData {
   mkv?: DownloadFormat[];
 }
 
-// Detail per Episode (untuk Player)
 export interface EpisodeDetail {
   episode: string;
   anime: {
-    slug: string; // Kadang berisi URL penuh, perlu diparsing
+    slug: string;
     otakudesu_url: string;
   };
   has_next_episode: boolean;
@@ -74,7 +71,6 @@ export interface EpisodeDetail {
   download_urls: DownloadData;
 }
 
-// Item dalam list episode
 export interface EpisodeList {
   episode: string;
   episode_number: number;
@@ -88,7 +84,6 @@ export interface Batch {
   uploaded_at: string;
 }
 
-// Detail Lengkap Anime (untuk Info & List Episode)
 export interface AnimeDetail {
   title: string;
   slug: string;
@@ -109,7 +104,6 @@ export interface AnimeDetail {
   recommendations: Anime[];
 }
 
-// Response Batch Download
 export interface BatchResponse {
   title: string;
   animeId: string;
@@ -128,4 +122,35 @@ export interface BatchResponse {
       }[];
     }[];
   };
+}
+
+export interface ScheduleAnime {
+  anime_name: string;
+  url: string;
+  slug: string;
+  poster: string;
+}
+
+export interface ScheduleDay {
+  day: string;
+  anime_list: ScheduleAnime[];
+}
+
+export interface ScheduleResponse {
+  data: ScheduleDay[];
+}
+
+export interface PaginationData {
+  current_page: number;
+  last_visible_page: number;
+  has_next_page: boolean;
+  next_page: number | null;
+  has_previous_page: boolean;
+  previous_page: number | null;
+}
+
+// Struktur Data untuk Response Ongoing
+export interface OngoingResponse {
+  paginationData: PaginationData;
+  ongoingAnimeData: Anime[];
 }

@@ -61,9 +61,8 @@ export default async function AnimeDetailPage({ params }: Props) {
 
   const episodeLists = anime.episode_lists || [];
 
-  // Ambil episode pertama (ambil index terakhir karena urutan biasanya descending di API ini)
-  const firstEpisode =
-    episodeLists.length > 0 ? episodeLists[episodeLists.length - 1] : null;
+  // const firstEpisode = episodeLists.length > 0 ? episodeLists[episodeLists.length - 1] : null;
+  const firstEpisode = episodeLists.length > 0 ? episodeLists[0] : null;
 
   const genres = anime.genres || [];
 
@@ -85,7 +84,7 @@ export default async function AnimeDetailPage({ params }: Props) {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
           {/* SIDEBAR (Poster & Info) */}
           <div className="md:col-span-3 lg:col-span-3 flex flex-col gap-6">
-            <div className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-2xl border-4 border-white dark:border-zinc-800">
+            <div className="relative aspect-[3/4] rounded-xl overflow-hidden  border-4 border-white dark:border-zinc-800">
               <Image
                 src={getProxyUrl(anime.poster)}
                 alt={anime.title}
@@ -107,11 +106,12 @@ export default async function AnimeDetailPage({ params }: Props) {
               {firstEpisode ? (
                 <Button
                   asChild
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-full shadow-lg shadow-indigo-600/20"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-full "
                   size="lg"
                 >
-                  <Link href={`/watch/${firstEpisode.slug}`}>
+                  <Link href={`/watch/${slug}/${firstEpisode.slug}`}>
                     <Play className="w-4 h-4 mr-2 fill-current" /> Mulai Nonton
+                    (Episode 1)
                   </Link>
                 </Button>
               ) : (
@@ -121,18 +121,6 @@ export default async function AnimeDetailPage({ params }: Props) {
                   variant="secondary"
                 >
                   Belum ada Episode
-                </Button>
-              )}
-
-              {anime.batch && (
-                <Button
-                  asChild
-                  variant="outline"
-                  className="w-full border-zinc-300 dark:border-zinc-700 rounded-full"
-                >
-                  <Link href={`/anime/batch/${anime.batch.slug}`}>
-                    <Download className="w-4 h-4 mr-2" /> Download Batch
-                  </Link>
                 </Button>
               )}
             </div>

@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 @import '@vidstack/react/player/styles/default/theme.css';
 @import '@vidstack/react/player/styles/default/layouts/video.css';
-
+@custom-variant dark (&:where(.dark, .dark *));
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -121,4 +121,59 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+
+@layer base {
+  :root {
+    --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    --font-heading: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+    
+    /* Warna Shadcn/Base (Optional, agar tidak broken) */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+  }
+  
+  /* Paksa Heading menggunakan Font Heading */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+}
+
+/* 2. KONFIGURASI TEMA TAILWIND V4
+   Memberitahu Tailwind untuk menggunakan variabel yang sudah kita definisikan di atas.
+*/
+@theme {
+  --font-sans: var(--font-sans);
+  --font-heading: var(--font-heading);
+
+  --color-primary: #6366f1;
+  --color-primary-foreground: #ffffff;
+}
+
+
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-zinc-300 dark:bg-zinc-700 rounded-full;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-zinc-400 dark:bg-zinc-600;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
 }

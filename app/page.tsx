@@ -1,9 +1,9 @@
 import { fetchAnime } from "@/lib/api";
 import { HomeData } from "@/lib/types";
-import AnimeCard from "@/components/anime-card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight, Flame, Sparkles } from "lucide-react";
+import AnimeCard from "@/components/animeCard";
 
 // Revalidate data setiap 30 menit (ISR)
 export const revalidate = 1800;
@@ -17,7 +17,7 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen pb-20 space-y-12">
-      {/* 1. HERO SECTION */}
+      {/* HERO SECTION */}
       {heroAnime && (
         <section className="relative w-full h-[50vh] md:h-[60vh] overflow-hidden">
           {/* Background Image Blur */}
@@ -42,7 +42,7 @@ export default async function HomePage() {
                   {heroAnime.release_day}, {heroAnime.newest_release_date}
                 </span>
               </div>
-              <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50 leading-tight">
+              <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50 leading-tight font-heading">
                 {heroAnime.title}
               </h1>
               <div className="flex gap-3 pt-4">
@@ -68,7 +68,7 @@ export default async function HomePage() {
       )}
 
       <div className="container mx-auto px-4 space-y-16">
-        {/* 2. ONGOING SECTION */}
+        {/* ONGOING SECTION */}
         <section>
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
@@ -98,7 +98,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* 3. COMPLETED SECTION */}
+        {/* COMPLETED SECTION */}
         <section>
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">

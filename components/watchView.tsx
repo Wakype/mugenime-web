@@ -1,21 +1,20 @@
 "use client";
 
 import { useEffect, useState, useMemo, useRef } from "react";
-import { AnimeDetail, EpisodeDetail } from "@/lib/types";
+import { AnimeDetail, EpisodeDetail, BatchResponse } from "@/lib/types";
 import { useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
 import {
-  Download,
   ChevronLeft,
   ChevronRight,
   MonitorPlay,
@@ -24,14 +23,17 @@ import {
   ExternalLink,
   List,
   Info,
-  Package,
+  Download,
+  FileVideo,
+  Film,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import BatchDownload from "./batchDownload";
 
 interface WatchViewProps {
   episode: EpisodeDetail;
-  animeDetail: AnimeDetail | null; // Bisa null jika fetch gagal
+  animeDetail: AnimeDetail | null;
   episodeSlug: string;
   slug: string;
 }
@@ -42,24 +44,28 @@ export default function WatchView({
   episodeSlug,
   slug,
 }: WatchViewProps) {
+  // --- STATE ---
   const [currentVideoUrl, setCurrentVideoUrl] = useState<string>(
     episode?.stream_url || ""
   );
-
   const [isLoadingVideo, setIsLoadingVideo] = useState(false);
   const [selectedServerId, setSelectedServerId] = useState<string | null>(null);
+
+  // State untuk Batch Data
+  const [batchData, setBatchData] = useState<BatchResponse | null>(null);
+  const [isLoadingBatch, setIsLoadingBatch] = useState(false);
+
   const activeRequestRef = useRef<string>("");
   const addToHistory = useStore((state) => state.addToHistory);
 
   const isInvalid = !episode || !episode.stream_url;
 
-  // Helper untuk Image Proxy (Defensive)
+  // --- HELPERS ---
   const getProxyUrl = (url: string | undefined) => {
     if (!url) return "";
     return `/api/image-proxy?url=${encodeURIComponent(url)}`;
   };
 
-  // Helper untuk Ekstrak Slug dengan Aman (Dipakai di Effect & Render)
   const safeExtractSlug = (url: string | undefined) => {
     if (!url) return "";
     try {
@@ -73,7 +79,17 @@ export default function WatchView({
     }
   };
 
+  const getQualityLabel = (id: string) => {
+    if (id.includes("360p")) return "360p";
+    if (id.includes("480p")) return "480p";
+    if (id.includes("720p")) return "720p";
+    if (id.includes("1080p")) return "1080p";
+    return "SD";
+  };
+
   // --- EFFECTS ---
+
+  // 1. History & Reset Video
   useEffect(() => {
     if (isInvalid) return;
 
@@ -91,18 +107,44 @@ export default function WatchView({
       currentEpisode: episode.episode,
       url: `/watch/${episodeSlug}`,
     });
+  }, [episode, episodeSlug, addToHistory, isInvalid, animeDetail, slug]);
+
+  // 2. Fetch Batch Data (Jika ada)
+  useEffect(() => {
+    const fetchBatch = async () => {
+      if (animeDetail?.batch?.slug && !batchData) {
+        setIsLoadingBatch(true);
+        try {
+          const res = await fetch(`/api/anime/batch/${animeDetail.batch.slug}`); // Proxy ke API internal Next.js Anda jika sudah dibuat, atau langsung fetchAnime
+          // Karena ini Client Component, idealnya kita punya route handler /api/batch/[slug]
+          // ATAU kita panggil server action.
+          // Untuk simpelnya, kita asumsikan fetchAnime bisa dipanggil via API Route Next.js yang meneruskan request.
+          // Disini saya pakai fetch ke API route Anda (sesuaikan pathnya).
+          // Jika belum ada route handler, Anda harus buat atau pass data dari Server Component.
+
+          // SOLUSI CEPAT: Kita pakai fetch langsung ke endpoint Server Component via props? Tidak bisa.
+          // Kita pakai fetch ke route handler internal kita.
+          // Asumsi: Anda sudah membuat route.ts di app/api/anime/[...path]/route.ts atau sejenisnya.
+          // JIKA BELUM ADA, saya sarankan buat file: app/api/batch/route.ts
+
+          const response = await fetch(
+            `/api/batch?slug=${animeDetail.batch.slug}`
+          );
+          const json = await response.json();
+          if (json.data) setBatchData(json.data);
+        } catch (error) {
+          console.error("Gagal load batch:", error);
+        } finally {
+          setIsLoadingBatch(false);
+        }
+      }
+    };
+
+    fetchBatch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [episode, episodeSlug, addToHistory, isInvalid, animeDetail]);
+  }, [animeDetail]);
 
-  // --- HELPERS ---
-  const getQualityLabel = (id: string) => {
-    if (id.includes("360p")) return "360p";
-    if (id.includes("480p")) return "480p";
-    if (id.includes("720p")) return "720p";
-    if (id.includes("1080p")) return "1080p";
-    return "SD";
-  };
-
+  // --- HANDLERS ---
   const handleServerChange = async (urlId: string) => {
     if (urlId === selectedServerId) return;
     setIsLoadingVideo(true);
@@ -139,9 +181,7 @@ export default function WatchView({
 
   if (isInvalid) return null;
 
-  // PERBAIKAN 2: Logic Safe Parsing Slug untuk Link "Lihat Detail Anime"
   let parentAnimeSlug = "#";
-
   if (animeDetail?.slug) {
     const extracted = safeExtractSlug(animeDetail.slug);
     if (extracted) parentAnimeSlug = extracted;
@@ -154,103 +194,100 @@ export default function WatchView({
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* --- KOLOM UTAMA (KIRI) --- */}
       <div className="lg:col-span-2 space-y-8">
-        {/* 1. PLAYER */}
-        <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border border-zinc-800 group">
-          <div
-            className={`absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-950 transition-opacity duration-300 ${
-              isLoadingVideo
-                ? "opacity-100 pointer-events-auto"
-                : "opacity-0 pointer-events-none"
-            }`}
-          >
-            <Loader2 className="w-12 h-12 animate-spin text-indigo-500 mb-3" />
-            <p className="text-zinc-400 font-medium animate-pulse">
-              Memuat Stream...
-            </p>
-          </div>
-          <iframe
-            key={currentVideoUrl}
-            src={currentVideoUrl}
-            title={episode.episode}
-            className="w-full h-full"
-            allowFullScreen
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            referrerPolicy="no-referrer"
-          />
-        </div>
-
-        {/* 2. NAVIGASI & JUDUL */}
+        {/* 1. PLAYER SECTION */}
         <div className="space-y-4">
-          <h1 className="text-xl md:text-2xl font-bold font-heading leading-tight text-zinc-900 dark:text-zinc-100">
-            {episode.episode}
-          </h1>
-
-          <div className="flex items-center justify-between gap-3">
-            <Button
-              variant="outline"
-              asChild
-              disabled={!episode.has_previous_episode}
-              className="flex-1 md:flex-none"
+          <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border border-zinc-800 group ring-1 ring-white/10">
+            <div
+              className={`absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-950 transition-opacity duration-300 ${
+                isLoadingVideo
+                  ? "opacity-100 pointer-events-auto"
+                  : "opacity-0 pointer-events-none"
+              }`}
             >
-              {episode.previous_episode ? (
-                <Link href={`/watch/${slug}/${episode.previous_episode.slug}`}>
-                  <ChevronLeft className="w-4 h-4 mr-2" /> Sebelumnya
-                </Link>
-              ) : (
-                <span>
-                  <ChevronLeft className="w-4 h-4 mr-2" /> Sebelumnya
-                </span>
-              )}
-            </Button>
+              <Loader2 className="w-12 h-12 animate-spin text-indigo-500 mb-3" />
+              <p className="text-zinc-400 font-medium animate-pulse">
+                Memuat Stream...
+              </p>
+            </div>
+            <iframe
+              key={currentVideoUrl}
+              src={currentVideoUrl}
+              title={episode.episode}
+              className="w-full h-full"
+              allowFullScreen
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              referrerPolicy="no-referrer"
+            />
+          </div>
 
-            <Button
-              variant="ghost"
-              asChild
-              className="text-indigo-600 hidden md:flex hover:text-indigo-700"
-            >
-              <Link href={`/anime/${parentAnimeSlug}`}>Lihat Detail Anime</Link>
-            </Button>
-
-            <Button
-              variant="default"
-              asChild
-              disabled={!episode.has_next_episode}
-              className="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-700 text-white"
-            >
-              {episode.next_episode ? (
-                <Link href={`/watch/${slug}/${episode.next_episode.slug}`}>
-                  Selanjutnya <ChevronRight className="w-4 h-4 ml-2" />
-                </Link>
-              ) : (
-                <span>
-                  Selanjutnya <ChevronRight className="w-4 h-4 ml-2" />
-                </span>
-              )}
-            </Button>
+          {/* Judul & Navigasi */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <h1 className="text-xl font-bold font-heading text-zinc-900 dark:text-zinc-100 line-clamp-1">
+              {episode.episode}
+            </h1>
+            <div className="flex items-center gap-2 text-sm">
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+                disabled={!episode.has_previous_episode}
+              >
+                {episode.previous_episode ? (
+                  <Link
+                    href={`/watch/${slug}/${episode.previous_episode.slug}`}
+                  >
+                    <ChevronLeft className="w-4 h-4 mr-1" /> Prev
+                  </Link>
+                ) : (
+                  <span>
+                    <ChevronLeft className="w-4 h-4 mr-1" /> Prev
+                  </span>
+                )}
+              </Button>
+              <Button
+                variant="default"
+                size="sm"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                asChild
+                disabled={!episode.has_next_episode}
+              >
+                {episode.next_episode ? (
+                  <Link href={`/watch/${slug}/${episode.next_episode.slug}`}>
+                    Next <ChevronRight className="w-4 h-4 ml-1" />
+                  </Link>
+                ) : (
+                  <span>
+                    Next <ChevronRight className="w-4 h-4 ml-1" />
+                  </span>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
 
         <Separator />
 
-        {/* 3. PILIH SERVER */}
+        {/* 2. PILIH SERVER */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MonitorPlay className="w-5 h-5 text-indigo-600" />
-              <h3 className="font-bold text-lg">Pilih Server</h3>
+              <h3 className="font-bold text-lg text-zinc-800 dark:text-zinc-200">
+                Server Stream
+              </h3>
             </div>
             <Button
               variant="ghost"
               size="sm"
               asChild
-              className="text-xs text-zinc-500"
+              className="text-xs text-zinc-500 hover:text-indigo-600"
             >
               <a
                 href={currentVideoUrl}
                 target="_blank"
                 rel="noreferrer noopener"
               >
-                <ExternalLink className="w-3 h-3 mr-1" /> Buka Tab Baru
+                <ExternalLink className="w-3 h-3 mr-1" /> Tab Baru
               </a>
             </Button>
           </div>
@@ -259,12 +296,12 @@ export default function WatchView({
             defaultValue={processedServers[0]?.quality || "360p"}
             className="w-full"
           >
-            <TabsList className="w-full justify-start h-auto p-1 bg-zinc-100 dark:bg-zinc-900 flex-wrap">
+            <TabsList className="w-full justify-start h-auto p-1 bg-zinc-100 dark:bg-zinc-900 flex-wrap gap-1">
               {processedServers.map((group, idx) => (
                 <TabsTrigger
                   key={idx}
                   value={group.quality}
-                  className="px-4 py-2 flex-1 md:flex-none"
+                  className="px-4 py-2 flex-1 md:flex-none data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-800 data-[state=active]:text-indigo-600 shadow-sm"
                 >
                   {group.quality}
                 </TabsTrigger>
@@ -287,10 +324,10 @@ export default function WatchView({
                       disabled={
                         isLoadingVideo && selectedServerId !== server.id
                       }
-                      className={`w-full capitalize truncate ${
+                      className={`w-full capitalize truncate border-zinc-200 dark:border-zinc-800 ${
                         selectedServerId === server.id
-                          ? "bg-indigo-600 text-white border-0"
-                          : ""
+                          ? "bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700"
+                          : "hover:border-indigo-300 dark:hover:border-indigo-700 hover:text-indigo-600"
                       }`}
                     >
                       {isLoadingVideo && selectedServerId === server.id ? (
@@ -304,26 +341,26 @@ export default function WatchView({
             ))}
           </Tabs>
 
-          <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-900/50 p-3 rounded-md flex gap-3 items-centerr text-xs text-yellow-800 dark:text-yellow-200">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 p-3 rounded-lg flex gap-3 items-start text-xs text-amber-800 dark:text-amber-200/80">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <p>
-              Jika video error (Hotlink/Sandboxed), coba ganti server lain atau
-              gunakan tombol <b>&quot;Buka Tab Baru&quot;</b>.
+              Video tidak bisa diputar? Coba ganti server atau resolusi lain.
+              Gunakan tombol &quot;Tab Baru&quot; jika player masih error.
             </p>
           </div>
         </div>
 
-        {/* 4. INFO ANIME & BATCH */}
+        {/* 3. INFO ANIME (MINI) */}
         {animeDetail && (
-          <div className="bg-zinc-50 dark:bg-zinc-900/30 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6 flex flex-col md:flex-row gap-6">
-            <div className="shrink-0 relative w-[120px] aspect-[3/4] rounded-lg overflow-hidden shadow-md hidden md:block bg-zinc-200 dark:bg-zinc-800">
+          <div className="bg-zinc-50 dark:bg-zinc-900/30 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 md:p-6 flex flex-col md:flex-row gap-6">
+            <div className="shrink-0 relative w-[100px] aspect-[3/4] rounded-lg overflow-hidden shadow-md  bg-zinc-200 dark:bg-zinc-800">
               {animeDetail.poster ? (
                 <Image
                   src={getProxyUrl(animeDetail.poster)}
-                  alt={animeDetail.title || "Poster Anime"}
+                  alt={animeDetail.title}
                   fill
                   className="object-cover"
-                  sizes="120px"
+                  sizes="100px"
                   unoptimized
                 />
               ) : (
@@ -332,40 +369,38 @@ export default function WatchView({
                 </div>
               )}
             </div>
-            <div className="space-y-3 flex-1">
+            <div className="space-y-2 flex-1">
               <div className="flex flex-col gap-1">
-                <h3 className="font-bold text-lg font-heading">
-                  {animeDetail.title || "Judul Tidak Tersedia"}
-                </h3>
+                <Link
+                  href={`/anime/${parentAnimeSlug}`}
+                  className="font-bold text-lg hover:text-indigo-600 transition-colors"
+                >
+                  {animeDetail.title}
+                </Link>
                 <div className="flex flex-wrap gap-2 text-xs">
-                  <Badge variant="outline">{animeDetail.status || "?"}</Badge>
-                  <Badge variant="outline">{animeDetail.rating || "-"} ★</Badge>
+                  <Badge
+                    variant="secondary"
+                    className="bg-zinc-200 dark:bg-zinc-800"
+                  >
+                    {animeDetail.status}
+                  </Badge>
                   <span className="text-zinc-500 self-center">
                     {animeDetail.studio}
                   </span>
                 </div>
               </div>
-
-              <p className="text-sm text-zinc-600 dark:text-zinc-400 line-clamp-3">
-                {animeDetail.synopsis || "Sinopsis belum tersedia."}
+              <p className="text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2">
+                {animeDetail.synopsis}
               </p>
-
-              {/* BATCH DOWNLOAD BUTTON */}
-              {animeDetail.status?.toLowerCase() === "completed" &&
-                animeDetail.batch && (
-                  <div className="pt-2">
-                    <Button
-                      asChild
-                      size="sm"
-                      className="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white"
-                    >
-                      <Link href={`/anime/batch/${animeDetail.batch.slug}`}>
-                        <Package className="w-4 h-4 mr-2" /> Download Batch
-                        (Tamat)
-                      </Link>
-                    </Button>
-                  </div>
-                )}
+              <Button
+                variant="link"
+                asChild
+                className="p-0 h-auto text-indigo-600"
+              >
+                <Link href={`/anime/${parentAnimeSlug}`}>
+                  Lihat Selengkapnya &rarr;
+                </Link>
+              </Button>
             </div>
           </div>
         )}
@@ -373,16 +408,16 @@ export default function WatchView({
 
       {/* --- KOLOM KANAN (SIDEBAR) --- */}
       <div className="space-y-6">
-        {/* 5. LIST EPISODE */}
+        {/* 4. LIST EPISODE GRID */}
         {animeDetail && animeDetail.episode_lists && (
-          <Card className="border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <List className="w-4 h-4" /> Daftar Episode
+          <Card className="border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm overflow-hidden">
+            <CardHeader className="pb-3 border-b border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-900/50">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <List className="w-4 h-4 text-indigo-600" /> Daftar Episode
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-4 gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+            <CardContent className="p-3">
+              <div className="grid grid-cols-4 gap-2 max-h-[250px] overflow-y-auto pr-1 custom-scrollbar">
                 {animeDetail.episode_lists.map((ep) => {
                   const isCurrent = ep.slug === episodeSlug;
                   return (
@@ -390,11 +425,11 @@ export default function WatchView({
                       key={ep.slug}
                       href={`/watch/${slug}/${ep.slug}`}
                       className={`
-                        text-xs font-medium py-2 px-1 rounded text-center border transition-colors
+                        text-xs font-medium py-2 rounded-md text-center border transition-all
                         ${
                           isCurrent
-                            ? "bg-indigo-600 text-white border-indigo-600"
-                            : "bg-zinc-100 dark:bg-zinc-800 border-transparent hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                            ? "bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-500/20"
+                            : "bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 hover:border-indigo-400 dark:hover:border-indigo-500 hover:text-indigo-600"
                         }
                       `}
                     >
@@ -407,88 +442,122 @@ export default function WatchView({
           </Card>
         )}
 
-        {/* 6. DOWNLOAD PER EPISODE */}
-        <Card className="border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
+        {/* 5. DOWNLOAD PER EPISODE (REDESIGNED) */}
+        <Card className="border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm overflow-hidden">
+          <CardHeader className="pb-3 border-b border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-900/50">
+            <CardTitle className="text-sm font-bold flex items-center gap-2">
               <Download className="w-4 h-4 text-green-600" /> Download Episode
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4 text-sm">
-            {episode.download_urls?.mp4 && (
-              <div className="space-y-2">
-                <Badge
-                  variant="secondary"
-                  className="text-[10px] bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-100"
+          <CardContent className="p-0">
+            <Accordion type="single" collapsible className="w-full">
+              {/* MP4 Section */}
+              {episode.download_urls?.mp4 && (
+                <AccordionItem
+                  value="mp4"
+                  className="border-b border-zinc-100 dark:border-zinc-800"
                 >
-                  MP4
-                </Badge>
-                {episode.download_urls.mp4.map((format, idx) => (
-                  <div key={idx} className="space-y-1">
-                    <p className="text-[10px] font-bold text-zinc-500">
-                      {format.resolution}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {format.urls.map((link, lIdx) => (
-                        <Button
-                          key={lIdx}
-                          size="sm"
-                          variant="outline"
-                          asChild
-                          className="h-6 text-[10px] px-2"
-                        >
-                          <a
-                            href={link.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {link.provider}
-                          </a>
-                        </Button>
-                      ))}
+                  <AccordionTrigger className="px-4 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 text-sm font-medium">
+                    <div className="flex items-center gap-2">
+                      <FileVideo className="w-4 h-4 text-blue-500" />
+                      <span>MP4 Format</span>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            {episode.download_urls?.mkv && (
-              <div className="space-y-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                <Badge
-                  variant="secondary"
-                  className="text-[10px] bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-100"
-                >
-                  MKV
-                </Badge>
-                {episode.download_urls.mkv.map((format, idx) => (
-                  <div key={idx} className="space-y-1">
-                    <p className="text-[10px] font-bold text-zinc-500">
-                      {format.resolution}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {format.urls.map((link, lIdx) => (
-                        <Button
-                          key={lIdx}
-                          size="sm"
-                          variant="outline"
-                          asChild
-                          className="h-6 text-[10px] px-2"
-                        >
-                          <a
-                            href={link.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {link.provider}
-                          </a>
-                        </Button>
-                      ))}
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pb-4 pt-1 space-y-4">
+                    {episode.download_urls.mp4.map((format, idx) => (
+                      <div key={idx} className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                            {format.resolution}
+                          </span>
+                          <div className="h-px flex-1 bg-zinc-100 dark:bg-zinc-800"></div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {format.urls.map((link, lIdx) => (
+                            <Button
+                              key={lIdx}
+                              size="sm"
+                              variant="outline"
+                              asChild
+                              className="h-7 text-[10px] px-3 rounded-full hover:border-blue-300 hover:text-blue-600 dark:hover:border-blue-700 dark:hover:text-blue-400"
+                            >
+                              <a
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {link.provider}
+                              </a>
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </AccordionContent>
+                </AccordionItem>
+              )}
+
+              {/* MKV Section */}
+              {episode.download_urls?.mkv && (
+                <AccordionItem value="mkv" className="border-b-0">
+                  <AccordionTrigger className="px-4 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 text-sm font-medium">
+                    <div className="flex items-center gap-2">
+                      <Film className="w-4 h-4 text-purple-500" />
+                      <span>MKV Format</span>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pb-4 pt-1 space-y-4">
+                    {episode.download_urls.mkv.map((format, idx) => (
+                      <div key={idx} className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                            {format.resolution}
+                          </span>
+                          <div className="h-px flex-1 bg-zinc-100 dark:bg-zinc-800"></div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {format.urls.map((link, lIdx) => (
+                            <Button
+                              key={lIdx}
+                              size="sm"
+                              variant="outline"
+                              asChild
+                              className="h-7 text-[10px] px-3 rounded-full hover:border-purple-300 hover:text-purple-600 dark:hover:border-purple-700 dark:hover:text-purple-400"
+                            >
+                              <a
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {link.provider}
+                              </a>
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </AccordionContent>
+                </AccordionItem>
+              )}
+            </Accordion>
           </CardContent>
         </Card>
+
+        {/* 6. BATCH DOWNLOAD SECTION (NEW) */}
+        {/* Render BatchDownload component jika data batch tersedia di animeDetail */}
+        {/* Kita mengirim object batchData yang di-fetch via useEffect ke komponen ini */}
+        {(batchData || animeDetail?.batch) && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {isLoadingBatch ? (
+              <div className="p-4 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-400 gap-2 text-sm">
+                <Loader2 className="w-4 h-4 animate-spin" /> Memuat info
+                batch...
+              </div>
+            ) : batchData ? (
+              <BatchDownload batchData={batchData} />
+            ) : null}
+          </div>
+        )}
       </div>
     </div>
   );

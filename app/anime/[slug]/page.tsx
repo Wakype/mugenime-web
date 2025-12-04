@@ -1,5 +1,5 @@
 import { fetchAnime } from "@/lib/api";
-import { AnimeDetail } from "@/lib/types";
+import { AnimeDetail, BatchResponse } from "@/lib/types";
 import AnimeCard from "@/components/animeCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
+import BatchDownload from "@/components/batchDownload";
 
 // Cache data selama 1 jam
 export const revalidate = 3600;
@@ -17,6 +18,19 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
+function isAnimeDetail(data: unknown): data is AnimeDetail {
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    "title" in data &&
+    typeof data.title === "string" &&
+    "synopsis" in data &&
+    typeof data.synopsis === "string" &&
+    "episode_lists" in data &&
+    Array.isArray(data.episode_lists)
+  );
+}
+
 const getProxyUrl = (url: string) =>
   `/api/image-proxy?url=${encodeURIComponent(url)}`;
 
@@ -24,8 +38,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
 
   try {
-    const anime = await fetchAnime<AnimeDetail>(`anime/anime/${slug}`);
-    if (!anime) return { title: "Anime Not Found" };
+    const responseData: AnimeDetail = await fetchAnime<AnimeDetail>(
+      `anime/anime/${slug}`
+    );
+
+    if (!isAnimeDetail(responseData)) {
+      return { title: "Anime Not Found" };
+    }
+
+    const anime = responseData as AnimeDetail;
 
     return {
       title: `${anime.title} - Mugenime`,
@@ -47,20 +68,34 @@ export default async function AnimeDetailPage({ params }: Props) {
   const { slug } = await params;
 
   let anime: AnimeDetail;
+  let responseData: unknown;
 
   try {
-    anime = await fetchAnime<AnimeDetail>(`anime/anime/${slug}`);
+    responseData = await fetchAnime<AnimeDetail>(`anime/anime/${slug}`);
   } catch (error) {
     console.error("Failed to fetch anime detail:", error);
     return notFound();
   }
 
-  if (!anime) {
+  if (!isAnimeDetail(responseData)) {
     return notFound();
+  }
+  // eslint-disable-next-line prefer-const
+  anime = responseData;
+
+  let batchData: BatchResponse | null = null;
+
+  if (anime.batch && anime.batch.slug) {
+    try {
+      batchData = await fetchAnime<BatchResponse>(
+        `anime/batch/${anime.batch.slug}`
+      );
+    } catch (error) {
+      console.error("Gagal mengambil data batch:", error);
+    }
   }
 
   const episodeLists = anime.episode_lists || [];
-
   // const firstEpisode = episodeLists.length > 0 ? episodeLists[episodeLists.length - 1] : null;
   const firstEpisode = episodeLists.length > 0 ? episodeLists[0] : null;
 
@@ -87,7 +122,7 @@ export default async function AnimeDetailPage({ params }: Props) {
             <div className="relative aspect-[3/4] rounded-xl overflow-hidden  border-4 border-white dark:border-zinc-800">
               <Image
                 src={getProxyUrl(anime.poster)}
-                alt={anime.title}
+                alt={anime.title ?? "Anime Poster"}
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 33vw"
@@ -96,7 +131,8 @@ export default async function AnimeDetailPage({ params }: Props) {
               />
               <div className="absolute top-2 right-2">
                 <Badge className="bg-yellow-500 text-black font-bold text-sm flex items-center gap-1 hover:bg-yellow-400">
-                  <Star className="w-3 h-3 fill-black" /> {anime.rating}
+                  <Star className="w-3 h-3 fill-black" />{" "}
+                  {anime.rating === "" ? "N/A" : anime.rating}
                 </Badge>
               </div>
             </div>
@@ -139,9 +175,15 @@ export default async function AnimeDetailPage({ params }: Props) {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Episode</span>
+                  <span>
+                    {anime.episode_count === "Unknown"
+                      ? `Episode`
+                      : `Total Episode`}
+                  </span>
                   <span className="font-medium text-zinc-900 dark:text-zinc-200">
-                    {anime.episode_count}
+                    {anime.episode_count === "Unknown"
+                      ? `${episodeLists.length} (Sampai saat ini)`
+                      : anime.episode_count}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -159,16 +201,25 @@ export default async function AnimeDetailPage({ params }: Props) {
                 <div className="flex justify-between">
                   <span>Studio</span>
                   <span
-                    className="font-medium text-zinc-900 dark:text-zinc-200 truncate max-w-[150px] text-right"
+                    className="font-medium text-zinc-900 dark:text-zinc-200 max-w-[150px] text-right"
                     title={anime.studio}
                   >
                     {anime.studio}
                   </span>
                 </div>
                 <div className="flex justify-between">
+                  <span>Produser</span>
+                  <span
+                    className="font-medium text-zinc-900 dark:text-zinc-200 max-w-[150px] text-right"
+                    title={anime.produser}
+                  >
+                    {anime.produser}
+                  </span>
+                </div>
+                <div className="flex justify-between">
                   <span>Durasi</span>
                   <span className="font-medium text-zinc-900 dark:text-zinc-200">
-                    {anime.duration}
+                    {anime.duration === "" ? "N/A" : anime.duration}
                   </span>
                 </div>
               </div>
@@ -191,10 +242,7 @@ export default async function AnimeDetailPage({ params }: Props) {
               {/* Genre Badges */}
               <div className="flex flex-wrap gap-2">
                 {genres.map((genre) => (
-                  <Link
-                    key={genre.slug}
-                    href={`/directory/genre/${genre.slug}`}
-                  >
+                  <Link key={genre.slug} href={`/genre-anime/${genre.slug}`}>
                     <Badge
                       variant="secondary"
                       className="hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer px-3 py-1"
@@ -232,7 +280,7 @@ export default async function AnimeDetailPage({ params }: Props) {
                     <Link
                       key={ep.slug}
                       href={`/watch/${slug}/${ep.slug}`}
-                      className="group relative flex items-center justify-center p-4 bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 hover:border-indigo-500 dark:hover:border-indigo-500 rounded-lg transition-all hover:shadow-md"
+                      className="group relative flex items-center justify-center p-4 bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 hover:border-indigo-600 rounded-lg transition-all hover:shadow-md"
                     >
                       <div className="text-center">
                         <span className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">
@@ -252,6 +300,13 @@ export default async function AnimeDetailPage({ params }: Props) {
                 </div>
               )}
             </div>
+
+            {batchData && (
+              <>
+                <Separator className="my-8" />
+                <BatchDownload batchData={batchData} />
+              </>
+            )}
 
             <Separator className="my-8" />
 

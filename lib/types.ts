@@ -183,3 +183,29 @@ export interface AnimeListGroup {
 export interface AnimeListResponse {
   list: AnimeListGroup[];
 }
+
+export interface BatchLink {
+  title: string;
+  url: string;
+}
+
+export interface BatchQuality {
+  title: string;
+  size: string;
+  urls: BatchLink[];
+}
+
+export interface BatchFormat {
+  title: string;
+  qualities: BatchQuality[];
+}
+
+export interface BatchResponse {
+  title: string;
+  animeId: string;
+  poster: string;
+  // ... properti lain seperti score, duration dll (opsional jika tidak dipakai di UI)
+  downloadUrl: {
+    formats: BatchFormat[];
+  };
+}

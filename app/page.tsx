@@ -94,9 +94,9 @@ export default async function HomePage() {
 
           {/* Hero Content */}
           <div className="container relative z-10 mx-auto px-4 pb-16 md:pb-24">
-            <div className="max-w-3xl space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+            <div className="max-w-5xl space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-1000">
               {/* Poster Image - Diperbaiki ukurannya */}
-              <div className="relative w-44 sm:w-56 md:w-64 aspect-[3/4] rounded-xl overflow-hidden border-4 border-white dark:border-zinc-800 shadow-2xl">
+              <div className="relative w-44 sm:w-56 md:w-48 aspect-[3/4] rounded-xl overflow-hidden border-4 border-white dark:border-zinc-800 shadow-2xl">
                 <Image
                   src={getProxyUrl(heroAnime.poster)}
                   alt={heroAnime.title ?? "Anime Poster"}

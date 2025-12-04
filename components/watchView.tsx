@@ -30,6 +30,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import BatchDownload from "./batchDownload";
+import CommentSection from "./commentSection";
 
 interface WatchViewProps {
   episode: EpisodeDetail;
@@ -43,7 +44,7 @@ export default function WatchView({
   animeDetail,
   episodeSlug,
   slug,
-}: WatchViewProps) {
+}: Readonly<WatchViewProps>) {
   // --- STATE ---
   const [currentVideoUrl, setCurrentVideoUrl] = useState<string>(
     episode?.stream_url || ""
@@ -58,7 +59,7 @@ export default function WatchView({
   const activeRequestRef = useRef<string>("");
   const addToHistory = useStore((state) => state.addToHistory);
 
-  const isInvalid = !episode || !episode.stream_url;
+  const isInvalid = !episode?.stream_url;
 
   // --- HELPERS ---
   const getProxyUrl = (url: string | undefined) => {
@@ -71,7 +72,7 @@ export default function WatchView({
     try {
       if (url.includes("otakudesu")) {
         const parts = url.split("/").filter((p) => p && p.trim() !== "");
-        return parts.length > 0 ? parts[parts.length - 1] : url;
+        return parts.length > 0 ? parts.at(-1) : url;
       }
       return url;
     } catch (e) {
@@ -115,18 +116,7 @@ export default function WatchView({
       if (animeDetail?.batch?.slug && !batchData) {
         setIsLoadingBatch(true);
         try {
-          const res = await fetch(`/api/anime/batch/${animeDetail.batch.slug}`); // Proxy ke API internal Next.js Anda jika sudah dibuat, atau langsung fetchAnime
-          // Karena ini Client Component, idealnya kita punya route handler /api/batch/[slug]
-          // ATAU kita panggil server action.
-          // Untuk simpelnya, kita asumsikan fetchAnime bisa dipanggil via API Route Next.js yang meneruskan request.
-          // Disini saya pakai fetch ke API route Anda (sesuaikan pathnya).
-          // Jika belum ada route handler, Anda harus buat atau pass data dari Server Component.
-
-          // SOLUSI CEPAT: Kita pakai fetch langsung ke endpoint Server Component via props? Tidak bisa.
-          // Kita pakai fetch ke route handler internal kita.
-          // Asumsi: Anda sudah membuat route.ts di app/api/anime/[...path]/route.ts atau sejenisnya.
-          // JIKA BELUM ADA, saya sarankan buat file: app/api/batch/route.ts
-
+          // const res = await fetch(`/api/anime/batch/${animeDetail.batch.slug}`);
           const response = await fetch(
             `/api/batch?slug=${animeDetail.batch.slug}`
           );
@@ -341,8 +331,8 @@ export default function WatchView({
             ))}
           </Tabs>
 
-          <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 p-3 rounded-lg flex gap-3 items-start text-xs text-amber-800 dark:text-amber-200/80">
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <div className="bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-900/50 p-3 rounded-lg flex gap-3 items-center text-xs text-indigo-800 dark:text-indigo-200/80">
+            <AlertCircle className="w-4 h-4 shrink-0" />
             <p>
               Video tidak bisa diputar? Coba ganti server atau resolusi lain.
               Gunakan tombol &quot;Tab Baru&quot; jika player masih error.
@@ -350,10 +340,10 @@ export default function WatchView({
           </div>
         </div>
 
-        {/* 3. INFO ANIME (MINI) */}
+        {/* INFO ANIME (MINI) */}
         {animeDetail && (
           <div className="bg-zinc-50 dark:bg-zinc-900/30 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 md:p-6 flex flex-col md:flex-row gap-6">
-            <div className="shrink-0 relative w-[100px] aspect-[3/4] rounded-lg overflow-hidden shadow-md  bg-zinc-200 dark:bg-zinc-800">
+            <div className="shrink-0 relative w-[100px] aspect-3/4 rounded-lg overflow-hidden shadow-md  bg-zinc-200 dark:bg-zinc-800">
               {animeDetail.poster ? (
                 <Image
                   src={getProxyUrl(animeDetail.poster)}
@@ -404,12 +394,17 @@ export default function WatchView({
             </div>
           </div>
         )}
+
+        {/* 4. KOMENTAR SECTION */}
+        <div className="mt-8">
+          <CommentSection />
+        </div>
       </div>
 
       {/* --- KOLOM KANAN (SIDEBAR) --- */}
       <div className="space-y-6">
         {/* 4. LIST EPISODE GRID */}
-        {animeDetail && animeDetail.episode_lists && (
+        {animeDetail?.episode_lists && (
           <Card className="border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm overflow-hidden">
             <CardHeader className="pb-3 border-b border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-900/50">
               <CardTitle className="text-sm font-bold flex items-center gap-2">

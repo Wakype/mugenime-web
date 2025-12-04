@@ -10,6 +10,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import BatchDownload from "@/components/batchDownload";
+import CommentSection from "@/components/commentSection";
 
 // Cache data selama 1 jam
 export const revalidate = 3600;
@@ -119,7 +120,7 @@ export default async function AnimeDetailPage({ params }: Props) {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
           {/* SIDEBAR (Poster & Info) */}
           <div className="md:col-span-3 lg:col-span-3 flex flex-col gap-6">
-            <div className="relative aspect-[3/4] rounded-xl overflow-hidden  border-4 border-white dark:border-zinc-800">
+            <div className="relative aspect-[3/4] rounded-xl overflow-hidden border-4 border-white dark:border-zinc-800">
               <Image
                 src={getProxyUrl(anime.poster)}
                 alt={anime.title ?? "Anime Poster"}
@@ -321,6 +322,11 @@ export default async function AnimeDetailPage({ params }: Props) {
                 </div>
               </div>
             )}
+
+            <Separator className="my-8" />
+
+            {/* KOMENTAR SECTION */}
+            <CommentSection />
           </div>
         </div>
       </div>

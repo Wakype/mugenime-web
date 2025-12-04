@@ -3,16 +3,7 @@ import { OngoingResponse } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
-import {
-  Calendar,
-  CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  Flame,
-  Info,
-  Zap,
-} from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Zap } from "lucide-react";
 import OngoingCard from "@/components/ongoingCard";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +15,9 @@ interface PageProps {
   searchParams: Promise<{ page?: string }>;
 }
 
-export default async function OngoingPage({ searchParams }: PageProps) {
+export default async function OngoingPage({
+  searchParams,
+}: Readonly<PageProps>) {
   // 1. Ambil page dari URL, default ke 1 jika tidak ada
   const params = await searchParams;
   const currentPage = Number(params.page) || 1;
@@ -93,7 +86,7 @@ export default async function OngoingPage({ searchParams }: PageProps) {
         <div className="relative rounded-3xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-6 md:p-10 shadow-sm overflow-hidden group">
           {/* 1. BACKGROUND DECORATION */}
           {/* Grid Pattern Halus */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px] pointer-events-none" />
 
           {/* Gradient Blobs (Dekorasi) */}
           <div className="absolute -top-20 -right-20 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none transition-opacity duration-500 group-hover:opacity-70" />
@@ -106,15 +99,12 @@ export default async function OngoingPage({ searchParams }: PageProps) {
                 {/* Label Kecil (Update Setiap Hari) */}
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold uppercase tracking-wider w-fit">
                   <Zap className="w-3.5 h-3.5" />
-                  Update Setiap Hari
+                  Anime Ongoing
                 </div>
 
                 {/* Judul dengan Gradient Text */}
                 <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight font-heading">
-                  Anime{" "}
-                  <span className="text-indigo-600">
-                    Sedang Tayang
-                  </span>
+                  Anime <span className="text-indigo-600">Sedang Tayang</span>
                 </h1>
 
                 <p className="text-zinc-500 dark:text-zinc-400 text-sm md:text-base leading-relaxed max-w-2xl">

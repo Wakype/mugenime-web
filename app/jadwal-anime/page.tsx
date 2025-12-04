@@ -1,7 +1,7 @@
 import { fetchAnime } from "@/lib/api";
 import { ScheduleDay } from "@/lib/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, Info } from "lucide-react";
+import { Calendar, Info } from "lucide-react";
 import ScheduleCard from "@/components/scheduleCard";
 
 export const revalidate = 3600;
@@ -21,7 +21,7 @@ export default async function JadwalPage() {
   const todayIndex = new Date().getDay();
   const currentDayName = daysMap[todayIndex];
 
-  const defaultTab = scheduleData.find((d) => d.day === currentDayName)
+  const defaultTab = scheduleData.some((d) => d.day === currentDayName)
     ? currentDayName
     : "Senin";
 
@@ -36,7 +36,7 @@ export default async function JadwalPage() {
 
           {/* Gradient Blobs (Kiri & Kanan) */}
           <div className="absolute -top-20 -right-20 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none transition-opacity duration-500 group-hover:opacity-70" />
-          <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-start justify-between gap-8">
             {/* --- KIRI: KONTEN UTAMA --- */}
@@ -61,9 +61,9 @@ export default async function JadwalPage() {
               </div>
 
               {/* Modern Alert Box */}
-              <div className="flex gap-4 p-4 rounded-xl bg-amber-50/50 dark:bg-amber-950/10 border border-amber-200/60 dark:border-amber-900/30 backdrop-blur-sm">
+              <div className="flex gap-4 p-4 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/10 border border-indigo-200/60 dark:border-indigo-900/30 backdrop-blur-sm">
                 <div className="shrink-0">
-                  <Info className="w-5 h-5 text-amber-600 dark:text-amber-500" />
+                  <Info className="w-5 h-5 text-indigo-600 dark:text-indigo-500" />
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm font-bold text-zinc-800 dark:text-zinc-200">
@@ -71,11 +71,11 @@ export default async function JadwalPage() {
                   </p>
                   <p className="text-xs md:text-sm text-zinc-600 dark:text-zinc-400 leading-snug">
                     Terkadang anime yang statusnya sudah{" "}
-                    <span className="font-semibold text-amber-700 dark:text-amber-400">
+                    <span className="font-semibold text-indigo-700 dark:text-indigo-400">
                       Completed (Tamat)
                     </span>{" "}
                     masih muncul di daftar jadwal{" "}
-                    <span className="font-semibold text-amber-700 dark:text-amber-400">
+                    <span className="font-semibold text-indigo-700 dark:text-indigo-400">
                       Ongoing (Sedang Tayang)
                     </span>{" "}
                     ini karena bug pada sistem. Harap maklum! 🙏
@@ -123,9 +123,9 @@ export default async function JadwalPage() {
           {/* TABS NAVIGATION (Scrollable on mobile) */}
           <div className="sticky top-16 z-30 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md py-2 -mx-4 px-4 md:mx-0 md:px-0 md:static md:bg-transparent md:backdrop-blur-none">
             <TabsList className="w-full justify-start overflow-x-auto h-auto p-1 bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 no-scrollbar">
-              {scheduleData.map((item, idx) => (
+              {scheduleData.map((item) => (
                 <TabsTrigger
-                  key={idx}
+                  key={item.day}
                   value={item.day}
                   className="px-6 py-2.5 min-w-[100px] text-sm font-medium data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all"
                 >
@@ -135,9 +135,9 @@ export default async function JadwalPage() {
             </TabsList>
           </div>
 
-          {scheduleData.map((dayData, idx) => (
+          {scheduleData.map((dayData) => (
             <TabsContent
-              key={idx}
+              key={dayData.day}
               value={dayData.day}
               className="animate-in fade-in-50 slide-in-from-bottom-4 duration-500"
             >

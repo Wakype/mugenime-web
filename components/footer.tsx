@@ -26,13 +26,17 @@ export default function Footer() {
           {/* KOLOM 1: BRANDING & SOSMED (4 SPAN) */}
           <div className="lg:col-span-4 space-y-6">
             <div className="space-y-4">
-              <Link href="/" className="flex items-center gap-2">
-                <div className="bg-indigo-600 p-1.5 rounded-lg group-hover:bg-indigo-700 group-hover:text-indigo-700 transition-colors">
-                  <Moon className="w-5 h-5 text-white fill-white" />
+              <Link href="/" className="flex items-center gap-2 group shrink-0 hover:-rotate-2 transition-all ease-in-out">
+                <div className="relative h-8 md:h-10 w-auto aspect-1142/249">
+                  <Image
+                    src="/assets/logo.png"
+                    alt="Mugenime Logo"
+                    fill
+                    className="object-contain transition-transform duration-300 -mt-0.5"
+                    priority
+                    sizes="(max-width: 768px) 120px, 160px"
+                  />
                 </div>
-                <h2 className="text-2xl font-black text-indigo-600 dark:text-indigo-500 font-heading">
-                  MUGENIME.
-                </h2>
               </Link>
               <p className="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed max-w-sm">
                 Download dan streaming anime subtitle Indonesia lengkap dalam

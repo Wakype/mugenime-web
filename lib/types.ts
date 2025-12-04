@@ -209,3 +209,17 @@ export interface BatchResponse {
     formats: BatchFormat[];
   };
 }
+
+export interface SearchResult {
+  title: string;
+  slug: string;
+  poster: string;
+  genres: Genre[];
+  status: string;
+  rating: string;
+  url: string;
+}
+
+export interface SearchResponse {
+  data: SearchResult[];
+}

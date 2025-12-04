@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Home, Search, MoveLeft } from "lucide-react";
+import { Home, Search } from "lucide-react";
 
 export default function NotFound() {
   return (
     <div className="relative min-h-[80vh] flex flex-col items-center justify-center p-4 overflow-hidden bg-white dark:bg-zinc-950">
       {/* 1. BACKGROUND DECORATION */}
       {/* Grid Pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px] pointer-events-none" />
 
       {/* Glow Effect di tengah */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
@@ -16,7 +16,7 @@ export default function NotFound() {
       <div className="relative z-10 text-center space-y-8 max-w-lg mx-auto">
         {/* Angka 404 Besar */}
         <div className="relative">
-          <h1 className="text-[150px] md:text-[200px] font-black leading-none text-transparent bg-clip-text bg-gradient-to-b from-indigo-500/80 to-transparent select-none opacity-80 dark:opacity-80">
+          <h1 className="text-[150px] md:text-[200px] font-black leading-none text-transparent bg-clip-text bg-linear-to-b from-indigo-500/80 to-transparent select-none opacity-80 dark:opacity-80">
             404
           </h1>
 
@@ -33,7 +33,7 @@ export default function NotFound() {
             Ara ara... Kamu Tersesat?
           </h2>
           <p className="text-zinc-500 dark:text-zinc-400 text-sm md:text-base leading-relaxed">
-            Sepertinya kamu gagal masuk ke isekai lain 🗿
+            Sepertinya kamu gagal masuk ke isekai 🗿
           </p>
         </div>
 

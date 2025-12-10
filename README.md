@@ -1,8 +1,8 @@
 <div align="center">
   <!-- Ganti link gambar di bawah dengan logo proyek Anda jika ada -->
-  <img src="https://i.ibb.co.com/7JcFYF2Q/Mugenime-Logo-stroke.png" alt="Mugenime Logo" width="700">
-
-  <h1>✨ Mugenime 🌙</h1>
+  <a href="https://mugenime.vercel.app/"><img src="https://i.ibb.co.com/7JcFYF2Q/Mugenime-Logo-stroke.png" alt="Mugenime Logo" width="500"></a>
+ 
+  <h1><a href="https://mugenime.vercel.app/">✨ Mugenime 🌙</a></h1>
   
   <p>
     <strong>Modern Anime Streaming Platform</strong>
@@ -27,7 +27,8 @@ Download dan streaming anime subtitle Indonesia lengkap dalam format Mp4 dan MKV
 ## 📸 Preview
 
 <!-- Ganti link gambar di bawah dengan Screenshot asli aplikasi Anda -->
-![Mugenime](https://i.ibb.co.com/zVTWPTDc/image.png)
+<img width="1903" height="1079" alt="mugenimeweb" src="https://github.com/user-attachments/assets/949357e6-32b6-4ed3-a172-0b229530b89f" />
+
 
 ---
 
@@ -37,7 +38,7 @@ Download dan streaming anime subtitle Indonesia lengkap dalam format Mp4 dan MKV
 - **📥 Download Center**: Unduh anime per episode atau langsung satu paket (*Batch*) dengan berbagai pilihan resolusi.
 - **📅 Jadwal Rilis**: Pantau anime favorit yang rilis setiap hari secara *real-time*.
 - **🔍 Pencarian Cepat**: Fitur pencarian instan dengan *live suggestion*.
-- **🔖 Riwayat & Bookmark**: Simpan progres tontonan dan anime favorit di perangkat lokal (**Local Storage**) tanpa perlu login.
+- **🔖 Riwayat & Bookmark (Soon)**: Simpan progres tontonan dan anime favorit di perangkat lokal (**Local Storage**) tanpa perlu login.
 - **🌗 Dark Mode (Soon)**: Tampilan yang nyaman di mata dengan opsi tema gelap/terang.
 - **📱 Responsive Design**: Tampilan optimal di Desktop, Tablet, dan Mobile.
 

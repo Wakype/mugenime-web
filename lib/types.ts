@@ -150,6 +150,7 @@ export interface AnimeDetail {
   duration: string;
   aired: string;
   studios: string;
+  studio?: string;
   genreList: Genre[];
   synopsis:
     | {

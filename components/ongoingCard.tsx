@@ -6,7 +6,7 @@ import { PlayCircle, ImageOff, CalendarDays, Clock } from "lucide-react";
 import { Anime } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 
-export default function OngoingCard({ anime }: { anime: Anime }) {
+export default function OngoingCard({ anime }: Readonly<{ anime: Anime }>) {
   // 1. VALIDASI POSTER
   const isValidPoster =
     anime.poster &&
@@ -43,7 +43,7 @@ export default function OngoingCard({ anime }: { anime: Anime }) {
         )}
 
         {/* GRADIENT OVERLAY */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
 
         {/* HOVER PLAY BUTTON */}
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">

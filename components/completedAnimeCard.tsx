@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import {
-  PlayCircle,
-  ImageOff,
-  Star,
-  Layers,
-  CalendarCheck,
-} from "lucide-react";
+import { PlayCircle, ImageOff, Star, CalendarCheck } from "lucide-react";
 import { Anime } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 

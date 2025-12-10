@@ -1,11 +1,11 @@
-import { Loader2, Moon } from "lucide-react";
+import { Moon } from "lucide-react";
 
 export default function Loading() {
   return (
     <div className="relative min-h-[70vh] flex flex-col items-center justify-center bg-white dark:bg-zinc-950 overflow-hidden">
       {/* 1. BACKGROUND DECORATION (Konsisten dengan page lain) */}
       {/* Grid Pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px] pointer-events-none" />
 
       {/* Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" />

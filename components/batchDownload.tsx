@@ -19,9 +19,9 @@ import { Badge } from "@/components/ui/badge";
 
 export default function BatchDownload({
   batchData,
-}: {
+}: Readonly<{
   batchData: BatchResponse;
-}) {
+}>) {
   const [isOpen, setIsOpen] = useState(false);
 
   // Ambil format pertama (biasanya cuma ada 1 format list batch)
@@ -68,8 +68,8 @@ export default function BatchDownload({
 
         <CollapsibleContent className="animate-collapsible-down">
           <div className="p-4 space-y-6 border-t border-zinc-200 dark:border-zinc-800">
-            {formats.qualities.map((quality, idx) => (
-              <div key={idx} className="space-y-3">
+            {formats.qualities.map((quality) => (
+              <div key={quality.title} className="space-y-3">
                 {/* Header Kualitas & Ukuran */}
                 <div className="flex items-center gap-2">
                   <Badge
@@ -85,9 +85,9 @@ export default function BatchDownload({
 
                 {/* Grid Tombol Download */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-2">
-                  {quality.urls.map((link, linkIdx) => (
+                  {quality.urls.map((link) => (
                     <Button
-                      key={linkIdx}
+                      key={link.title}
                       variant="outline"
                       size="sm"
                       asChild

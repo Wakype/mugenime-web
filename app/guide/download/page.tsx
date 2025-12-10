@@ -4,18 +4,17 @@ import {
   FileVideo,
   HardDrive,
   AlertCircle,
-  CheckCircle2,
 } from "lucide-react";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Metadata } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Panduan Download - Mugenime",
   description:
     "Cara mudah mendownload anime per episode atau batch di Mugenime.",
@@ -27,7 +26,7 @@ export default function DownloadGuidePage() {
       <div className="container mx-auto px-4 space-y-10 max-w-5xl">
         {/* --- HEADER --- */}
         <div className="relative rounded-3xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-6 md:p-10 shadow-sm overflow-hidden group">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px] pointer-events-none" />
           <div className="absolute -top-20 -right-20 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 space-y-4">
@@ -53,6 +52,7 @@ export default function DownloadGuidePage() {
               <span className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-600 text-white text-sm">
                 1
               </span>
+              {""}
               Download Per Episode
             </h2>
 
@@ -81,6 +81,7 @@ export default function DownloadGuidePage() {
               <span className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-600 text-white text-sm">
                 2
               </span>
+              {""}
               Download Batch (Tamat)
             </h2>
 
@@ -127,11 +128,11 @@ function StepCard({
   icon,
   title,
   desc,
-}: {
+}: Readonly<{
   icon: React.ReactNode;
   title: string;
   desc: string;
-}) {
+}>) {
   return (
     <Card className="border-l-4 border-l-indigo-500 border-y-zinc-200 border-r-zinc-200 dark:border-y-zinc-800 dark:border-r-zinc-800 shadow-sm hover:shadow-md transition-all">
       <CardHeader className="p-4">

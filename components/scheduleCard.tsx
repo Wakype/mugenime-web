@@ -20,11 +20,13 @@ import {
 } from "lucide-react";
 import { getAnimeDetailAction } from "@/app/actions";
 
-export default function ScheduleCard({ anime }: Readonly<{ anime: ScheduleAnime }>) {
+export default function ScheduleCard({
+  anime,
+}: Readonly<{ anime: ScheduleAnime }>) {
   const [detail, setDetail] = useState<AnimeDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [hasFetched, setHasFetched] = useState(false);
-
+  console.log("detail", detail);
   const isValidPoster =
     anime.poster &&
     anime.poster !== "" &&
@@ -57,7 +59,9 @@ export default function ScheduleCard({ anime }: Readonly<{ anime: ScheduleAnime 
 
     if (detail) {
       const synopsisText =
-        detail.synopsis.paragraphs?.join(" ") || "Sinopsis belum tersedia.";
+        typeof detail.synopsis === "string"
+          ? detail.synopsis
+          : detail.synopsis.paragraphs?.join(" ") || "Sinopsis belum tersedia.";
 
       return (
         <>
@@ -77,7 +81,7 @@ export default function ScheduleCard({ anime }: Readonly<{ anime: ScheduleAnime 
           </div>
 
           <div className="flex flex-wrap gap-1.5">
-            {detail.genreList.slice(0, 3).map((g) => (
+            {(detail.genreList || []).slice(0, 3).map((g) => (
               <Badge
                 key={g.genreId}
                 variant="secondary"
@@ -160,7 +164,7 @@ export default function ScheduleCard({ anime }: Readonly<{ anime: ScheduleAnime 
               {anime.title}
             </h4>
             <h4 className="font-normal text-zinc-200 text-xs line-clamp-1">
-              {detail?.studios}
+              {detail?.studios || detail?.studio}
             </h4>
           </div>
         </div>

@@ -1,36 +1,150 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
+  <!-- Ganti link gambar di bawah dengan logo proyek Anda jika ada -->
+  <img src="https://i.ibb.co.com/7JcFYF2Q/Mugenime-Logo-stroke.png" alt="Mugenime Logo" width="700">
 
-## Getting Started
+  <h1>✨ Mugenime 🌙</h1>
+  
+  <p>
+    <strong>Modern Anime Streaming Platform</strong>
+  </p>
 
-First, run the development server:
+  <p>
+    <a href="https://nextjs.org"><img src="https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js" alt="Next.js 16"></a>
+    <a href="https://react.dev"><img src="https://img.shields.io/badge/React-19-blue?style=flat-square&logo=react" alt="React 19"></a>
+    <a href="https://tailwindcss.com"><img src="https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?style=flat-square&logo=tailwind-css" alt="Tailwind v4"></a>
+    <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-Blue?style=flat-square&logo=typescript" alt="TypeScript"></a>
+  </p>
+</div>
 
+<br />
+
+## 📖 Deskripsi
+
+Download dan streaming anime subtitle Indonesia lengkap dalam format Mp4 dan MKV dengan berbagai resolusi (360p, 480p, 720p, dan 1080p) di platform gratis, tanpa iklan yang mengganggu, dan hemat kuota.
+
+---
+
+## 📸 Preview
+
+<!-- Ganti link gambar di bawah dengan Screenshot asli aplikasi Anda -->
+![Mugenime](https://i.ibb.co.com/zVTWPTDc/image.png)
+
+---
+
+## 🚀 Fitur Utama
+
+- **📚 Katalog Lengkap**: Akses ribuan anime, baik yang sedang tayang (*Ongoing*) maupun yang sudah tamat (*Completed*).
+- **📥 Download Center**: Unduh anime per episode atau langsung satu paket (*Batch*) dengan berbagai pilihan resolusi.
+- **📅 Jadwal Rilis**: Pantau anime favorit yang rilis setiap hari secara *real-time*.
+- **🔍 Pencarian Cepat**: Fitur pencarian instan dengan *live suggestion*.
+- **🔖 Riwayat & Bookmark**: Simpan progres tontonan dan anime favorit di perangkat lokal (**Local Storage**) tanpa perlu login.
+- **🌗 Dark Mode (Soon)**: Tampilan yang nyaman di mata dengan opsi tema gelap/terang.
+- **📱 Responsive Design**: Tampilan optimal di Desktop, Tablet, dan Mobile.
+
+---
+
+## 🛠 Tech Stack
+
+Project ini dibangun menggunakan ekosistem Next.js dan library modern untuk performa maksimal:
+
+### Core
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Runtime**: React 19
+
+### Styling & UI
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **Components**: [Shadcn UI](https://ui.shadcn.com/) (Radix UI based)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Animation**: `tailwindcss-animate`
+
+### State & Data Management
+- **Server State**: [TanStack Query v5](https://tanstack.com/query/latest) (Fetching, caching, & sync)
+- **Local State**: [Zustand](https://github.com/pmndrs/zustand) (History/Bookmark)
+
+---
+
+## 📂 Struktur Halaman (Sitemap)
+
+Aplikasi ini memiliki struktur routing yang rapi menggunakan Next.js App Router:
+
+| Path | Deskripsi |
+| :--- | :--- |
+| `/` | **Home Page** (Hero, Ongoing, Completed, Announcement) |
+| `/anime/[slug]` | **Detail Anime** (Info, Sinopsis, List Episode, Batch Download) |
+| `/watch/[slug]/[episodeSlug]` | **Streaming Room** (Player, Server Switcher, Download Link) |
+| `/jadwal-anime` | **Jadwal Rilis** (Kalender rilis harian) |
+| `/ongoing-anime` | **List Ongoing** (Daftar anime yang sedang tayang) |
+| `/completed-anime` | **List Completed** (Daftar anime yang sudah tamat) |
+| `/list-anime` | **A-Z Directory** (Indeks anime berdasarkan abjad) |
+| `/genre-anime` | **Genre List** (Daftar semua genre) |
+| `/genre-anime/[slug]` | **Genre Detail** (Filter anime berdasarkan genre) |
+| `/search` | **Pencarian** (Hasil pencarian kata kunci) |
+| `/guide/download` | **Panduan Download** (Tutorial cara unduh) |
+| `/guide/streaming` | **Panduan Streaming** (Troubleshooting player) |
+| `/dmca` | **Legal & DMCA** (Disclaimer hak cipta) |
+| `/report` | **Lapor Masalah** (Pusat laporan link rusak/error) |
+
+---
+
+## ⚙ Instalasi & Menjalankan Project
+
+Pastikan Anda sudah menginstal **Node.js (v20+)** dan **pnpm**.
+
+### 1. Clone Repository
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/Wakype/mugenime-web.git
+cd mugenime-web
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Install Dependencies
+```bash
+pnpm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Setup Environment Variables
+Buat file `.env.local` di root folder dan tambahkan konfigurasi berikut:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+NEXT_PUBLIC_API_BASE_URL=YOUR_API_KEY
+```
 
-## Learn More
+### 4. Jalankan Development Server
+```bash
+pnpm dev
+```
+Buka [http://localhost:3000](http://localhost:3000) di browser Anda.
 
-To learn more about Next.js, take a look at the following resources:
+### 5. Build untuk Production
+```bash
+pnpm build
+pnpm start
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## ⚠ Catatan Penting (API Rate Limit)
 
-## Deploy on Vercel
+> **Peringatan:** Aplikasi ini menggunakan API pihak ketiga (Sanka Vollerei) yang memiliki batasan ketat.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+*   **Rate Limit**: ~70 request / menit.
+*   **Strategi**: Aplikasi ini telah dikonfigurasi menggunakan fitur caching bawaan Next.js (`revalidate`) dan TanStack Query untuk meminimalisir request ke server asli dan menghindari pemblokiran IP (IP Ban).
+*   **Saran**: Jangan melakukan spam refresh atau load testing berlebihan pada environment production.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🤝 Kredit & Sumber Data
+
+*   **Data Anime**: Diambil dari API publik **Sanka Vollerei**.
+
+---
+
+## 📄 Lisensi
+
+Project ini dibuat untuk tujuan pembelajaran dan edukasi. Hak cipta konten anime (gambar, video, sinopsis) sepenuhnya milik pemegang hak cipta asli dan produsen anime terkait.
+
+<br />
+
+<div align="center">
+  Made with ❤️ and 🧅 by <strong>Aing Gabut awokaokwok</strong>
+</div>

@@ -8,10 +8,10 @@ import { AlertTriangle, RefreshCcw, Home } from "lucide-react";
 export default function Error({
   error,
   reset,
-}: {
+}: Readonly<{
   error: Error & { digest?: string };
   reset: () => void;
-}) {
+}>) {
   useEffect(() => {
     // Log error ke layanan reporting (opsional)
     console.error("Next.js Error Boundary caught:", error);

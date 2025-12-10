@@ -4,7 +4,20 @@ import AnimeCard from "@/components/animeCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Play, Star, MonitorPlay, Download, Info } from "lucide-react";
+import {
+  Play,
+  Star,
+  MonitorPlay,
+  Info,
+  Calendar,
+  Clock,
+  Layers,
+  Share2,
+  Tv,
+  Users,
+  Film,
+  Bookmark,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -12,7 +25,6 @@ import { Metadata } from "next";
 import BatchDownload from "@/components/batchDownload";
 import CommentSection from "@/components/commentSection";
 
-// Cache data selama 1 jam
 export const revalidate = 3600;
 
 type Props = {
@@ -20,55 +32,51 @@ type Props = {
 };
 
 function isAnimeDetail(data: unknown): data is AnimeDetail {
+  if (typeof data !== "object" || data === null) return false;
+  const d = data as AnimeDetail;
   return (
-    typeof data === "object" &&
-    data !== null &&
-    "title" in data &&
-    typeof data.title === "string" &&
-    "synopsis" in data &&
-    typeof data.synopsis === "string" &&
-    "episode_lists" in data &&
-    Array.isArray(data.episode_lists)
+    typeof d.title === "string" &&
+    (typeof d.synopsis === "object" || typeof d.synopsis === "string") &&
+    "episodeList" in d &&
+    Array.isArray(d.episodeList)
   );
 }
 
 const getProxyUrl = (url: string) =>
   `/api/image-proxy?url=${encodeURIComponent(url)}`;
 
+const getSynopsisText = (synopsis: AnimeDetail["synopsis"]) => {
+  if (typeof synopsis === "string") return synopsis;
+  if (synopsis && Array.isArray(synopsis.paragraphs)) {
+    return synopsis.paragraphs.join(" ");
+  }
+  return "";
+};
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-
   try {
-    const responseData: AnimeDetail = await fetchAnime<AnimeDetail>(
-      `anime/anime/${slug}`
-    );
-
-    if (!isAnimeDetail(responseData)) {
-      return { title: "Anime Not Found" };
-    }
-
-    const anime = responseData as AnimeDetail;
-
+    const responseData = await fetchAnime<AnimeDetail>(`anime/anime/${slug}`);
+    if (!isAnimeDetail(responseData)) return { title: "Anime Not Found" };
+    const anime = responseData;
+    const synopsisText = getSynopsisText(anime.synopsis);
     return {
       title: `${anime.title} - Mugenime`,
-      description: anime.synopsis
-        ? anime.synopsis.slice(0, 150) + "..."
+      description: synopsisText
+        ? synopsisText.slice(0, 150) + "..."
         : "Nonton anime sub indo gratis.",
-      openGraph: {
-        images: [getProxyUrl(anime.poster)],
-      },
+      openGraph: { images: [getProxyUrl(anime.poster)] },
     };
   } catch (e) {
-    return {
-      title: "Anime Not Found - Mugenime",
-    };
+    console.error(e);
+    return { title: "Anime Not Found - Mugenime" };
   }
 }
 
-export default async function AnimeDetailPage({ params }: Props) {
-  const { slug } = await params;
+// --- MAIN PAGE COMPONENT ---
 
-  let anime: AnimeDetail;
+export default async function AnimeDetailPage({ params }: Readonly<Props>) {
+  const { slug } = await params;
   let responseData: unknown;
 
   try {
@@ -81,174 +89,187 @@ export default async function AnimeDetailPage({ params }: Props) {
   if (!isAnimeDetail(responseData)) {
     return notFound();
   }
-  // eslint-disable-next-line prefer-const
-  anime = responseData;
 
+  const anime = responseData;
+  const synopsisText = getSynopsisText(anime.synopsis);
+
+  // Batch Data Logic
   let batchData: BatchResponse | null = null;
-
-  if (anime.batch && anime.batch.slug) {
+  if (anime.batch?.batchId) {
     try {
       batchData = await fetchAnime<BatchResponse>(
-        `anime/batch/${anime.batch.slug}`
+        `anime/batch/${anime.batch.batchId}`
       );
     } catch (error) {
       console.error("Gagal mengambil data batch:", error);
     }
   }
 
-  const episodeLists = anime.episode_lists || [];
-  // const firstEpisode = episodeLists.length > 0 ? episodeLists[episodeLists.length - 1] : null;
-  const firstEpisode = episodeLists.length > 0 ? episodeLists[0] : null;
-
-  const genres = anime.genres || [];
+  const episodeLists = anime.episodeList || [];
+  const firstEpisode = episodeLists.length > 0 ? episodeLists.at(-1) : null;
+  const genres = anime.genreList || [];
 
   return (
-    <div className="min-h-screen pb-20">
-      {/* --- HERO BACKGROUND --- */}
-      <div className="relative w-full h-[40vh] md:h-[50vh] overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center blur opacity-60 dark:opacity-40 scale-110"
-          style={{
-            backgroundImage: `url(${getProxyUrl(anime.poster)})`,
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/60 to-transparent dark:from-zinc-950 dark:via-zinc-950/60 dark:to-transparent" />
+    <div className="min-h-screen bg-white dark:bg-zinc-950 pb-20">
+      {/* --- 1. HERO BACKGROUND (Immersive) --- */}
+      <div className="relative w-full h-[50vh] md:h-[60vh] overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0">
+          <Image
+            src={getProxyUrl(anime.poster)}
+            alt="Background"
+            fill
+            className="object-cover opacity-50 dark:opacity-30 blur-xl scale-110"
+            priority
+            unoptimized
+          />
+        </div>
+
+        {/* Gradients for readability and seamless transition */}
+        <div className="absolute inset-0 bg-linear-to-t from-white via-white/50 to-transparent dark:from-zinc-950 dark:via-zinc-950/80 dark:to-zinc-950/20" />
+        <div className="absolute inset-0 bg-linear-to-b from-transparent to-white dark:to-zinc-950 opacity-90" />
       </div>
 
-      {/* --- MAIN CONTENT --- */}
-      <div className="container mx-auto px-4 -mt-32 md:-mt-48 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-          {/* SIDEBAR (Poster & Info) */}
-          <div className="md:col-span-3 lg:col-span-3 flex flex-col gap-6">
-            <div className="relative aspect-[3/4] rounded-xl overflow-hidden border-4 border-white dark:border-zinc-800">
-              <Image
-                src={getProxyUrl(anime.poster)}
-                alt={anime.title ?? "Anime Poster"}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 33vw"
-                priority
-                unoptimized
-              />
-              <div className="absolute top-2 right-2">
-                <Badge className="bg-yellow-500 text-black font-bold text-sm flex items-center gap-1 hover:bg-yellow-400">
-                  <Star className="w-3 h-3 fill-black" />{" "}
-                  {anime.rating === "" ? "N/A" : anime.rating}
-                </Badge>
+      {/* --- 2. MAIN CONTENT CONTAINER --- */}
+      <div className="container mx-auto px-4 -mt-64 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+          {/* --- SIDEBAR (Left - Sticky) --- */}
+          <div className="lg:col-span-3 lg:block">
+            <div className="lg:top-24 space-y-6">
+              {/* Poster Card */}
+              <div className="group relative aspect-3/4 rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/5 dark:ring-white/10 bg-zinc-200 dark:bg-zinc-800">
+                <Image
+                  src={getProxyUrl(anime.poster)}
+                  alt={anime.title}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  sizes="(max-width: 768px) 60vw, 300px"
+                  priority
+                  unoptimized
+                />
+
+                {/* Rating Badge Overlay */}
+                <div className="absolute top-3 right-3 z-10">
+                  <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/10 text-white text-sm font-bold shadow-lg">
+                    <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+                    <span>{anime.score || "N/A"}</span>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            {/* Action Buttons */}
-            <div className="space-y-3">
-              {firstEpisode ? (
-                <Button
-                  asChild
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-full "
-                  size="lg"
-                >
-                  <Link href={`/watch/${slug}/${firstEpisode.slug}`}>
-                    <Play className="w-4 h-4 mr-2 fill-current" /> Mulai Nonton
-                    (Episode 1)
-                  </Link>
-                </Button>
-              ) : (
-                <Button
-                  disabled
-                  className="w-full rounded-full"
-                  variant="secondary"
-                >
-                  Belum ada Episode
-                </Button>
-              )}
-            </div>
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                {firstEpisode ? (
+                  <Button
+                    asChild
+                    size="lg"
+                    className="w-full rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-12 shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/40 transition-all"
+                  >
+                    <Link href={`/watch/${slug}/${firstEpisode.episodeId}`}>
+                      <Play className="w-5 h-5 mr-2 fill-current" />
+                      Mulai Nonton (Episode 1)
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button
+                    disabled
+                    size="lg"
+                    className="w-full rounded-xl"
+                    variant="secondary"
+                  >
+                    Belum Tayang
+                  </Button>
+                )}
 
-            {/* Detail Data Grid */}
-            <div className="bg-zinc-50 dark:bg-zinc-900/50 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-4 text-sm">
-              <h3 className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                <Info className="w-4 h-4" /> Informasi Anime
-              </h3>
-              <Separator />
-              <div className="space-y-3 text-zinc-600 dark:text-zinc-400">
-                <div className="flex justify-between">
-                  <span>Tipe</span>
-                  <span className="font-medium text-zinc-900 dark:text-zinc-200">
-                    {anime.type}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>
-                    {anime.episode_count === "Unknown"
-                      ? `Episode`
-                      : `Total Episode`}
-                  </span>
-                  <span className="font-medium text-zinc-900 dark:text-zinc-200">
-                    {anime.episode_count === "Unknown"
-                      ? `${episodeLists.length} (Sampai saat ini)`
-                      : anime.episode_count}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Status</span>
-                  <span className="font-medium text-zinc-900 dark:text-zinc-200">
-                    {anime.status}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Rilis</span>
-                  <span className="font-medium text-zinc-900 dark:text-zinc-200">
-                    {anime.release_date}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Studio</span>
-                  <span
-                    className="font-medium text-zinc-900 dark:text-zinc-200 max-w-[150px] text-right"
-                    title={anime.studio}
+                {/* Secondary Actions Row */}
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Dummy Share Button */}
+                  <Button
+                    variant="outline"
+                    className="w-full rounded-xl border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
                   >
-                    {anime.studio}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Produser</span>
-                  <span
-                    className="font-medium text-zinc-900 dark:text-zinc-200 max-w-[150px] text-right"
-                    title={anime.produser}
+                    <Share2 className="w-4 h-4 mr-2" /> Bagikan
+                  </Button>
+                  {/* Dummy Bookmark */}
+                  <Button
+                    variant="outline"
+                    className="w-full rounded-xl border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
                   >
-                    {anime.produser}
-                  </span>
+                    <Bookmark className="w-4 h-4 mr-2" /> Simpan
+                  </Button>
                 </div>
-                <div className="flex justify-between">
-                  <span>Durasi</span>
-                  <span className="font-medium text-zinc-900 dark:text-zinc-200">
-                    {anime.duration === "" ? "N/A" : anime.duration}
-                  </span>
+              </div>
+
+              {/* Information Card */}
+              <div className="bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl p-5 border border-zinc-200 dark:border-zinc-800/50 space-y-4">
+                <h3 className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2 text-sm uppercase tracking-wider">
+                  <Info className="w-4 h-4" /> Informasi
+                </h3>
+                <Separator />
+                <div className="space-y-3 text-sm">
+                  <InfoRow
+                    icon={<Tv className="w-4 h-4" />}
+                    label="Tipe"
+                    value={anime.type}
+                  />
+                  <InfoRow
+                    icon={<Layers className="w-4 h-4" />}
+                    label="Eps"
+                    value={anime.episodes ?? `${episodeLists.length}`}
+                  />
+                  <InfoRow
+                    icon={<Calendar className="w-4 h-4" />}
+                    label="Status"
+                    value={anime.status}
+                  />
+                  <InfoRow
+                    icon={<Clock className="w-4 h-4" />}
+                    label="Durasi"
+                    value={anime.duration}
+                  />
+                  <InfoRow
+                    icon={<Users className="w-4 h-4" />}
+                    label="Studio"
+                    value={anime.studios}
+                  />
+
+                  {/* --- TAMBAHAN PRODUCERS --- */}
+                  <InfoRow
+                    icon={<Film className="w-4 h-4" />}
+                    label="Produser"
+                    value={anime.producers}
+                  />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* CONTENT AREA */}
-          <div className="md:col-span-9 lg:col-span-9 space-y-8">
-            {/* Title & Header */}
+          {/* --- CONTENT AREA (Right) --- */}
+          <div className="lg:col-span-9 space-y-10 pt-4 lg:pt-0">
+            {/* Header: Title & Genres */}
             <div className="space-y-4">
-              <div>
-                <h1 className="text-3xl md:text-4xl font-extrabold text-zinc-900 dark:text-white leading-tight">
-                  {anime.title}
-                </h1>
-                <p className="text-lg text-zinc-500 dark:text-zinc-400 font-medium mt-1">
-                  {anime.japanese_title}
-                </p>
-              </div>
+              <h1 className="text-3xl md:text-5xl font-black text-zinc-900 dark:text-white leading-[1.15]">
+                {anime.title}
+              </h1>
 
-              {/* Genre Badges */}
-              <div className="flex flex-wrap gap-2">
+              {/* --- TAMBAHAN JAPANESE TITLE --- */}
+              {anime.japanese && (
+                <p className="text-lg text-zinc-500 dark:text-zinc-400 font-medium font-serif italic">
+                  {anime.japanese}
+                </p>
+              )}
+
+              <div className="flex flex-wrap gap-2 pt-2">
                 {genres.map((genre) => (
-                  <Link key={genre.slug} href={`/genre-anime/${genre.slug}`}>
+                  <Link
+                    key={genre.genreId}
+                    href={`/genre-anime/${genre.genreId}`}
+                  >
                     <Badge
                       variant="secondary"
-                      className="hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer px-3 py-1"
+                      className="px-3 py-1 text-sm bg-zinc-100 dark:bg-zinc-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer border border-transparent hover:border-indigo-200 dark:hover:border-indigo-800"
                     >
-                      {genre.name}
+                      {genre.title}
                     </Badge>
                   </Link>
                 ))}
@@ -256,80 +277,124 @@ export default async function AnimeDetailPage({ params }: Props) {
             </div>
 
             {/* Synopsis */}
-            <div className="prose dark:prose-invert max-w-none text-zinc-600 dark:text-zinc-300 leading-relaxed">
-              <h3 className="text-xl font-bold mb-2 text-zinc-900 dark:text-white">
+            <div className="prose dark:prose-invert max-w-none">
+              <h3 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2 mb-4">
+                <span className="w-1 h-6 bg-indigo-600 rounded-full mr-2"></span>{" "}
                 Sinopsis
               </h3>
-              <p>{anime.synopsis || "Sinopsis belum tersedia."}</p>
+              <div className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-base">
+                {synopsisText || "Sinopsis belum tersedia untuk anime ini."}
+              </div>
             </div>
 
             {/* Episode List Section */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold flex items-center gap-2">
-                  <MonitorPlay className="w-5 h-5 text-indigo-600" /> Daftar
-                  Episode
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-4">
+                <h3 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center">
+                  <span className="w-1 h-6 bg-indigo-600 rounded-full mr-3"></span>{" "}
+                  Daftar Episode
                 </h3>
-                <span className="text-xs text-zinc-500 font-mono bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded">
+                <Badge
+                  variant="outline"
+                  className="h-7 border-zinc-300 dark:border-zinc-700"
+                >
                   Total: {episodeLists.length}
-                </span>
+                </Badge>
               </div>
 
               {episodeLists.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                  {episodeLists.map((ep) => (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                  {episodeLists.toReversed().map((ep) => (
                     <Link
-                      key={ep.slug}
-                      href={`/watch/${slug}/${ep.slug}`}
-                      className="group relative flex items-center justify-center p-4 bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 hover:border-indigo-600 rounded-lg transition-all hover:shadow-md"
+                      key={ep.episodeId}
+                      href={`/watch/${slug}/${ep.episodeId}`}
+                      className="group relative flex items-center justify-center p-3 h-16 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-indigo-500 dark:hover:border-indigo-500 rounded-lg transition-all hover:shadow-md hover:shadow-indigo-500/10 overflow-hidden"
                     >
-                      <div className="text-center">
-                        <span className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">
+                      {/* Hover Effect Background */}
+                      <div className="absolute inset-0 bg-indigo-50 dark:bg-indigo-900/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                      <div className="relative z-10 flex flex-col items-center">
+                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase tracking-wide font-medium">
                           Episode
                         </span>
-                        <span className="block text-xl font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
-                          {ep.episode_number}
+                        <span className="text-lg font-bold text-zinc-800 dark:text-zinc-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                          {ep.eps}
                         </span>
                       </div>
-                      <Play className="absolute w-6 h-6 text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity fill-current" />
+
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:-translate-x-1">
+                        <Play className="w-3 h-3 text-indigo-500 fill-indigo-500" />
+                      </div>
                     </Link>
                   ))}
                 </div>
               ) : (
-                <div className="p-8 text-center border border-dashed border-zinc-300 dark:border-zinc-700 rounded-xl text-zinc-500">
-                  Belum ada episode yang tersedia.
+                <div className="py-12 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/50">
+                  <MonitorPlay className="w-10 h-10 text-zinc-300 mx-auto mb-3" />
+                  <p className="text-zinc-500">
+                    Belum ada episode yang tersedia.
+                  </p>
                 </div>
               )}
             </div>
 
+            {/* Batch Download */}
             {batchData && (
-              <>
-                <Separator className="my-8" />
+              <div className="animate-in fade-in slide-in-from-bottom-4">
                 <BatchDownload batchData={batchData} />
-              </>
+              </div>
             )}
 
-            <Separator className="my-8" />
-
-            {/* Recommendations Section */}
+            {/* Recommendations */}
             {anime.recommendations && anime.recommendations.length > 0 && (
-              <div className="space-y-6">
-                <h3 className="text-xl font-bold">Rekomendasi Sejenis</h3>
+              <div className="space-y-6 pt-4">
+                <h3 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center">
+                  <span className="w-1 h-6 bg-pink-500 rounded-full mr-3"></span>{" "}
+                  Rekomendasi
+                </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-8">
                   {anime.recommendations.map((rec) => (
-                    <AnimeCard key={rec.slug} anime={rec} />
+                    <AnimeCard key={rec.animeId} anime={rec} />
                   ))}
                 </div>
               </div>
             )}
 
-            <Separator className="my-8" />
-
-            {/* KOMENTAR SECTION */}
-            <CommentSection />
+            {/* Comments */}
+            <div className="pt-8">
+              <CommentSection />
+            </div>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// --- SUB COMPONENTS ---
+
+function InfoRow({
+  icon,
+  label,
+  value,
+}: Readonly<{
+  icon: React.ReactNode;
+  label: string;
+  value?: string;
+}>) {
+  if (!value) return null;
+  return (
+    <div className="flex items-start justify-between group">
+      <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
+        {icon}
+        <span>{label}</span>
+      </div>
+      <span
+        className="font-medium text-zinc-900 dark:text-zinc-200 text-right max-w-[150px] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"
+        title={value}
+      >
+        {value}
+      </span>
     </div>
   );
 }

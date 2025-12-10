@@ -10,7 +10,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import CompletedCard from "@/components/completedAnimeCard";
 
-// Cache 1 jam karena data anime tamat jarang berubah drastis
+// Cache 1 jam
 export const revalidate = 3600;
 
 interface PageProps {
@@ -24,28 +24,34 @@ export default async function CompletedPage({ searchParams }: PageProps) {
 
   // 2. Fetch Data
   const response = await fetchAnime<CompleteAnimeResponse>(
-    `anime/complete-anime/${currentPage}`
+    `anime/complete-anime/?page=${currentPage}`
   );
 
-  const { paginationData, completeAnimeData } = response;
-  const { last_visible_page } = paginationData;
+  // DESTRUCTURING BARU:
+  // Menggunakan 'pagination' dan 'animeList' sesuai API wrapper yang baru
+  const { pagination, animeList } = response;
+  
+  // Menggunakan 'totalPages' dari struktur PaginationData baru
+  const { totalPages } = pagination;
 
-  // 3. Helper Pagination (Sama seperti Ongoing)
+  // 3. Helper Pagination
   const generatePagination = () => {
     const pages = [];
     const maxVisible = 5;
 
-    if (last_visible_page <= maxVisible) {
-      for (let i = 1; i <= last_visible_page; i++) pages.push(i);
-    } else if (currentPage <= 3) {
-        pages.push(1, 2, 3, "...", last_visible_page);
-      } else if (currentPage >= last_visible_page - 2) {
+    // Ganti last_visible_page dengan totalPages
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, "...", totalPages);
+      } else if (currentPage >= totalPages - 2) {
         pages.push(
           1,
           "...",
-          last_visible_page - 2,
-          last_visible_page - 1,
-          last_visible_page
+          totalPages - 2,
+          totalPages - 1,
+          totalPages
         );
       } else {
         pages.push(
@@ -55,16 +61,17 @@ export default async function CompletedPage({ searchParams }: PageProps) {
           currentPage,
           currentPage + 1,
           "...",
-          last_visible_page
+          totalPages
         );
       }
+    }
     return pages;
   };
 
   return (
     <div className="min-h-screen pb-20 py-10 bg-white dark:bg-zinc-950">
       <div className="container mx-auto px-4 space-y-8">
-        {/* --- HEADER SECTION (PREMIUM) --- */}
+        {/* --- HEADER SECTION --- */}
         <div className="relative rounded-3xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-6 md:p-10 shadow-sm overflow-hidden group">
           {/* Background Decoration */}
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px] pointer-events-none" />
@@ -100,7 +107,7 @@ export default async function CompletedPage({ searchParams }: PageProps) {
                   {currentPage}
                 </span>
                 <span className="text-sm font-medium text-zinc-400">
-                  / {last_visible_page}
+                  / {totalPages}
                 </span>
               </div>
             </div>
@@ -108,23 +115,29 @@ export default async function CompletedPage({ searchParams }: PageProps) {
         </div>
 
         {/* --- GRID ANIME --- */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
-          {completeAnimeData.map((anime) => (
-            <CompletedCard key={anime.slug} anime={anime} />
-          ))}
-        </div>
+        {animeList && animeList.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+            {animeList.map((anime) => (
+              <CompletedCard key={anime.animeId} anime={anime} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-20 text-zinc-500">
+            Data anime selesai tayang tidak ditemukan.
+          </div>
+        )}
 
         {/* --- PAGINATION CONTROL --- */}
         <div className="flex items-center justify-center gap-5 pt-8 overflow-x-auto pb-4">
           <Button
             variant="outline"
-            disabled={!paginationData.has_previous_page}
-            asChild={paginationData.has_previous_page}
+            disabled={!pagination.hasPrevPage}
+            asChild={pagination.hasPrevPage}
             className="h-10 px-4 gap-2"
           >
-            {paginationData.has_previous_page ? (
+            {pagination.hasPrevPage ? (
               <Link
-                href={`/completed-anime?page=${paginationData.previous_page}`}
+                href={`/completed-anime?page=${pagination.prevPage}`}
               >
                 <ChevronLeft className="w-4 h-4" /> Sebelumnya
               </Link>
@@ -169,12 +182,12 @@ export default async function CompletedPage({ searchParams }: PageProps) {
 
           <Button
             variant="outline"
-            disabled={!paginationData.has_next_page}
-            asChild={paginationData.has_next_page}
+            disabled={!pagination.hasNextPage}
+            asChild={pagination.hasNextPage}
             className="h-10 px-4 gap-2"
           >
-            {paginationData.has_next_page ? (
-              <Link href={`/completed-anime?page=${paginationData.next_page}`}>
+            {pagination.hasNextPage ? (
+              <Link href={`/completed-anime?page=${pagination.nextPage}`}>
                 Selanjutnya <ChevronRight className="w-4 h-4" />
               </Link>
             ) : (

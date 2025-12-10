@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { PlayCircle, ImageOff, Star, Layers, Calendar, Clapperboard } from "lucide-react";
+import {
+  PlayCircle,
+  ImageOff,
+  Star,
+  Calendar,
+  Clapperboard,
+} from "lucide-react";
 import { Anime } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 
@@ -19,12 +25,10 @@ export default function GenreCard({ anime }: Readonly<{ anime: Anime }>) {
     : "";
 
   return (
-    <Link href={`/anime/${anime.slug}`} className="group block h-full">
+    <Link href={`/anime/${anime.animeId}`} className="group block h-full">
       <div className="flex flex-col h-full gap-3">
-        
         {/* --- CARD CONTAINER (IMAGE) --- */}
         <div className="relative aspect-[3/4.2] overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 shadow-sm transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1">
-          
           {/* IMAGE LAYER */}
           {isValidPoster ? (
             <Image
@@ -54,35 +58,38 @@ export default function GenreCard({ anime }: Readonly<{ anime: Anime }>) {
 
           {/* TOP BADGES (Rating & Eps) */}
           <div className="absolute top-0 left-0 right-0 p-2 flex justify-between items-start z-20">
-             {/* Kiri: Episode Count */}
-             {anime.episode_count ? (
-               <Badge className="bg-indigo-600/90 hover:bg-indigo-600 text-white border-0 px-2 h-6 text-[10px] font-semibold shadow-lg backdrop-blur-sm flex items-center gap-1">
-                  {anime.episode_count} Episode
-               </Badge>
-             ) : (
-               <Badge variant="outline" className="bg-black/40 text-white border-white/20 px-2 h-6 text-[10px] backdrop-blur-sm">
-                  ? Episode
-               </Badge>
-             )}
+            {/* Kiri: Episode Count */}
+            {anime.episodes ? (
+              <Badge className="bg-indigo-600/90 hover:bg-indigo-600 text-white border-0 px-2 h-6 text-[10px] font-semibold shadow-lg backdrop-blur-sm flex items-center gap-1">
+                {anime.episodes} Episode
+              </Badge>
+            ) : (
+              <Badge
+                variant="outline"
+                className="bg-black/40 text-white border-white/20 px-2 h-6 text-[10px] backdrop-blur-sm"
+              >
+                ? Episode
+              </Badge>
+            )}
 
-             {/* Kanan: Rating */}
-             {anime.rating && anime.rating !== "" && (
-               <Badge className="bg-amber-500/90 hover:bg-amber-500 text-white border-0 px-2 h-6 text-[10px] font-bold shadow-lg backdrop-blur-sm flex items-center gap-1">
-                  <Star className="w-3 h-3 fill-white" />
-                  {anime.rating}
-               </Badge>
-             )}
+            {/* Kanan: Rating */}
+            {anime.score && anime.score !== "" && (
+              <Badge className="bg-amber-500/90 hover:bg-amber-500 text-white border-0 px-2 h-6 text-[10px] font-bold shadow-lg backdrop-blur-sm flex items-center gap-1">
+                <Star className="w-3 h-3 fill-white" />
+                {anime.score}
+              </Badge>
+            )}
           </div>
 
           {/* BOTTOM INFO (Season) */}
           {anime.season && (
             <div className="absolute bottom-2 left-2 right-2 z-20">
-                <div className="flex items-center justify-center gap-1.5 bg-black/60 backdrop-blur-md rounded-lg p-1.5 border border-white/10 shadow-lg">
-                    <Calendar className="w-3 h-3 text-indigo-400" />
-                    <span className="text-[10px] font-bold text-zinc-100 uppercase tracking-wide">
-                        {anime.season}
-                    </span>
-                </div>
+              <div className="flex items-center justify-center gap-1.5 bg-black/60 backdrop-blur-md rounded-lg p-1.5 border border-white/10 shadow-lg">
+                <Calendar className="w-3 h-3 text-indigo-400" />
+                <span className="text-[10px] font-bold text-zinc-100 uppercase tracking-wide">
+                  {anime.season}
+                </span>
+              </div>
             </div>
           )}
         </div>
@@ -95,31 +102,32 @@ export default function GenreCard({ anime }: Readonly<{ anime: Anime }>) {
           </h3>
 
           {/* Studio Info */}
-          {anime.studio && (
-             <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
-                <Clapperboard className="w-3 h-3" />
-                <span className="line-clamp-1">{anime.studio}</span>
-             </div>
+          {anime.studios && (
+            <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+              <Clapperboard className="w-3 h-3" />
+              <span className="line-clamp-1">{anime.studios}</span>
+            </div>
           )}
 
           {/* Genre Tags (Limit 3) */}
           {anime.genres && anime.genres.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-auto pt-1">
               {anime.genres.slice(0, 3).map((g) => (
-                <span 
-                  key={g.slug} 
+                <span
+                  key={g.genreId}
                   className="px-1.5 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-[10px] text-zinc-600 dark:text-zinc-400 font-medium"
                 >
-                  {g.name}
+                  {g.title}
                 </span>
               ))}
               {anime.genres.length > 3 && (
-                <span className="text-[10px] text-zinc-400 self-center">+{anime.genres.length - 3}</span>
+                <span className="text-[10px] text-zinc-400 self-center">
+                  +{anime.genres.length - 3}
+                </span>
               )}
             </div>
           )}
         </div>
-
       </div>
     </Link>
   );

@@ -1,16 +1,5 @@
 import Link from "next/link";
-import {
-  AlertTriangle,
-  Heart,
-  Zap,
-  ShieldAlert,
-  BookOpen,
-  Tv,
-  Download,
-  Moon,
-  CheckCircle2,
-  Activity,
-} from "lucide-react";
+import { AlertTriangle, Zap, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
@@ -26,7 +15,10 @@ export default function Footer() {
           {/* KOLOM 1: BRANDING & SOSMED (4 SPAN) */}
           <div className="lg:col-span-4 space-y-6">
             <div className="space-y-4">
-              <Link href="/" className="flex items-center gap-2 group shrink-0 hover:-rotate-2 transition-all ease-in-out">
+              <Link
+                href="/"
+                className="flex items-center gap-2 group shrink-0 hover:-rotate-2 transition-all ease-in-out"
+              >
                 <div className="relative h-8 md:h-10 w-auto aspect-1142/249">
                   <Image
                     src="/assets/logo.png"
@@ -49,7 +41,7 @@ export default function Footer() {
             {/* Social Links */}
             <div className="flex items-center gap-4">
               <SocialLink
-                href="#"
+                href="https://www.facebook.com/profile.php?id=61584752845992"
                 icon={
                   <Image
                     width={0}

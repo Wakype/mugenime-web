@@ -10,10 +10,7 @@ interface AnimeCardProps {
   anime: Anime;
 }
 
-export default function AnimeCard({
-  anime,
-}: AnimeCardProps) {
-  
+export default function AnimeCard({ anime }: Readonly<AnimeCardProps>) {
   // --- DEFENSIVE CODING: Validasi Poster ---
   const isValidPoster =
     anime.poster &&
@@ -27,12 +24,11 @@ export default function AnimeCard({
 
   return (
     <Link
-      href={`/anime/${anime.slug}`}
+      href={`/anime/${anime.animeId}`}
       className="group block space-y-3 w-full"
     >
       {/* --- CARD CONTAINER --- */}
       <div className="relative aspect-[3/4.2] overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 shadow-sm transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1">
-        
         {/* 1. IMAGE LAYER */}
         {isValidPoster ? (
           <Image
@@ -63,49 +59,41 @@ export default function AnimeCard({
         {/* 4. TOP BADGES (Episode & Rating) */}
         <div className="absolute top-0 left-0 right-0 p-2 flex justify-between items-start z-20">
           {/* Kiri: Rating */}
-          {anime.rating && (
+          {anime.score && (
             <Badge className="bg-yellow-500 text-white border-0 px-2 py-0.5 h-6 text-[11px] font-bold shadow-sm flex gap-1 items-center">
               <Star className="w-3 h-3 fill-white" />
-              {anime.rating}
+              {anime.score}
             </Badge>
           )}
 
           {/* Kanan: Episode Count / Current Episode */}
           <div className="flex flex-col gap-1 items-end">
-             {anime.current_episode && (
-                <Badge className="bg-indigo-600 hover:bg-indigo-700 text-white border-0 px-2.5 h-6 text-[11px] shadow-lg shadow-indigo-900/20">
-                  {anime.current_episode}
-                </Badge>
-             )}
-             {anime.episode_count && !anime.current_episode && (
-                <Badge className="bg-indigo-600 hover:bg-indigo-700 text-white border-0 px-2.5 h-6 text-[11px] shadow-lg shadow-indigo-900/20">
-                  {anime.episode_count} Episode
-                </Badge>
-             )}
+            <Badge className="bg-indigo-600 hover:bg-indigo-700 text-white border-0 px-2.5 h-6 text-[11px] shadow-lg shadow-indigo-900/20">
+              Episode {anime.episodes}
+            </Badge>
           </div>
         </div>
 
         {/* 5. BOTTOM INFO (Day & Date - INSIDE CARD) */}
         {/* Kita buat strip info di bagian paling bawah gambar */}
         <div className="absolute bottom-2 left-2 right-2 z-20">
-            <div className="flex items-center justify-between bg-black/60 backdrop-blur-md rounded-lg p-2 border border-white/10 shadow-lg">
-                
-                {/* Hari */}
-                <div className="flex items-center gap-1.5 text-zinc-100">
-                    <CalendarDays className="w-3.5 h-3.5 text-indigo-400" />
-                    <span className="text-[11px] font-bold uppercase tracking-wide">
-                        {anime.release_day || "Tamat"}
-                    </span>
-                </div>
-
-                {/* Tanggal */}
-                <div className="flex items-center gap-1.5 text-zinc-300">
-                    <Clock className="w-3.5 h-3.5 text-zinc-400" />
-                    <span className="text-[10px] font-medium">
-                        {anime.newest_release_date || anime.last_release_date || "-"}
-                    </span>
-                </div>
+          <div className="flex items-center justify-between bg-black/60 backdrop-blur-md rounded-lg p-2 border border-white/10 shadow-lg">
+            {/* Hari */}
+            <div className="flex items-center gap-1.5 text-zinc-100">
+              <CalendarDays className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="text-[11px] font-bold uppercase tracking-wide">
+                {anime.releaseDay || "Tamat"}
+              </span>
             </div>
+
+            {/* Tanggal */}
+            <div className="flex items-center gap-1.5 text-zinc-300">
+              <Clock className="w-3.5 h-3.5 text-zinc-400" />
+              <span className="text-[10px] font-medium">
+                {anime.latestReleaseDate || anime.lastReleaseDate || "-"}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -117,9 +105,9 @@ export default function AnimeCard({
         </h3>
         {/* Genre Tags (Optional - Jika ada data genre, tampilkan 1-2) */}
         {anime.genres && anime.genres.length > 0 && (
-           <p className="text-[10px] text-zinc-500 dark:text-zinc-500 line-clamp-1">
-             {anime.genres.map(g => g.name).join(", ")}
-           </p>
+          <p className="text-[10px] text-zinc-500 dark:text-zinc-500 line-clamp-1">
+            {anime.genres.map((g) => g.title).join(", ")}
+          </p>
         )}
       </div>
     </Link>

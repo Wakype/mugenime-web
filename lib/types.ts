@@ -1,30 +1,38 @@
 export interface Anime {
   title: string;
-  slug: string;
+  animeId: string;
   poster: string;
-  current_episode?: string;
-  release_day?: string;
-  newest_release_date?: string;
+  // current_episode?: string;
+  releaseDay?: string;
+  latestReleaseDate?: string;
   otakudesu_url?: string;
-  episode_count?: string;
-  rating?: string;
-  last_release_date?: string;
+  episodes?: string;
+  score?: string;
+  lastReleaseDate?: string;
   genres?: Genre[];
   synopsis?: string;
   season?: string;
-  studio?: string;
+  studios?: string;
 }
 
 export interface Genre {
-  name: string;
-  slug: string;
-  url?: string;
-  otakudesu_url?: string;
+  title: string;
+  genreId: string;
+  href?: string;
+  otakudesUrl?: string;
 }
 
 export interface HomeData {
-  ongoing_anime: Anime[];
-  complete_anime: Anime[];
+  ongoing: {
+    animeList: Anime[];
+    href?: string;
+    otakudesuUrl?: string;
+  };
+  completed: {
+    animeList: Anime[];
+    href?: string;
+    otakudesuUrl?: string;
+  };
 }
 
 export interface StreamServer {
@@ -38,8 +46,14 @@ export interface QualityGroup {
 }
 
 export interface DownloadLink {
-  provider: string;
+  title: string;
   url: string;
+}
+
+export interface DownloadQuality {
+  title: string; // ex: "Mp4_360p"
+  size: string;
+  urls: DownloadLink[];
 }
 
 export interface DownloadFormat {
@@ -48,62 +62,111 @@ export interface DownloadFormat {
 }
 
 export interface DownloadData {
-  mp4?: DownloadFormat[];
-  mkv?: DownloadFormat[];
+  qualities?: DownloadQuality[];
+  formats?: DownloadFormatGroup[];
+}
+
+export interface DownloadFormatGroup {
+  title: string;
+  qualities: DownloadQuality[];
+}
+
+export interface ServerItem {
+  title: string;
+  serverId: string;
+  href: string;
+}
+
+export interface ServerQuality {
+  title: string; // ex: "360p"
+  serverList: ServerItem[];
+}
+
+export interface ServerData {
+  qualities: ServerQuality[];
+}
+
+export interface EpisodeInfo {
+  credit: string;
+  encoder: string;
+  duration: string;
+  type: string;
+  genreList: Genre[];
+  episodeList: EpisodeList[];
 }
 
 export interface EpisodeDetail {
-  episode: string;
-  anime: {
-    slug: string;
-    otakudesu_url: string;
-  };
-  has_next_episode: boolean;
-  next_episode: {
-    slug: string;
-    otakudesu_url: string;
+  title: string;
+  animeId: string;
+  releaseTime: string;
+  defaultStreamingUrl: string;
+  hasPrevEpisode: boolean;
+  prevEpisode: {
+    title: string;
+    episodeId: string;
+    href: string;
+    otakudesuUrl: string;
   } | null;
-  has_previous_episode: boolean;
-  previous_episode: {
-    slug: string;
-    otakudesu_url: string;
+  hasNextEpisode: boolean;
+  nextEpisode: {
+    title: string;
+    episodeId: string;
+    href: string;
+    otakudesuUrl: string;
   } | null;
-  stream_url: string;
-  stream_servers: QualityGroup[];
-  download_urls: DownloadData;
+  server: ServerData;
+  downloadUrl: DownloadData;
+  info: EpisodeInfo; // Properti baru dari API
 }
 
 export interface EpisodeList {
-  episode: string;
-  episode_number: number;
-  slug: string;
-  otakudesu_url: string;
+  title: string;
+  date: string;
+  eps: number;
+  episodeId: string;
+  href?: string;
+  otakudesuUrl?: string;
 }
 
 export interface Batch {
-  slug: string;
+  title: string;
+  batchId: string;
   otakudesu_url: string;
   uploaded_at: string;
+  href: string;
+  otakudesuUrl: string;
 }
 
 export interface AnimeDetail {
   title: string;
   slug: string;
-  japanese_title: string;
+  japanese: string;
+  score: string;
   poster: string;
-  rating: string;
-  produser: string;
+  producers: string;
   type: string;
   status: string;
-  episode_count: string;
+  episodes: string;
   duration: string;
-  release_date: string;
-  studio: string;
-  genres: Genre[];
-  synopsis: string;
+  aired: string;
+  studios: string;
+  genreList: Genre[];
+  synopsis:
+    | {
+        paragraphs: string[];
+        connections: AnimeConnection[];
+      }
+    | string;
   batch: Batch | null;
-  episode_lists: EpisodeList[];
+  episodeList: EpisodeList[];
   recommendations: Anime[];
+}
+
+export interface AnimeConnection {
+  title: string;
+  animeId: string;
+  href: string;
+  otakudesuUrl: string;
 }
 
 export interface BatchResponse {
@@ -127,7 +190,7 @@ export interface BatchResponse {
 }
 
 export interface ScheduleAnime {
-  anime_name: string;
+  title: string;
   url: string;
   slug: string;
   poster: string;
@@ -143,28 +206,30 @@ export interface ScheduleResponse {
 }
 
 export interface PaginationData {
-  current_page: number;
-  last_visible_page: number;
-  has_next_page: boolean;
-  next_page: number | null;
-  has_previous_page: boolean;
-  previous_page: number | null;
+  currentPage: number;
+  hasPrevPage: boolean;
+  prevPage: number | null;
+  hasNextPage: boolean;
+  nextPage: number | null;
+  totalPages: number; // Menggantikan last_visible_page
 }
 
 export interface OngoingResponse {
-  paginationData: PaginationData;
-  ongoingAnimeData: Anime[];
+  pagination: PaginationData;
+  animeList: Anime[];
 }
 
 export interface CompleteAnimeResponse {
-  paginationData: PaginationData; // Kita reuse interface PaginationData yang sudah ada
-  completeAnimeData: Anime[];
+  pagination: PaginationData;
+  animeList: Anime[];
 }
 
-export type GenreListResponse = Genre[];
+export interface GenreListResponse {
+  genreList: Genre[];
+}
 
 export interface GenreDetailResponse {
-  anime: Anime[];
+  animeList: Anime[];
   pagination: PaginationData; // Perhatikan: API ini menggunakan key "pagination"
 }
 
@@ -204,7 +269,6 @@ export interface BatchResponse {
   title: string;
   animeId: string;
   poster: string;
-  // ... properti lain seperti score, duration dll (opsional jika tidak dipakai di UI)
   downloadUrl: {
     formats: BatchFormat[];
   };

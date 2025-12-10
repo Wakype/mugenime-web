@@ -18,7 +18,10 @@ export class FetchError extends Error {
   }
 }
 
-export async function fetchAnime<T>(endpoint: string, options?: RequestInit): Promise<T> {
+export async function fetchAnime<T>(
+  endpoint: string,
+  options?: RequestInit
+): Promise<T> {
   const path = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
   const url = `${BASE_URL}${path}`;
 
@@ -34,26 +37,37 @@ export async function fetchAnime<T>(endpoint: string, options?: RequestInit): Pr
         ...defaultHeaders,
         ...options?.headers,
       },
-      // Default cache untuk Next.js (bisa di-override per request)
-      // next: { revalidate: 3600 } // Contoh default 1 jam
+      next: { revalidate: 1800 },
     });
 
-    // Handle 404 (Not Found)
     if (res.status === 404) {
       return notFound() as never;
     }
 
-    // Handle Rate Limit (429) atau Server Error
     if (!res.ok) {
-      throw new FetchError(`API Error: ${res.status} ${res.statusText}`, res.status);
+      throw new FetchError(
+        `API Error: ${res.status} ${res.statusText}`,
+        res.status
+      );
     }
 
     const json: ApiResponse<T> = await res.json();
-    
-    // Kadang API mengembalikan data langsung, kadang dibungkus properti "data"
-    // Kita return properti "data" jika ada, agar lebih rapi di frontend
-    return json.data ? json.data : (json as unknown as T);
 
+    // Jika respons memiliki "data" (object) DAN "pagination" secara terpisah,
+    // kita gabungkan agar frontend bisa mengakses keduanya.
+    if (
+      json.data &&
+      json.pagination &&
+      typeof json.data === "object" &&
+      !Array.isArray(json.data)
+    ) {
+      return {
+        ...json.data,
+        pagination: json.pagination,
+      } as unknown as T;
+    }
+
+    return json.data ? json.data : (json as unknown as T);
   } catch (error) {
     console.error(`[Fetch Error] ${url}:`, error);
     throw error;

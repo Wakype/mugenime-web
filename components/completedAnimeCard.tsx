@@ -26,7 +26,7 @@ export default function CompletedCard({ anime }: Readonly<{ anime: Anime }>) {
 
   return (
     <Link
-      href={`/anime/${anime.slug}`}
+      href={`/anime/${anime.animeId}`}
       className="group block space-y-3 w-full"
     >
       {/* --- CARD CONTAINER --- */}
@@ -62,13 +62,13 @@ export default function CompletedCard({ anime }: Readonly<{ anime: Anime }>) {
         <div className="absolute top-0 left-0 right-0 p-2 flex justify-between items-start z-20">
           {/* KIRI: Episode Count (Indigo) */}
           <Badge className="bg-indigo-600/90 hover:bg-indigo-600 text-white border-0 px-2 h-6 text-[10px] font-semibold shadow-lg backdrop-blur-sm flex items-center gap-1">
-            {anime.episode_count} Episode
+            {anime.episodes} Episode
           </Badge>
 
           {/* KANAN: Rating (Yellow/Gold) */}
           <Badge className="bg-amber-500/90 hover:bg-amber-500 text-white border-0 px-2 h-6 text-[10px] font-bold shadow-lg backdrop-blur-sm flex items-center gap-1">
             <Star className="w-3 h-3 fill-white" />
-            {anime.rating}
+            {anime.score}
           </Badge>
         </div>
 
@@ -77,7 +77,7 @@ export default function CompletedCard({ anime }: Readonly<{ anime: Anime }>) {
           <div className="flex items-center justify-center gap-2 bg-black/60 backdrop-blur-md rounded-lg p-1.5 border border-white/10 shadow-lg">
             <CalendarCheck className="w-3.5 h-3.5 text-indigo-400" />
             <span className="text-[10px] font-medium text-zinc-200">
-              Tamat: {anime.last_release_date}
+              Tamat: {anime.lastReleaseDate}
             </span>
           </div>
         </div>

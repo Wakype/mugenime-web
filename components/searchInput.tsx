@@ -136,7 +136,7 @@ export default function SearchInput({
                   </Badge>
                 </div>
                 <div className="text-[10px] text-zinc-400 line-clamp-1">
-                  {anime.genres?.map((g) => g.name).join(", ")}
+                  {anime.genres?.map((g) => g.genreId).join(", ")}
                 </div>
               </div>
 

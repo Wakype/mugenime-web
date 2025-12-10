@@ -18,22 +18,9 @@ export default function OngoingCard({ anime }: { anime: Anime }) {
     ? `/api/image-proxy?url=${encodeURIComponent(anime.poster)}`
     : "";
 
-  // 2. FORMAT LABEL EPISODE
-  // Logic: "Total 8 Eps" -> "8" -> "Episode 8"
-  let episodeLabel = "Ongoing";
-
-  if (anime.current_episode) {
-    // Hapus kata "Total " dan " Eps" (case insensitive) untuk mendapatkan angkanya saja
-    const cleanNumber = anime.current_episode
-      .replace(/Total\s+/i, "")
-      .replace(/\s+Eps/i, "");
-
-    episodeLabel = `Episode ${cleanNumber}`;
-  }
-
   return (
     <Link
-      href={`/anime/${anime.slug}`}
+      href={`/anime/${anime.animeId}`}
       className="group block space-y-3 w-full"
     >
       {/* --- CARD CONTAINER --- */}
@@ -68,7 +55,7 @@ export default function OngoingCard({ anime }: { anime: Anime }) {
         {/* TOP BADGES (Episode Focus) */}
         <div className="absolute top-0 left-0 right-0 p-2 flex justify-start items-start z-20">
           <Badge className="bg-indigo-600 hover:bg-indigo-700 text-white border-0 px-2.5 h-6 text-[11px] font-semibold shadow-lg shadow-indigo-900/20">
-            {episodeLabel}
+            Episode {anime.episodes}
           </Badge>
         </div>
 
@@ -79,7 +66,7 @@ export default function OngoingCard({ anime }: { anime: Anime }) {
             <div className="flex items-center gap-1.5 text-zinc-100">
               <CalendarDays className="w-3.5 h-3.5 text-indigo-400" />
               <span className="text-[11px] font-bold uppercase tracking-wide">
-                {anime.release_day || "Tamat"}
+                {anime.releaseDay || "Tamat"}
               </span>
             </div>
 
@@ -87,7 +74,7 @@ export default function OngoingCard({ anime }: { anime: Anime }) {
             <div className="flex items-center gap-1.5 text-zinc-300">
               <Clock className="w-3.5 h-3.5 text-zinc-400" />
               <span className="text-[10px] font-medium">
-                {anime.newest_release_date || "-"}
+                {anime.latestReleaseDate || "-"}
               </span>
             </div>
           </div>

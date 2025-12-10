@@ -4,7 +4,6 @@ import { fetchAnime } from "@/lib/api";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  // id yang diterima: "/anime/server/187226-0-360p"
   const serverId = searchParams.get("id");
 
   if (!serverId) {
@@ -12,10 +11,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // KOREKSI DISINI:
-    // Jangan tambahkan prefix "/anime/server/" lagi karena serverId sudah berisi path lengkap.
-    // Langsung gunakan serverId sebagai endpoint.
-    const response = await fetchAnime<{ url: string }>(serverId);
+    const endpoint = `anime/server/${serverId}`;
+    const response = await fetchAnime<{ url: string }>(endpoint);
 
     return NextResponse.json({ url: response.url });
   } catch (error: any) {

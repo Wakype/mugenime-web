@@ -30,8 +30,8 @@ export default async function SearchPage({
   const hasResults = results.length > 0;
 
   // Helper proxy gambar
-  const getProxyUrl = (url: string) =>
-    `/api/image-proxy?url=${encodeURIComponent(url)}`;
+  // const getProxyUrl = (url: string) =>
+  //   `/api/image-proxy?url=${encodeURIComponent(url)}`;
 
   return (
     <div className="min-h-screen pb-20 py-10 bg-background">
@@ -107,12 +107,21 @@ export default async function SearchPage({
                 {/* Poster Wrapper */}
                 <div className="relative aspect-3/4 w-full overflow-hidden rounded-xl bg-muted shadow-sm transition-all duration-300 group-hover:-translate-y-1.5 group-hover:shadow-xl group-hover:shadow-primary/10 border border-border">
                   <Image
-                    src={getProxyUrl(anime.poster)}
+                    // src={getProxyUrl(anime.poster)}
+                    src={
+                      anime.poster &&
+                      anime.poster !== "" &&
+                      anime.poster !== "null" &&
+                      anime.poster.startsWith("http")
+                        ? anime.poster
+                        : ""
+                    }
                     alt={anime.title}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                     sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
                     unoptimized
+                    referrerPolicy="no-referrer"
                   />
 
                   {/* Overlay Gradient & Play Icon */}

@@ -160,7 +160,7 @@ export interface AnimeDetail {
     | string;
   batch: Batch | null;
   episodeList: EpisodeList[];
-  recommendations: Anime[];
+  recommendedAnimeList: Anime[];
 }
 
 export interface AnimeConnection {

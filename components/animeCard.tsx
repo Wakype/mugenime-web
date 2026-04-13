@@ -12,16 +12,19 @@ interface AnimeCardProps {
   index?: number;
 }
 
-export default function AnimeCard({ anime, index = 0 }: Readonly<AnimeCardProps>) {
+export default function AnimeCard({
+  anime,
+  index = 0,
+}: Readonly<AnimeCardProps>) {
   const isValidPoster =
     anime.poster &&
     anime.poster !== "" &&
     anime.poster !== "null" &&
     anime.poster.startsWith("http");
 
-  const imageUrl = isValidPoster
-    ? `/api/image-proxy?url=${encodeURIComponent(anime.poster)}`
-    : "";
+  // const imageUrl = isValidPoster
+  //   ? `/api/image-proxy?url=${encodeURIComponent(anime.poster)}`
+  //   : "";
 
   return (
     <motion.div
@@ -30,7 +33,10 @@ export default function AnimeCard({ anime, index = 0 }: Readonly<AnimeCardProps>
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, delay: index * 0.05 }}
     >
-      <Link href={`/anime/${anime.animeId}`} className="group block space-y-3 w-full h-full">
+      <Link
+        href={`/anime/${anime.animeId}`}
+        className="group block space-y-3 w-full h-full"
+      >
         {/* --- CARD CONTAINER --- */}
         <motion.div
           whileHover={{ y: -8, scale: 1.02 }}
@@ -78,9 +84,11 @@ export default function AnimeCard({ anime, index = 0 }: Readonly<AnimeCardProps>
               </Badge>
             )}
 
-            <Badge className="bg-primary/90 backdrop-blur-sm text-white border-0 px-2.5 h-6 text-[11px] shadow-lg shadow-primary/20">
-              Episode {anime.episodes}
-            </Badge>
+            {anime.episodes && (
+              <Badge className="bg-primary/90 backdrop-blur-sm text-white border-0 px-2.5 h-6 text-[11px] shadow-lg shadow-primary/20">
+                Episode {anime.episodes}
+              </Badge>
+            )}
           </div>
 
           {/* 5. BOTTOM INFO */}
@@ -89,7 +97,7 @@ export default function AnimeCard({ anime, index = 0 }: Readonly<AnimeCardProps>
               <div className="flex items-center gap-1.5 text-zinc-100">
                 <CalendarDays className="w-3.5 h-3.5 text-primary" />
                 <span className="text-[10px] font-bold uppercase tracking-wide truncate max-w-[60px]">
-                  {anime.releaseDay || "Tamat"}
+                  {anime.releaseDay ?? "Tamat"}
                 </span>
               </div>
               <div className="flex items-center gap-1.5 text-zinc-300">

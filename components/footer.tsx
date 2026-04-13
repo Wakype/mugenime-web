@@ -10,14 +10,14 @@ export default function Footer() {
   return (
     <footer className="bg-muted/20 border-t border-border pt-16 pb-8">
       <div className="container mx-auto px-4">
-        {/* --- TOP SECTION (GRID) --- */}
+        {/* --- TOP SECTION --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-12">
-          {/* KOLOM 1: BRANDING & SOSMED (4 SPAN) */}
+          {/* BRANDING & SOSMED */}
           <div className="lg:col-span-4 space-y-6">
             <div className="space-y-4">
               <Link
                 href="/"
-                className="flex items-center gap-2 group shrink-0 hover:-rotate-2 transition-all ease-in-out"
+                className="flex items-center gap-2 group shrink-0"
               >
                 <div className="relative h-8 md:h-10 w-auto aspect-1142/249">
                   <Image
@@ -87,7 +87,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* KOLOM 2: EXPLORE (2 SPAN) */}
+          {/* EXPLORE */}
           <div className="lg:col-span-2 space-y-6">
             <h3 className="font-bold text-foreground">Jelajahi</h3>
             <ul className="space-y-3 text-sm text-muted-foreground">
@@ -126,7 +126,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* KOLOM 3: BANTUAN (3 SPAN) */}
+          {/* BANTUAN */}
           <div className="lg:col-span-3 space-y-6">
             <h3 className="font-bold text-foreground">Panduan & Bantuan</h3>
             <ul className="space-y-3 text-sm text-muted-foreground">
@@ -157,7 +157,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* KOLOM 4: STATUS & LAPOR (3 SPAN) */}
+          {/* STATUS & LAPOR */}
           <div className="lg:col-span-3 space-y-6">
             {/* SYSTEM STATUS CARD */}
             <div className="group p-4 rounded-xl bg-card border border-border transition-all hover:border-emerald-500/30 hover:shadow-sm">
@@ -195,7 +195,7 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* Tombol Lapor (Call to Action) */}
+            {/* Lapor */}
             <div className="space-y-2">
               <p className="text-xs text-muted-foreground">
                 Menemukan link rusak, episode salah, atau error player?
@@ -220,7 +220,7 @@ export default function Footer() {
         <div className="mt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
           <div className="space-y-2">
             <p className="text-xs text-muted-foreground">
-              &copy; {currentYear} Mugenime. Dibuat karena gabut
+              &copy; {currentYear} 🌙 Mugenime.
             </p>
             <p className="text-[10px] text-muted-foreground/80 max-w-xl">
               Mugenime tidak menyimpan file video di server sendiri. Semua

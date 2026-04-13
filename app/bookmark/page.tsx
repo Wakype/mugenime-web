@@ -15,8 +15,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-const getProxyUrl = (url: string) =>
-  `/api/image-proxy?url=${encodeURIComponent(url)}`;
+// const getProxyUrl = (url: string) =>
+//   `/api/image-proxy?url=${encodeURIComponent(url)}`;
 
 export default function BookmarkPage() {
   const { bookmarks, removeBookmark } = useStore();

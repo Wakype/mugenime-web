@@ -1,5 +1,6 @@
-import { fetchAnime } from "@/lib/api";
+import { fetchAnime, fetchKS } from "@/lib/api";
 import { HomeData } from "@/lib/types";
+import { KS_LatestResponse } from "@/lib/batchAnimeTypes";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import {
@@ -8,30 +9,37 @@ import {
   Sparkles,
   ServerCrash,
   Info,
-  MessageCircle, // Icon tambahan untuk section komentar
+  MessageCircle,
+  Layers,
 } from "lucide-react";
 import AnimeCard from "@/components/animeCard";
+import BatchAnimeCard from "@/components/batchAnimeCard";
 import { FadeInWrapper, HeroSection } from "@/components/homeSection";
-import CommentSection from "@/components/commentSection"; // Import Component
+import CommentSection from "@/components/commentSection";
 
 export const revalidate = 1800;
 
 export default async function HomePage() {
-  const data = await fetchAnime<HomeData>("anime/home");
+  // Fetch data secara paralel agar loading halaman tidak terhambat
+  const [data, batchDataResponse] = await Promise.all([
+    fetchAnime<HomeData>("anime/home").catch(() => null),
+    fetchKS<KS_LatestResponse>("anime/kusonime/latest?page=1").catch(() => null),
+  ]);
+
   const heroAnime = data?.ongoing?.animeList[0] ?? null;
   const ongoingList = data?.ongoing?.animeList.slice(1, 11) ?? [];
   const completedList = data?.completed?.animeList.slice(0, 10) ?? [];
-
-  const getProxyUrl = (url: string) =>
-    `/api/image-proxy?url=${encodeURIComponent(url)}`;
+  
+  // Ambil 6 item pertama agar rapi menjadi 2 baris di grid 3 kolom
+  const batchList = batchDataResponse?.anime_list?.slice(0, 9) ?? [];
 
   const announcementList = [
     {
       id: 1,
-      icon: ServerCrash,
-      title: "Info Player Stream",
-      content: "Jika player Pixeldrain error, gunakan opsi server lain.",
-      theme: "red",
+      icon: Info,
+      title: "Batch Anime dah ada!",
+      content: "Mugenime udah ada halaman khusus buat anime batch, lho! Cek koleksi lengkapnya sekarang.",
+      theme: "blue",
     },
     {
       id: 2,
@@ -48,7 +56,6 @@ export default async function HomePage() {
       {heroAnime && (
         <HeroSection
           heroAnime={heroAnime}
-          // proxyUrl={getProxyUrl(heroAnime.poster)}
           proxyUrl={heroAnime.poster}
         />
       )}
@@ -197,6 +204,46 @@ export default async function HomePage() {
             ))}
           </div>
         </section>
+
+        {/* --- BATCH SECTION --- */}
+        {batchList.length > 0 && (
+          <section className="space-y-8">
+            <FadeInWrapper>
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-6">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
+                    <Layers className="w-5 h-5" />
+                    <span>Koleksi Batch</span>
+                  </div>
+                  <h2 className="text-3xl font-black text-foreground tracking-tight">
+                    Anime Batch
+                  </h2>
+                  <p className="text-muted-foreground max-w-lg">
+                    Download seluruh episode anime dalam satu paket dengan resolusi tinggi.
+                  </p>
+                </div>
+
+                <Button
+                  variant="outline"
+                  asChild
+                  className="rounded-full border-border hover:bg-secondary group"
+                >
+                  <Link href="/batch-anime">
+                    Lihat Semua{" "}
+                    <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                  </Link>
+                </Button>
+              </div>
+            </FadeInWrapper>
+
+            {/* Grid Layout Lanskap */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              {batchList.map((anime) => (
+                <BatchAnimeCard key={anime.slug} anime={anime} />
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* --- 3. GENERAL COMMENT SECTION --- */}
         <section className="space-y-8 pt-10 border-t border-border">

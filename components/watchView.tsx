@@ -66,7 +66,6 @@ export default function WatchView({
   episodeSlug,
   slug,
 }: Readonly<WatchViewProps>) {
-  // --- STATE ---
   const [currentVideoUrl, setCurrentVideoUrl] = useState<string>(
     episode?.defaultStreamingUrl || "",
   );
@@ -79,10 +78,10 @@ export default function WatchView({
   const isInvalid = !episode?.defaultStreamingUrl;
 
   // --- HELPERS ---
-  const getProxyUrl = (url: string | undefined) => {
-    if (!url) return "";
-    return `/api/image-proxy?url=${encodeURIComponent(url)}`;
-  };
+  // const getProxyUrl = (url: string | undefined) => {
+  //   if (!url) return "";
+  //   return `/api/image-proxy?url=${encodeURIComponent(url)}`;
+  // };
 
   const parseDownloadTitle = (title: string) => {
     const match = new RegExp(/^(mp4|mkv)[\s_]+(\d+p)$/i).exec(title);
@@ -121,7 +120,6 @@ export default function WatchView({
     return groups;
   }, [episode.downloadUrl]);
 
-  // --- EFFECTS ---
   useEffect(() => {
     if (isInvalid) return;
 

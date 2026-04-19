@@ -117,6 +117,14 @@ export default function Footer() {
               </li>
               <li>
                 <Link
+                  href="/batch-anime"
+                  className="hover:text-primary transition-colors"
+                >
+                  Batch Anime
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/genre-anime"
                   className="hover:text-primary transition-colors"
                 >

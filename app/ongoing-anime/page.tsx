@@ -107,7 +107,7 @@ export default async function OngoingPage({
                 </h1>
                 <p className="text-muted-foreground text-sm md:text-base leading-relaxed max-w-2xl">
                   Daftar anime musim ini yang sedang on-going. Pantau episode
-                  terbaru favoritmu secara real-time agar tidak ketinggalan!
+                  terbaru favoritmu agar tidak ketinggalan!
                 </p>
               </div>
             </div>

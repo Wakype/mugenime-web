@@ -44,9 +44,9 @@ export default async function HomePage() {
     {
       id: 2,
       icon: Info,
-      title: "Fitur Komentar (Beta)",
-      content: "Fitur komentar sudah bisa dipakai (Beta)",
-      theme: "blue",
+      title: "Fitur Komentar",
+      content: "Fitur komentar sementara kita nonaktifkan dulu ya 🙏",
+      theme: "red",
     },
   ];
 
@@ -213,7 +213,7 @@ export default async function HomePage() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
                     <Layers className="w-5 h-5" />
-                    <span>Koleksi Batch</span>
+                    <span>Koleksi Lengkap</span>
                   </div>
                   <h2 className="text-3xl font-black text-foreground tracking-tight">
                     Anime Batch
@@ -262,7 +262,7 @@ export default async function HomePage() {
             </div>
 
             {/* Komponen Komentar */}
-            <CommentSection identifier="general" title="Umum" type="page" />
+            <CommentSection />
           </FadeInWrapper>
         </section>
       </div>

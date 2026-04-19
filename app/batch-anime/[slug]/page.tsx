@@ -29,6 +29,7 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import ShareButton from "@/components/shareButton";
 import BookmarkButton from "@/components/bookmarkButton";
+import CommentSection from "@/components/commentSection";
 
 export const revalidate = 1800;
 
@@ -50,8 +51,8 @@ function parseDownloadLinks(
     for (const link of section.links) {
       const url = link.url.toLowerCase().trim();
 
-      const resMatch = url.match(/(360p|480p|720p|1080p|1440p|01-12|13-24)/);
-      const isSub = url.match(/(fontsubs|subtitle|subs)/);
+      const resMatch = new RegExp(/(360p|480p|720p|1080p|1440p|01-12|13-24)/).exec(url);
+      const isSub = new RegExp(/(fontsubs|subtitle|subs)/).exec(url);
 
       let detectedRes = null;
       if (resMatch) {
@@ -449,6 +450,7 @@ export default async function BatchAnimeDetailPage({
             {HeaderBlock}
             {SynopsisBlock}
             {DownloadBlock}
+            <CommentSection />
           </div>
 
           {/* SIDEBAR AREA (Kanan) */}

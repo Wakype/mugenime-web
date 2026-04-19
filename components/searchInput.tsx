@@ -52,12 +52,12 @@ export default function SearchInput({
       }
 
       setIsLoading(true);
-      
+
       try {
         const [stdData, ksData] = await Promise.all([
           searchAnimeAction(debouncedQuery).catch(() => []),
           fetchKS<KS_SearchResponse>(
-            `anime/kusonime/search/${encodeURIComponent(debouncedQuery)}`
+            `anime/kusonime/search/${encodeURIComponent(debouncedQuery)}`,
           ).catch(() => null),
         ]);
 
@@ -148,7 +148,8 @@ export default function SearchInput({
                     <div className="flex items-center gap-2 text-xs">
                       {anime.rating && (
                         <span className="flex items-center gap-1 text-amber-500 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">
-                          <Star className="w-3 h-3 fill-current" /> {anime.rating}
+                          <Star className="w-3 h-3 fill-current" />{" "}
+                          {anime.rating}
                         </span>
                       )}
                       <Badge
@@ -304,7 +305,7 @@ export default function SearchInput({
             )}
           </div>
 
-s          <div className="max-h-[400px] overflow-y-auto custom-scrollbar p-2">
+          <div className="max-h-[400px] overflow-y-auto custom-scrollbar p-2">
             {renderContent()}
           </div>
 

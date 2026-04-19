@@ -140,6 +140,14 @@ export default function Footer() {
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li>
                 <Link
+                  href="/about"
+                  className="flex items-center gap-2 hover:text-primary transition-colors"
+                >
+                  Tentang Kami
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/guide/streaming"
                   className="flex items-center gap-2 hover:text-primary transition-colors"
                 >

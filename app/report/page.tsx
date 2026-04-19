@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, Copy, Check, Info, HelpCircle } from "lucide-react";
+import { AlertTriangle, Copy, Check, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -31,7 +31,7 @@ Keterangan Tambahan: [Jelaskan detailnya]
 
   return (
     <div className="min-h-screen pb-20 py-10 bg-background">
-      <div className="container mx-auto px-4 space-y-10 max-w-5xl">
+      <div className="container mx-auto px-4 space-y-10">
         {/* --- HEADER --- */}
         <div className="relative rounded-3xl bg-card border border-border p-6 md:p-10 shadow-sm overflow-hidden group">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,currentColor_1px,transparent_1px),linear-gradient(to_bottom,currentColor_1px,transparent_1px)] bg-size-[24px_24px] text-muted-foreground/5 pointer-events-none" />
@@ -58,7 +58,6 @@ Keterangan Tambahan: [Jelaskan detailnya]
           <Card className="border-border bg-card h-full">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-                <Info className="w-5 h-5 text-primary" />
                 Cara Melapor
               </CardTitle>
               <CardDescription className="text-muted-foreground">
@@ -133,11 +132,7 @@ Keterangan Tambahan: [Jelaskan detailnya]
 
         {/* --- BAGIAN 2: KOMENTAR (FULL WIDTH DI BAWAH) --- */}
         <div className="w-full">
-          <CommentSection
-            identifier="report-problem"
-            title="Lapor Masalah"
-            type="page"
-          />
+          <CommentSection />
         </div>
       </div>
     </div>

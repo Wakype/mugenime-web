@@ -14,9 +14,9 @@ export default function OngoingCard({ anime }: Readonly<{ anime: Anime }>) {
     anime.poster !== "null" &&
     anime.poster.startsWith("http");
 
-  const imageUrl = isValidPoster
-    ? `/api/image-proxy?url=${encodeURIComponent(anime.poster)}`
-    : "";
+  // const imageUrl = isValidPoster
+  //   ? `/api/image-proxy?url=${encodeURIComponent(anime.poster)}`
+  //   : "";
 
   return (
     <Link

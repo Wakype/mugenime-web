@@ -73,3 +73,49 @@ export async function fetchAnime<T>(
     throw error;
   }
 }
+
+export async function fetchKS<T>(
+  endpoint: string,
+  options?: RequestInit
+): Promise<T> {
+  const path = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  const url = `${BASE_URL}${path}`;
+
+  const defaultHeaders = {
+    "User-Agent": "Mugenime/1.0",
+    "Content-Type": "application/json",
+  };
+
+  try {
+    const res = await fetch(url, {
+      ...options,
+      headers: {
+        ...defaultHeaders,
+        ...options?.headers,
+      },
+      // Revalidate cache every 30 minutes
+      next: { revalidate: 1800 },
+    });
+
+    if (res.status === 404) {
+      return notFound() as never;
+    }
+
+    if (!res.ok) {
+      throw new FetchError(
+        `KS API Error: ${res.status} ${res.statusText}`,
+        res.status
+      );
+    }
+
+    const json = await res.json();
+
+    // The KS_API does not consistently wrap its payload in a "data" property.
+    // Instead, it uses specific keys like "anime_list" or "detail" directly alongside "status".
+    // Therefore, we return the entire parsed JSON cast to the generic type T.
+    return json as T;
+  } catch (error) {
+    console.error(`[Fetch KS Error] ${url}:`, error);
+    throw error;
+  }
+}

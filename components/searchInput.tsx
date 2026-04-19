@@ -2,12 +2,14 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Search, X, Loader2, Star, PlayCircle } from "lucide-react";
+import { Search, X, Loader2, Star, PlayCircle, Layers } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 import { searchAnimeAction } from "@/app/actions";
+import { fetchKS } from "@/lib/api";
 import { SearchResult } from "@/lib/types";
+import { KS_SearchResponse, KS_AnimeItem } from "@/lib/batchAnimeTypes";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
@@ -23,6 +25,7 @@ export default function SearchInput({
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
+  const [batchResults, setBatchResults] = useState<KS_AnimeItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -39,19 +42,33 @@ export default function SearchInput({
     };
   }, [query]);
 
-  // Fetch Data
+  // Fetch Data (Reguler & Batch secara Paralel)
   useEffect(() => {
     const fetchResults = async () => {
       if (debouncedQuery.length < 3) {
         setResults([]);
+        setBatchResults([]);
         return;
       }
 
       setIsLoading(true);
-      const data = await searchAnimeAction(debouncedQuery);
-      setResults(data);
-      setIsLoading(false);
-      setIsOpen(true);
+      
+      try {
+        const [stdData, ksData] = await Promise.all([
+          searchAnimeAction(debouncedQuery).catch(() => []),
+          fetchKS<KS_SearchResponse>(
+            `anime/kusonime/search/${encodeURIComponent(debouncedQuery)}`
+          ).catch(() => null),
+        ]);
+
+        setResults(stdData || []);
+        setBatchResults(ksData?.anime_list || []);
+      } catch (error) {
+        console.error("Search error:", error);
+      } finally {
+        setIsLoading(false);
+        setIsOpen(true);
+      }
     };
 
     fetchResults();
@@ -79,8 +96,7 @@ export default function SearchInput({
     }
   };
 
-  const getProxyUrl = (url: string) =>
-    `/api/image-proxy?url=${encodeURIComponent(url)}`;
+  const totalResults = results.length + batchResults.length;
 
   const renderContent = () => {
     if (isLoading) {
@@ -92,62 +108,125 @@ export default function SearchInput({
       );
     }
 
-    if (results.length > 0) {
+    if (totalResults > 0) {
       return (
-        <div className="space-y-1">
-          {results.map((anime) => (
-            <Link
-              key={anime.slug}
-              href={`/anime/${anime.slug}`}
-              onClick={() => {
-                setIsOpen(false);
-                if (onSearchSubmit) onSearchSubmit();
-              }}
-              className="group flex gap-3 p-2 hover:bg-muted/80 rounded-lg transition-colors"
-            >
-              <div className="relative w-12 h-16 shrink-0 rounded-md overflow-hidden bg-muted">
-                <Image
-                  // src={getProxyUrl(anime.poster)}
-                  src={anime.poster ?? ""}
-                  alt={anime.title}
-                  fill
-                  className="object-cover"
-                  sizes="48px"
-                  unoptimized
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
+        <div className="space-y-2">
+          {/* List Anime Reguler */}
+          {results.length > 0 && (
+            <div className="space-y-1">
+              <div className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Anime Series
               </div>
+              {results.map((anime) => (
+                <Link
+                  key={anime.slug}
+                  href={`/anime/${anime.slug}`}
+                  onClick={() => {
+                    setIsOpen(false);
+                    if (onSearchSubmit) onSearchSubmit();
+                  }}
+                  className="group flex gap-3 p-2 hover:bg-muted/80 rounded-lg transition-colors"
+                >
+                  <div className="relative w-12 h-16 shrink-0 rounded-md overflow-hidden bg-muted">
+                    <Image
+                      src={anime.poster ?? ""}
+                      alt={anime.title}
+                      fill
+                      className="object-cover"
+                      sizes="48px"
+                      unoptimized
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
+                  </div>
 
-              {/* Info */}
-              <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
-                <h4 className="text-sm font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
-                  {anime.title}
-                </h4>
-                <div className="flex items-center gap-2 text-xs">
-                  {anime.rating && (
-                    <span className="flex items-center gap-1 text-amber-500 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">
-                      <Star className="w-3 h-3 fill-current" /> {anime.rating}
-                    </span>
-                  )}
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] h-5 border-border text-muted-foreground"
-                  >
-                    {anime.status}
-                  </Badge>
-                </div>
-                <div className="text-[10px] text-muted-foreground line-clamp-1">
-                  {anime.genres?.map((g) => g.genreId).join(", ")}
-                </div>
-              </div>
+                  {/* Info */}
+                  <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
+                    <h4 className="text-sm font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                      {anime.title}
+                    </h4>
+                    <div className="flex items-center gap-2 text-xs">
+                      {anime.rating && (
+                        <span className="flex items-center gap-1 text-amber-500 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">
+                          <Star className="w-3 h-3 fill-current" /> {anime.rating}
+                        </span>
+                      )}
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] h-5 border-border text-muted-foreground"
+                      >
+                        {anime.status}
+                      </Badge>
+                    </div>
+                    <div className="text-[10px] text-muted-foreground line-clamp-1">
+                      {anime.genres?.map((g) => g.genreId).join(", ")}
+                    </div>
+                  </div>
 
-              {/* Arrow Icon */}
-              <div className="self-center pr-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <PlayCircle className="w-5 h-5 text-primary" />
+                  {/* Arrow Icon */}
+                  <div className="self-center pr-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <PlayCircle className="w-5 h-5 text-primary" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {/* List Anime Batch */}
+          {batchResults.length > 0 && (
+            <div className="space-y-1">
+              <div className="px-3 pt-4 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-t border-border">
+                Anime Batch / Movie
               </div>
-            </Link>
-          ))}
+              {batchResults.map((anime) => (
+                <Link
+                  key={anime.slug}
+                  href={`/batch-anime/${anime.slug}`}
+                  onClick={() => {
+                    setIsOpen(false);
+                    if (onSearchSubmit) onSearchSubmit();
+                  }}
+                  className="group flex gap-3 p-2 hover:bg-muted/80 rounded-lg transition-colors"
+                >
+                  <div className="relative w-16 h-12 shrink-0 rounded-md overflow-hidden bg-muted">
+                    <Image
+                      src={anime.poster ?? ""}
+                      alt={anime.title}
+                      fill
+                      className="object-cover"
+                      sizes="64px"
+                      unoptimized
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
+                  </div>
+
+                  {/* Info Batch */}
+                  <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
+                    <h4 className="text-sm font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                      {anime.title}
+                    </h4>
+                    <div className="flex items-center gap-2 text-xs">
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] h-5 border-primary/30 text-primary bg-primary/5 flex items-center gap-1"
+                      >
+                        <Layers className="w-3 h-3" /> Batch
+                      </Badge>
+                    </div>
+                    <div className="text-[10px] text-muted-foreground line-clamp-1">
+                      {anime.genres?.map((g) => g.name).join(", ")}
+                    </div>
+                  </div>
+
+                  {/* Arrow Icon */}
+                  <div className="self-center pr-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <PlayCircle className="w-5 h-5 text-primary" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       );
     }
@@ -177,7 +256,7 @@ export default function SearchInput({
             if (e.target.value.length > 0) setIsOpen(true);
           }}
           onFocus={() => {
-            if (results.length > 0) setIsOpen(true);
+            if (totalResults > 0) setIsOpen(true);
           }}
         />
 
@@ -197,6 +276,7 @@ export default function SearchInput({
             onClick={() => {
               setQuery("");
               setResults([]);
+              setBatchResults([]);
               setIsOpen(false);
             }}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-destructive transition-colors"
@@ -217,20 +297,19 @@ export default function SearchInput({
                 &quot;{query}&quot;
               </span>
             </span>
-            {results.length > 0 && (
+            {totalResults > 0 && (
               <span className="text-[10px] bg-muted px-2 py-0.5 rounded-full text-foreground">
-                {results.length} ditemukan
+                {totalResults} ditemukan
               </span>
             )}
           </div>
 
-          {/* Render Content Function dipanggil disini */}
-          <div className="max-h-[350px] overflow-y-auto custom-scrollbar p-2">
+s          <div className="max-h-[400px] overflow-y-auto custom-scrollbar p-2">
             {renderContent()}
           </div>
 
           {/* Footer: View All */}
-          {results.length > 0 && (
+          {totalResults > 0 && (
             <Link
               href={`/search?q=${encodeURIComponent(query)}`}
               onClick={() => {

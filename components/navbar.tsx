@@ -43,8 +43,9 @@ const navLinks = [
   { name: "Jadwal", href: "/jadwal-anime", icon: Calendar },
   { name: "Ongoing", href: "/ongoing-anime", icon: Zap },
   { name: "Completed", href: "/completed-anime", icon: CheckCircle },
-  { name: "List Anime", href: "/list-anime", icon: List },
+  { name: "Batch", href: "/batch-anime", icon: CheckCircle },
   { name: "Genre", href: "/genre-anime", icon: Tags },
+  { name: "List (A-Z)", href: "/list-anime", icon: List },
 ];
 
 export default function Navbar() {

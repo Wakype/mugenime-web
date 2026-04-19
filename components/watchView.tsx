@@ -616,11 +616,7 @@ export default function WatchView({
 
       {/* 4. Comments */}
       <div className="mt-8 pt-8 border-t border-border">
-        <CommentSection
-          identifier={episodeSlug}
-          title={`${animeDetail?.title} - ${episode.title}`}
-          type="episode"
-        />
+        <CommentSection />
       </div>
     </div>
   );

@@ -418,11 +418,7 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
       </div>
 
       <div className="pt-2">
-        <CommentSection
-          identifier={anime.slug}
-          title={anime.title}
-          type="anime"
-        />
+        <CommentSection />
       </div>
     </div>
   );

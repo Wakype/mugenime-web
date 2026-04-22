@@ -1,13 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* @plugin "tailwindcss-animate"; */
-
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* DEFINISI VARIABEL WARNA
-  Menggunakan semantic naming agar tidak hardcode warna di component.
-*/
+/* DEFINISI VARIABEL WARNA */
 :root {
   /* --- LIGHT MODE --- */
   --background: 0 0% 100%; /* White */
@@ -174,4 +170,8 @@
   ::view-transition-new(root) {
     animation: none !important;
   }
+}
+
+html {
+  scroll-behavior: smooth;
 }

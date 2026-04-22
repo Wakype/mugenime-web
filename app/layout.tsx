@@ -47,7 +47,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${inter.variable} ${outfit.variable}`}
     >
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased scroll-smooth">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

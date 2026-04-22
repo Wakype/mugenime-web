@@ -12,6 +12,7 @@ export interface AnimeItem {
   currentEpisode?: string;
   lastWatchedAt?: number;
   studios?: string;
+  isBatch?: boolean;
 }
 
 interface AppState {

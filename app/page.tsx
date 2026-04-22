@@ -238,8 +238,8 @@ export default async function HomePage() {
 
             {/* Grid Layout Lanskap */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-              {batchList.map((anime) => (
-                <BatchAnimeCard key={anime.slug} anime={anime} />
+              {batchList.map((anime, idx) => (
+                <BatchAnimeCard key={anime.slug} anime={anime} index={idx} />
               ))}
             </div>
           </section>

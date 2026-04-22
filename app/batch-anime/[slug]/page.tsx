@@ -14,6 +14,7 @@ import {
   Home,
   Film,
   Disc,
+  Tags,
 } from "lucide-react";
 import {
   Breadcrumb,
@@ -37,30 +38,66 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
-// --- Extract Resolution via URL ---
+// --- Extract Resolution via URL & Host Pattern ---
 function parseDownloadLinks(
   rawLinks: KS_DetailResponse["detail"]["download_links"],
 ) {
   if (!rawLinks) return [];
 
   return rawLinks.map((section) => {
+    if (section.links.length === 1) {
+      return {
+        sectionTitle: section.resolution,
+        groups: [
+          {
+            resolution: "All Resolution",
+            links: section.links,
+          },
+        ],
+      };
+    }
+
     const groups: { resolution: string; links: KS_DownloadLink[] }[] = [];
     let currentRes = "Unknown";
     let currentGroup: KS_DownloadLink[] = [];
 
+    const fallbackResolutions = ["360P", "480P", "720P", "1080P"];
+    let fallbackIndex = 0;
+    const seenHosts = new Set<string>();
+
     for (const link of section.links) {
       const url = link.url.toLowerCase().trim();
+      const host = link.host.toLowerCase().trim();
 
-      const resMatch = new RegExp(/(360p|480p|720p|1080p|1440p|01-12|13-24)/).exec(url);
+      // Coba deteksi dari URL terlebih dahulu
+      const resMatch = new RegExp(
+        /(360p|480p|720p|1080p|1440p|01-12|13-24)/,
+      ).exec(url);
       const isSub = new RegExp(/(fontsubs|subtitle|subs)/).exec(url);
 
       let detectedRes = null;
+
       if (resMatch) {
         detectedRes = resMatch[1].toUpperCase();
       } else if (isSub) {
         detectedRes = "Subtitle";
+      } else {
+        // --- Deteksi Resolusi via Perulangan Host ---
+        if (seenHosts.has(host)) {
+          // Jika host sudah ada (mengulang), berarti naik tier resolusi
+          fallbackIndex++;
+          seenHosts.clear(); // Reset memori host untuk tier baru ini
+        }
+        
+        seenHosts.add(host); // Catat host ini ke dalam memori
+        
+        // Ambil label resolusi. Pakai Math.min agar index tidak kelebihan/error 
+        // jika ternyata ada lebih dari 4 kali perulangan.
+        const safeIndex = Math.min(fallbackIndex, fallbackResolutions.length - 1);
+        detectedRes = fallbackResolutions[safeIndex];
       }
 
+      // --- Grouping Logic ---
       if (detectedRes && detectedRes !== currentRes) {
         if (currentGroup.length > 0) {
           groups.push({
@@ -75,6 +112,7 @@ function parseDownloadLinks(
       }
     }
 
+    // Masukkan sisa link ke grup terakhir
     if (currentGroup.length > 0) {
       groups.push({
         resolution: currentRes,
@@ -161,8 +199,11 @@ export default async function BatchAnimeDetailPage({
   const isBD = /\bbd\b/i.test(anime.title);
 
   const parsedDownloadSections = parseDownloadLinks(anime.download_links);
+  const genreString = anime.genres
+    ? anime.genres.map((g) => g.name).join(", ")
+    : "Unknown";
 
-  // Data mapping untuk fungsi bookmark
+  // Data mapping bookmark
   const animeBookmarkData = {
     title: anime.title,
     slug: slug,
@@ -170,6 +211,7 @@ export default async function BatchAnimeDetailPage({
     type: anime.info.type,
     rating: anime.info.score,
     studios: anime.info.producers,
+    isBatch: true,
   };
 
   // --- UI COMPONENTS ---
@@ -326,7 +368,6 @@ export default async function BatchAnimeDetailPage({
                           variant="outline"
                           size="sm"
                           asChild
-                          // Penambahan paksa class hover khusus untuk dark mode agar seragam dengan light mode
                           className="h-8 text-xs font-semibold hover:bg-primary hover:text-primary-foreground hover:border-primary dark:hover:bg-primary dark:hover:text-primary-foreground dark:hover:border-primary border-border/60 transition-all bg-background/50"
                         >
                           <a
@@ -353,9 +394,36 @@ export default async function BatchAnimeDetailPage({
     </div>
   );
 
+  const TagsBlock = (
+    <div className="bg-card rounded-xl p-6 border border-border space-y-4 mt-8">
+      <div className="space-y-2">
+        <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+          <Tags className="w-4 h-4 text-primary shrink-0" />
+          Download {anime.title} Batch Sub Indo
+        </h2>
+        <div className="text-sm text-muted-foreground leading-relaxed text-justify">
+          Download anime <b>{anime.title}</b> Batch Subtitle Indonesia
+          terlengkap dan terbaru di Mugenime. Kamu bisa mengunduh{" "}
+          <b>{anime.title}</b> sub indo dalam format paket dengan kualitas HD
+          720p, 1080p, hingga paket hemat 360p dan 480p. Tersedia format MP4 dan
+          MKV yang bisa diakses gratis. Jangan lupa cek juga anime dari produser{" "}
+          {anime.info.producers} dan genre {genreString} lainnya hanya di sini.
+        </div>
+      </div>
+      <div className="pt-2 border-t border-border">
+        <p className="text-xs text-muted-foreground/80 leading-normal">
+          <span className="font-bold text-muted-foreground">Keywords: </span>
+          Download {anime.title} Batch, {anime.title} Batch Sub Indo, Download{" "}
+          {anime.title} Subtitle Indonesia, {anime.title} 360p 480p 720p 1080p,
+          Streaming Anime Sub Indo Gratis.
+        </p>
+      </div>
+    </div>
+  );
+
   const InfoBlock = (
     <div className="bg-card rounded-2xl p-5 border border-border space-y-4 shadow-sm">
-      <h3 className="font-bold text-foreground flex items-center gap-2 text-sm capitalize tracking-wider">
+      <h3 className="font-bold text-foreground flex items-center gap-2 text-sm uppercase tracking-wider">
         <Info className="w-4 h-4 text-primary" /> Informasi
       </h3>
       <Separator className="bg-border" />
@@ -391,11 +459,10 @@ export default async function BatchAnimeDetailPage({
 
   const ActionBlock = (
     <div className="space-y-3">
-      {/* Scroll button to Download Section */}
       <Button
         asChild
         size="lg"
-        className="w-full rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all"
+        className="w-full cursor-pointer rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12 shadow-lg shadow-primary/20 transition-all"
       >
         <a href="#download-section">
           <Download className="w-5 h-5 mr-2" />
@@ -440,6 +507,10 @@ export default async function BatchAnimeDetailPage({
           {ActionBlock}
           {SynopsisBlock}
           {DownloadBlock}
+          {TagsBlock}
+          <div className="pt-4">
+            <CommentSection />
+          </div>
         </div>
 
         {/* DESKTOP LAYOUT */}
@@ -450,7 +521,10 @@ export default async function BatchAnimeDetailPage({
             {HeaderBlock}
             {SynopsisBlock}
             {DownloadBlock}
-            <CommentSection />
+            {TagsBlock}
+            <div className="pt-4">
+              <CommentSection />
+            </div>
           </div>
 
           {/* SIDEBAR AREA (Kanan) */}

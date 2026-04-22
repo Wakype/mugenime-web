@@ -155,6 +155,7 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
     type: anime.type,
     rating: anime.score,
     studios: anime.studios,
+    isBatch: false,
   };
 
   const PosterBlock = (
@@ -210,7 +211,7 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
 
   const InfoBlock = (
     <div className="bg-card rounded-2xl p-5 border border-border space-y-4 shadow-sm">
-      <h3 className="font-bold text-foreground flex items-center gap-2 text-sm capitalize tracking-wider">
+      <h3 className="font-bold text-foreground flex items-center gap-2 text-sm uppercase tracking-wider uppercase">
         <Info className="w-4 h-4" /> Informasi
       </h3>
       <Separator className="bg-border" />
@@ -394,7 +395,7 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
       <div className="bg-card rounded-xl p-6 border border-border space-y-4">
         <div className="space-y-2">
           <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-            <Tags className="w-4 h-4 text-primary" />
+            <Tags className="w-4 h-4 text-primary shrink-0" />
             Nonton {anime.title} Sub Indo Gratis
           </h2>
           <div className="text-sm text-muted-foreground leading-relaxed text-justify">

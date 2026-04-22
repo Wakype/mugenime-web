@@ -131,6 +131,14 @@ export default function Footer() {
                   Daftar Genre
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/list-anime"
+                  className="hover:text-primary transition-colors"
+                >
+                  List Anime
+                </Link>
+              </li>
             </ul>
           </div>
 

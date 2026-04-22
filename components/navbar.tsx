@@ -17,6 +17,7 @@ import {
   History,
   Sun,
   Moon,
+  Package2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,7 +44,7 @@ const navLinks = [
   { name: "Jadwal", href: "/jadwal-anime", icon: Calendar },
   { name: "Ongoing", href: "/ongoing-anime", icon: Zap },
   { name: "Completed", href: "/completed-anime", icon: CheckCircle },
-  { name: "Batch", href: "/batch-anime", icon: CheckCircle },
+  { name: "Batch", href: "/batch-anime", icon: Package2 },
   { name: "Genre", href: "/genre-anime", icon: Tags },
   { name: "List (A-Z)", href: "/list-anime", icon: List },
 ];

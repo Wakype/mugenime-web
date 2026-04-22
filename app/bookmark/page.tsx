@@ -93,7 +93,7 @@ export default function BookmarkPage() {
             {bookmarks.map((anime) => (
               <Link
                 key={anime.slug}
-                href={`/anime/${anime.slug}`}
+                href={anime.isBatch ? `/batch-anime/${anime.slug}` : `/anime/${anime.slug}`}
                 className="group relative flex flex-col gap-3"
               >
                 {/* Image Container */}
@@ -113,10 +113,10 @@ export default function BookmarkPage() {
                   <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                   {/* Rating Badge */}
-                  {anime.rating && anime.rating !== "N/A" && (
+                  {anime.rating !== "N/A" && (
                     <div className="absolute top-2 right-2 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm text-xs font-bold text-white flex items-center gap-1 border border-white/10">
                       <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                      {anime.rating}
+                      {anime.rating || "N/A"}
                     </div>
                   )}
 
@@ -146,7 +146,7 @@ export default function BookmarkPage() {
 
                   {/* Studio Info */}
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Clapperboard className="w-3 h-3" />
+                    <Clapperboard className="w-3 h-3 shrink-0" />
                     <span className="truncate">
                       {anime.studios ? anime.studios : "Unknown Studio"}
                     </span>

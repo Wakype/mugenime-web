@@ -15,6 +15,7 @@ import {
   Film,
   Disc,
   Tags,
+  AlertTriangle,
 } from "lucide-react";
 import {
   Breadcrumb,
@@ -88,12 +89,15 @@ function parseDownloadLinks(
           fallbackIndex++;
           seenHosts.clear(); // Reset memori host untuk tier baru ini
         }
-        
+
         seenHosts.add(host); // Catat host ini ke dalam memori
-        
-        // Ambil label resolusi. Pakai Math.min agar index tidak kelebihan/error 
+
+        // Ambil label resolusi. Pakai Math.min agar index tidak kelebihan/error
         // jika ternyata ada lebih dari 4 kali perulangan.
-        const safeIndex = Math.min(fallbackIndex, fallbackResolutions.length - 1);
+        const safeIndex = Math.min(
+          fallbackIndex,
+          fallbackResolutions.length - 1,
+        );
         detectedRes = fallbackResolutions[safeIndex];
       }
 
@@ -144,9 +148,7 @@ const formatSynopsis = (text: string) => {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   try {
-    const responseData = await fetchKS<KS_DetailResponse>(
-      `anime/kusonime/detail/${slug}`,
-    );
+    const responseData = await fetchKS<KS_DetailResponse>(`detail/${slug}`);
 
     if (responseData.status !== "success" || !responseData.detail) {
       return { title: "Anime Not Found" };
@@ -183,9 +185,7 @@ export default async function BatchAnimeDetailPage({
   let responseData: KS_DetailResponse;
 
   try {
-    responseData = await fetchKS<KS_DetailResponse>(
-      `anime/kusonime/detail/${slug}`,
-    );
+    responseData = await fetchKS<KS_DetailResponse>(`detail/${slug}`);
   } catch (error) {
     console.error("Failed to fetch anime detail:", error);
     return notFound();
@@ -332,6 +332,14 @@ export default async function BatchAnimeDetailPage({
         </h3>
       </div>
 
+      {/* Warning Information Card */}
+      <div className="flex items-start gap-3 p-4 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400">
+        <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
+        <p className="text-sm leading-relaxed text-justify">
+          <strong>Informasi:</strong> Susunan resolusi pada link download terkadang bisa sedikit berantakan atau tidak sesuai urutan. Mohon untuk mengecek kembali dengan teliti resolusi pada link tujuan sebelum mulai mengunduh.
+        </p>
+      </div>
+
       {parsedDownloadSections.length > 0 ? (
         <div className="space-y-8">
           {parsedDownloadSections.map((section, idx) => (
@@ -346,7 +354,7 @@ export default async function BatchAnimeDetailPage({
                     key={gIdx}
                     className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl bg-secondary/10 hover:bg-secondary/30 border border-border/50 transition-colors"
                   >
-                    {/* Badge Resolusi */}
+                    {/* Resolution Badge */}
                     <div className="shrink-0 w-full sm:w-28 flex justify-center sm:justify-start">
                       <Badge
                         className={`w-fit sm:w-full justify-center py-1 font-bold text-xs ${
@@ -360,7 +368,7 @@ export default async function BatchAnimeDetailPage({
                       </Badge>
                     </div>
 
-                    {/* Daftar Link Host */}
+                    {/* Host Links List */}
                     <div className="flex flex-wrap justify-center sm:justify-start gap-2 items-center flex-1">
                       {group.links.map((link, lIdx) => (
                         <Button
@@ -509,7 +517,7 @@ export default async function BatchAnimeDetailPage({
           {DownloadBlock}
           {TagsBlock}
           <div className="pt-4">
-            <CommentSection />
+            <CommentSection identifier={slug} page_url={`/batch-anime/${slug}`}/>
           </div>
         </div>
 
@@ -523,7 +531,7 @@ export default async function BatchAnimeDetailPage({
             {DownloadBlock}
             {TagsBlock}
             <div className="pt-4">
-              <CommentSection />
+              <CommentSection identifier={slug} page_url={`/batch-anime/${slug}`}/>
             </div>
           </div>
 

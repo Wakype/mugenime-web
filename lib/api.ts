@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 export const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+export const KS_BASE_URL = process.env.NEXT_PUBLIC_KS_API_BASE_URL;
 
 export interface ApiResponse<T> {
   status: string;
@@ -79,7 +80,7 @@ export async function fetchKS<T>(
   options?: RequestInit
 ): Promise<T> {
   const path = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-  const url = `${BASE_URL}${path}`;
+  const url = `${KS_BASE_URL}${path}`;
 
   const defaultHeaders = {
     "User-Agent": "Mugenime/1.0",

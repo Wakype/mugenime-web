@@ -30,9 +30,9 @@ export default function Footer() {
                   />
                 </div>
               </Link>
-              <p className="text-muted-foreground text-sm leading-relaxed max-w-sm">
+              <p className="text-muted-foreground text-sm leading-relaxed max-w-sm text-justify">
                 Download dan streaming anime subtitle Indonesia lengkap dalam
-                format Mp4 dan MKV dengan berbagai resolusi di platform gratis,
+                format MP4 dan MKV dengan berbagai resolusi di platform gratis,
                 tanpa iklan yang mengganggu, dan hemat kuota.
               </p>
             </div>

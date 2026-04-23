@@ -211,7 +211,7 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
 
   const InfoBlock = (
     <div className="bg-card rounded-2xl p-5 border border-border space-y-4 shadow-sm">
-      <h3 className="font-bold text-foreground flex items-center gap-2 text-sm uppercase tracking-wider uppercase">
+      <h3 className="font-bold text-foreground flex items-center gap-2 text-sm uppercase tracking-wider">
         <Info className="w-4 h-4" /> Informasi
       </h3>
       <Separator className="bg-border" />
@@ -419,7 +419,7 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
       </div>
 
       <div className="pt-2">
-        <CommentSection />
+        <CommentSection identifier={slug} page_url={`/anime/${slug}`}/>
       </div>
     </div>
   );

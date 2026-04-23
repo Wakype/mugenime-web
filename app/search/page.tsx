@@ -32,7 +32,7 @@ export default async function SearchPage({
   const [results, batchResponse] = await Promise.all([
     searchAnimeAction(query).catch(() => [] as SearchResult[]),
     fetchKS<KS_SearchResponse>(
-      `anime/kusonime/search/${encodeURIComponent(query)}`,
+      `search/${encodeURIComponent(query)}`,
     ).catch(() => null),
   ]);
 

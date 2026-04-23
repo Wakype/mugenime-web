@@ -132,7 +132,7 @@ Keterangan Tambahan: [Jelaskan detailnya]
 
         {/* --- BAGIAN 2: KOMENTAR (FULL WIDTH DI BAWAH) --- */}
         <div className="w-full">
-          <CommentSection />
+          <CommentSection identifier="report" page_url="/report"/>
         </div>
       </div>
     </div>

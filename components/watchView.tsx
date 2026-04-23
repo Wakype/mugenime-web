@@ -616,7 +616,7 @@ export default function WatchView({
 
       {/* 4. Comments */}
       <div className="mt-8 pt-8 border-t border-border">
-        <CommentSection />
+        <CommentSection identifier={episodeSlug} page_url={`/watch/${slug}/${episodeSlug}`}/>
       </div>
     </div>
   );

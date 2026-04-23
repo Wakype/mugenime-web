@@ -3,8 +3,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTheme } from "next-themes";
+import { createClient } from "@/utils/supabase/client";
 import {
   Menu,
   Home,
@@ -17,7 +18,12 @@ import {
   History,
   Sun,
   Moon,
-  Package2
+  Package2,
+  User as UserIcon,
+  LogOut,
+  Settings,
+  LogIn,
+  ShieldAlert,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +39,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import SearchInput from "./searchInput";
 import Image from "next/image";
@@ -54,16 +67,85 @@ export default function Navbar() {
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
   const pathname = usePathname();
 
-  // Logic Theme
+  const [user, setUser] = useState<any>(null);
+
+  // Memoize Supabase client to prevent recreating it on every render
+  const supabase = useMemo(() => createClient(), []);
+
   const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    let isMounted = true;
     setMounted(true);
-  }, []);
 
-  // --- FUNGSI ANIMASI TRANSISI TEMA (LINGKARAN) ---
+    // Single unified function to handle user session and fetch DB profile
+    const handleUserSession = async (sessionUser: any) => {
+      if (!sessionUser) {
+        if (isMounted) setUser(null);
+        return;
+      }
+      try {
+        // Fetch role, full_name, and avatar_url from the profiles table
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role, full_name, avatar_url")
+          .eq("id", sessionUser.id)
+          .single();
+
+        if (isMounted) {
+          setUser({
+            ...sessionUser,
+            role: profile?.role || "user",
+            db_full_name:
+              profile?.full_name || sessionUser.user_metadata?.full_name,
+            db_avatar_url:
+              profile?.avatar_url || sessionUser.user_metadata?.avatar_url,
+          });
+        }
+      } catch {
+        if (isMounted) {
+          setUser({
+            ...sessionUser,
+            role: "user",
+            db_full_name: sessionUser.user_metadata?.full_name,
+            db_avatar_url: sessionUser.user_metadata?.avatar_url,
+          });
+        }
+      }
+    };
+
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      handleUserSession(session?.user);
+    });
+
+    // Listen to auth changes automatically
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      handleUserSession(session?.user);
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, [supabase]);
+
+  const handleLoginGoogle = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${globalThis.location.origin}${globalThis.location.pathname}`,
+      },
+    });
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
   const handleThemeToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
     const newTheme = resolvedTheme === "dark" ? "light" : "dark";
 
@@ -77,7 +159,6 @@ export default function Navbar() {
 
     const x = e.clientX;
     const y = e.clientY;
-
     const endRadius = Math.hypot(
       Math.max(x, window.innerWidth - x),
       Math.max(y, window.innerHeight - y),
@@ -106,7 +187,7 @@ export default function Navbar() {
 
   const getMobileItemClass = (path: string) =>
     cn(
-      "flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-200 group",
+      "flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-200 group cursor-pointer",
       pathname === path
         ? "bg-primary/10 text-primary"
         : "text-muted-foreground hover:bg-secondary hover:text-foreground",
@@ -128,7 +209,7 @@ export default function Navbar() {
       )}
     >
       <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
-        {/* --- LOGO SECTION --- */}
+        {/* Logo Section */}
         <Link
           href="/"
           className="flex items-center gap-2 group shrink-0 relative z-50"
@@ -145,7 +226,7 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* --- DESKTOP NAVIGATION --- */}
+        {/* Desktop Navigation */}
         <nav
           className="hidden lg:flex items-center gap-1 p-1 rounded-full bg-secondary/50 border border-border/50 backdrop-blur-md"
           onMouseLeave={() => setHoveredPath(null)}
@@ -161,8 +242,7 @@ export default function Navbar() {
                 href={link.href}
                 onMouseEnter={() => setHoveredPath(link.href)}
                 className={cn(
-                  "relative px-4 py-1.5 text-sm font-medium rounded-full transition-colors duration-200",
-                  "z-10",
+                  "relative px-4 py-1.5 text-sm font-medium rounded-full transition-colors duration-200 z-10",
                 )}
               >
                 {showPill && (
@@ -191,24 +271,21 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* --- ACTIONS --- */}
+        {/* Actions */}
         <div className="flex items-center gap-2 flex-1 justify-end">
-          {/* Search Input */}
           <div className="hidden md:block w-full max-w-[200px] lg:max-w-[260px] transition-all focus-within:max-w-[300px]">
             <SearchInput />
           </div>
 
-          {/* DESKTOP ACTION BUTTONS CONTAINER */}
           <div className="hidden md:flex items-center gap-1 p-1 rounded-full bg-secondary/50 border border-border/50 backdrop-blur-md">
             <TooltipProvider delayDuration={100}>
-              {/* History Button */}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     asChild
                     variant="ghost"
                     size="icon"
-                    className="rounded-full w-8 h-8 text-muted-foreground hover:bg-background hover:text-foreground transition-colors"
+                    className="rounded-full w-8 h-8 text-muted-foreground hover:bg-background hover:text-foreground transition-colors cursor-pointer"
                   >
                     <Link href="/history" aria-label="Riwayat Tontonan">
                       <History className="w-4 h-4" />
@@ -220,14 +297,13 @@ export default function Navbar() {
                 </TooltipContent>
               </Tooltip>
 
-              {/* Bookmark Button */}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     asChild
                     variant="ghost"
                     size="icon"
-                    className="rounded-full w-8 h-8 text-muted-foreground hover:bg-background hover:text-foreground transition-colors"
+                    className="rounded-full w-8 h-8 text-muted-foreground hover:bg-background hover:text-foreground transition-colors cursor-pointer"
                   >
                     <Link href="/bookmark" aria-label="Lihat Bookmark">
                       <Bookmark className="w-4 h-4" />
@@ -239,30 +315,114 @@ export default function Navbar() {
                 </TooltipContent>
               </Tooltip>
 
-              {/* Theme Toggle Desktop */}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span
                     tabIndex={0}
                     className="rounded-full cursor-pointer outline-none"
                   >
-                    <ModeToggle className="w-8 h-8 rounded-full hover:bg-background hover:text-foreground" />
+                    <ModeToggle className="w-8 h-8 rounded-full hover:bg-background hover:text-foreground cursor-pointer" />
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs font-medium">
                   <p>Ganti Tema</p>
                 </TooltipContent>
               </Tooltip>
+
+              <div className="w-px h-5 bg-border mx-1" />
+
+              {/* User Profile Dropdown */}
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="w-8 h-8 rounded-full overflow-hidden border border-border cursor-pointer relative"
+                    >
+                      {user.db_avatar_url ? (
+                        <Image
+                          src={user.db_avatar_url}
+                          alt="Profile"
+                          fill
+                          className="object-cover"
+                          sizes="32px"
+                        />
+                      ) : (
+                        <UserIcon className="w-4 h-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 mt-1">
+                    <div className="flex items-center justify-start gap-2 p-2">
+                      <div className="flex flex-col space-y-1 leading-none">
+                        <p className="font-medium text-sm truncate">
+                          {user.db_full_name || "Pengguna"}
+                        </p>
+                        <p className="w-[200px] truncate text-xs text-muted-foreground">
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild className="cursor-pointer">
+                      <Link
+                        href="/profile"
+                        className="w-full flex items-center"
+                      >
+                        <Settings className="w-4 h-4 mr-2" />
+                        Pengaturan Profil
+                      </Link>
+                    </DropdownMenuItem>
+
+                    {(user.role === "admin" || user.role === "superadmin") && (
+                      <DropdownMenuItem asChild className="cursor-pointer">
+                        <Link
+                          href="/admin"
+                          className="w-full flex items-center text-primary focus:text-primary"
+                        >
+                          <ShieldAlert className="w-4 h-4 mr-2" />
+                          Dashboard Admin
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="cursor-pointer text-destructive focus:text-destructive"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Keluar
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleLoginGoogle}
+                      className="rounded-full w-8 h-8 text-primary hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
+                    >
+                      <LogIn className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="text-xs font-medium">
+                    <p>Masuk</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </TooltipProvider>
           </div>
 
-          {/* MOBILE MENU TRIGGER */}
+          {/* Mobile Menu */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="lg:hidden rounded-full hover:bg-secondary"
+                className="lg:hidden rounded-full hover:bg-secondary cursor-pointer"
               >
                 <Menu className="w-6 h-6 text-foreground" />
                 <span className="sr-only">Toggle menu</span>
@@ -271,7 +431,7 @@ export default function Navbar() {
 
             <SheetContent
               side="right"
-              className="w-[85vw] sm:w-[380px] p-0 border-l-border bg-background"
+              className="w-[85vw] sm:w-[380px] p-0 border-l-border bg-background flex flex-col"
               onOpenAutoFocus={(e) => e.preventDefault()}
             >
               <SheetHeader className="p-6 border-b border-border text-left">
@@ -286,9 +446,58 @@ export default function Navbar() {
                 <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
               </SheetHeader>
 
-              <div className="flex flex-col h-full overflow-y-auto">
-                <div className="p-6 pb-2 space-y-4">
-                  {/* SEARCH SECTION */}
+              <div className="flex-1 overflow-y-auto">
+                <div className="p-6 pb-2">
+                  {user ? (
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/40 border border-border/50">
+                      <div className="flex items-center gap-3">
+                        <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-background ring-1 ring-border">
+                          {user.db_avatar_url ? (
+                            <Image
+                              src={user.db_avatar_url}
+                              alt="Profile"
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-secondary flex items-center justify-center">
+                              <UserIcon className="w-5 h-5 text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-foreground line-clamp-1">
+                            {user.db_full_name || "Pengguna"}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground line-clamp-1">
+                            {user.email}
+                          </span>
+                        </div>
+                      </div>
+                      <Link href="/profile" onClick={() => setIsOpen(false)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="w-8 h-8 rounded-full cursor-pointer"
+                        >
+                          <Settings className="w-4 h-4 text-muted-foreground" />
+                        </Button>
+                      </Link>
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={() => {
+                        handleLoginGoogle();
+                        setIsOpen(false);
+                      }}
+                      className="w-full rounded-xl cursor-pointer"
+                    >
+                      <LogIn className="w-4 h-4 mr-2" /> Masuk via Google
+                    </Button>
+                  )}
+                </div>
+
+                <div className="p-6 py-2 space-y-4">
                   <div>
                     <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                       Pencarian
@@ -296,10 +505,9 @@ export default function Navbar() {
                     <SearchInput onSearchSubmit={() => setIsOpen(false)} />
                   </div>
 
-                  {/* THEME TOGGLE BUTTON (MOBILE) */}
                   <button
                     onClick={handleThemeToggle}
-                    className="w-full flex items-center justify-between p-3 rounded-xl bg-secondary/40 border border-border/50 hover:bg-secondary/70 active:scale-[0.98] transition-all duration-200 text-left group overflow-hidden relative"
+                    className="w-full flex items-center justify-between p-3 rounded-xl bg-secondary/40 border border-border/50 hover:bg-secondary/70 active:scale-[0.98] transition-all duration-200 text-left group overflow-hidden relative cursor-pointer"
                   >
                     <div className="flex items-center gap-3 relative z-10">
                       <div className="p-2.5 bg-background rounded-lg shadow-sm text-primary group-hover:text-primary transition-colors border border-border/50">
@@ -322,11 +530,10 @@ export default function Navbar() {
                             ? resolvedTheme === "dark"
                               ? "Mode Gelap"
                               : "Mode Terang"
-                            : "Memuat tema..."}
+                            : "Memuat..."}
                         </span>
                       </div>
                     </div>
-                    {/* Indikator Status (Dot) */}
                     <div
                       className={cn(
                         "w-2 h-2 rounded-full mr-1 relative z-10",
@@ -344,8 +551,6 @@ export default function Navbar() {
                   <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                     Menu Utama
                   </h4>
-
-                  {/* Nav Links */}
                   {navLinks.map((link) => {
                     const Icon = link.icon;
                     return (
@@ -365,7 +570,6 @@ export default function Navbar() {
 
                   <div className="my-2 border-t border-border/50" />
 
-                  {/* History Item */}
                   <Link
                     href="/history"
                     onClick={() => setIsOpen(false)}
@@ -377,7 +581,6 @@ export default function Navbar() {
                     Riwayat Tontonan
                   </Link>
 
-                  {/* Bookmark Item */}
                   <Link
                     href="/bookmark"
                     onClick={() => setIsOpen(false)}
@@ -389,13 +592,22 @@ export default function Navbar() {
                     Bookmark Saya
                   </Link>
                 </div>
+              </div>
 
-                {/* Footer */}
-                <div className="mt-auto p-6 border-t border-border text-center">
-                  <p className="text-[10px] text-muted-foreground">
+              <div className="p-6 border-t border-border mt-auto">
+                {user ? (
+                  <Button
+                    onClick={handleLogout}
+                    variant="destructive"
+                    className="w-full rounded-xl cursor-pointer text-destructive-foreground font-semibold"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" /> Keluar Akun
+                  </Button>
+                ) : (
+                  <p className="text-[10px] text-muted-foreground text-center">
                     &copy; {new Date().getFullYear()} Mugenime.
                   </p>
-                </div>
+                )}
               </div>
             </SheetContent>
           </Sheet>

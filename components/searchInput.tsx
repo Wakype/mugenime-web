@@ -57,7 +57,7 @@ export default function SearchInput({
         const [stdData, ksData] = await Promise.all([
           searchAnimeAction(debouncedQuery).catch(() => []),
           fetchKS<KS_SearchResponse>(
-            `anime/kusonime/search/${encodeURIComponent(debouncedQuery)}`,
+            `search/${encodeURIComponent(debouncedQuery)}`,
           ).catch(() => null),
         ]);
 
@@ -299,7 +299,7 @@ export default function SearchInput({
               </span>
             </span>
             {totalResults > 0 && (
-              <span className="text-[10px] bg-muted px-2 py-0.5 rounded-full text-foreground">
+              <span className="text-[10px] bg-muted px-2 py-0.5 rounded-full text-foreground shrink-0">
                 {totalResults} ditemukan
               </span>
             )}

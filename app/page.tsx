@@ -20,17 +20,14 @@ import CommentSection from "@/components/commentSection";
 export const revalidate = 1800;
 
 export default async function HomePage() {
-  // Fetch data secara paralel agar loading halaman tidak terhambat
   const [data, batchDataResponse] = await Promise.all([
     fetchAnime<HomeData>("anime/home").catch(() => null),
-    fetchKS<KS_LatestResponse>("anime/kusonime/latest?page=1").catch(() => null),
+    fetchKS<KS_LatestResponse>("latest?page=1").catch(() => null),
   ]);
 
   const heroAnime = data?.ongoing?.animeList[0] ?? null;
   const ongoingList = data?.ongoing?.animeList.slice(1, 11) ?? [];
   const completedList = data?.completed?.animeList.slice(0, 10) ?? [];
-  
-  // Ambil 6 item pertama agar rapi menjadi 2 baris di grid 3 kolom
   const batchList = batchDataResponse?.anime_list?.slice(0, 9) ?? [];
 
   const announcementList = [
@@ -38,15 +35,16 @@ export default async function HomePage() {
       id: 1,
       icon: Info,
       title: "Batch Anime dah ada!",
-      content: "Mugenime udah ada halaman khusus buat anime batch, lho! Cek koleksi lengkapnya sekarang.",
+      content:
+        "Mugenime udah ada halaman khusus buat anime batch, lho! Cek koleksi lengkapnya sekarang.",
       theme: "blue",
     },
     {
       id: 2,
       icon: Info,
       title: "Fitur Komentar",
-      content: "Fitur komentar sementara kita nonaktifkan dulu ya 🙏",
-      theme: "red",
+      content: "Fitur komentar sudah bis dicoba!",
+      theme: "blue",
     },
   ];
 
@@ -54,10 +52,7 @@ export default async function HomePage() {
     <div className="min-h-screen bg-background pb-20 selection:bg-primary/30">
       {/* --- 1. HERO SECTION --- */}
       {heroAnime && (
-        <HeroSection
-          heroAnime={heroAnime}
-          proxyUrl={heroAnime.poster}
-        />
+        <HeroSection heroAnime={heroAnime} proxyUrl={heroAnime.poster} />
       )}
 
       {/* --- 2. ANNOUNCEMENT & CONTENT --- */}
@@ -219,7 +214,8 @@ export default async function HomePage() {
                     Anime Batch
                   </h2>
                   <p className="text-muted-foreground max-w-lg">
-                    Download seluruh episode anime dalam satu paket dengan resolusi tinggi.
+                    Download seluruh episode anime dalam satu paket dengan
+                    resolusi tinggi.
                   </p>
                 </div>
 
@@ -246,7 +242,7 @@ export default async function HomePage() {
         )}
 
         {/* --- 3. GENERAL COMMENT SECTION --- */}
-        <section className="space-y-8 pt-10 border-t border-border">
+        <section className="space-y-8 pt-10">
           <FadeInWrapper>
             <div className="space-y-2 mb-6">
               <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
@@ -261,8 +257,8 @@ export default async function HomePage() {
               </p>
             </div>
 
-            {/* Komponen Komentar */}
-            <CommentSection />
+            {/* Komponen Komentar Diupdate */}
+            <CommentSection identifier="general" page_url="/" />
           </FadeInWrapper>
         </section>
       </div>

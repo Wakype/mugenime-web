@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -175,3 +176,14 @@
 html {
   scroll-behavior: smooth;
 }
+
+/* Spoiler Base Style */
+span[data-spoiler] {
+  @apply bg-foreground text-transparent cursor-pointer rounded px-1.5 py-0.5 select-none transition-colors duration-200;
+}
+
+/* Spoiler Revealed Style */
+span[data-spoiler].spoiler-revealed {
+  @apply bg-muted text-foreground;
+}
+

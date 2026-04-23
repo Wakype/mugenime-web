@@ -18,7 +18,7 @@ export default async function BatchAnimePage({
   const currentPage = Number(params.page) || 1;
 
   const response = await fetchKS<KS_LatestResponse>(
-    `anime/kusonime/latest?page=${currentPage}`,
+    `latest?page=${currentPage}`,
   );
 
   const animeList = response?.anime_list || [];

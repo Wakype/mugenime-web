@@ -7,15 +7,16 @@ import {
   ArrowRight,
   Flame,
   Sparkles,
-  ServerCrash,
-  Info,
   MessageCircle,
   Layers,
+  Megaphone,
+  Package2,
 } from "lucide-react";
 import AnimeCard from "@/components/animeCard";
 import BatchAnimeCard from "@/components/batchAnimeCard";
 import { FadeInWrapper, HeroSection } from "@/components/homeSection";
 import CommentSection from "@/components/commentSection";
+import { Badge } from "@/components/ui/badge";
 
 export const revalidate = 1800;
 
@@ -30,21 +31,30 @@ export default async function HomePage() {
   const completedList = data?.completed?.animeList.slice(0, 10) ?? [];
   const batchList = batchDataResponse?.anime_list?.slice(0, 9) ?? [];
 
+  // --- STRUKTUR DATA CHANGELOG COMPACT ---
   const announcementList = [
     {
       id: 1,
-      icon: Info,
-      title: "Batch Anime dah ada!",
-      content:
-        "Mugenime udah ada halaman khusus buat anime batch, lho! Cek koleksi lengkapnya sekarang.",
-      theme: "blue",
+      date: "26 April 2026",
+      tag: "Baru",
+      tagColor: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+      icon: MessageCircle,
+      iconColor: "text-blue-500",
+      iconBg: "bg-blue-500/10",
+      title: "Fitur Komentar Sudah Tersedia!",
+      content: "Udah bisa komen di mugenime nih! tinggal login aja",
     },
     {
       id: 2,
-      icon: Info,
-      title: "Fitur Komentar",
-      content: "Fitur komentar sudah bis dicoba!",
-      theme: "blue",
+      date: "20 April 2026",
+      tag: "Update",
+      tagColor: "bg-purple-500/10 text-purple-500 border-purple-500/20",
+      icon: Package2,
+      iconColor: "text-purple-500",
+      iconBg: "bg-purple-500/10",
+      title: "Halaman Batch",
+      content:
+        "Anime Batch sekarang punya halaman khusus. Download seluruh episode / movie anime disini.",
     },
   ];
 
@@ -52,102 +62,82 @@ export default async function HomePage() {
     <div className="min-h-screen bg-background pb-20 selection:bg-primary/30">
       {/* --- 1. HERO SECTION --- */}
       {heroAnime && (
-        <HeroSection heroAnime={heroAnime} proxyUrl={heroAnime.poster} />
+        <HeroSection heroAnime={heroAnime} poster={heroAnime.poster} />
       )}
 
-      {/* --- 2. ANNOUNCEMENT & CONTENT --- */}
-      <div className="container mx-auto px-4 -mt-10 relative z-20 space-y-16">
-        {/* Announcement Section */}
+      {/* --- 2. MAIN CONTENT --- */}
+      <div className="container mx-auto px-4 -mt-10 relative z-20 space-y-12">
+        {/* --- COMPACT ANNOUNCEMENT SECTION --- */}
         <FadeInWrapper delay={0.2}>
-          <div className="grid lg:grid-cols-2 grid-cols-1 gap-4 w-full">
-            {announcementList.map((item) => {
-              const Icon = item.icon;
-              const isAlert = item.theme === "red";
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
+              <Megaphone className="w-4 h-4" />
+              <span>Pengumuman</span>
+            </div>
 
-              return (
-                <div
-                  key={item.id}
-                  className={`
-                    relative group flex-1 overflow-hidden rounded-xl border p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1
-                    ${
-                      isAlert
-                        ? "bg-red-50/50 dark:bg-red-950/20 border-red-200 dark:border-red-900 border-l-4 border-l-red-500"
-                        : "bg-card/60 border-primary/20 border-l-4 border-l-primary"
-                    }
-                    backdrop-blur-md
-                  `}
-                >
-                  {/* Background Watermark Icon */}
-                  <div className="absolute -right-6 -top-6 text-current opacity-5 dark:opacity-[0.03] group-hover:scale-110 transition-transform duration-500 rotate-12">
-                    <Icon
-                      className={`w-32 h-32 ${
-                        isAlert ? "text-red-500" : "text-primary"
-                      }`}
-                    />
-                  </div>
-
-                  <div className="relative z-10 flex items-start gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {announcementList.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div
+                    key={item.id}
+                    className="flex items-start gap-4 p-4 rounded-2xl bg-card border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300 group"
+                  >
                     <div
-                      className={`
-                        p-3 rounded-full shrink-0 shadow-sm ring-1 ring-inset
-                        ${
-                          isAlert
-                            ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 ring-red-200 dark:ring-red-800"
-                            : "bg-primary/10 text-primary ring-primary/20"
-                        }
-                      `}
+                      className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${item.iconBg}`}
                     >
                       <Icon
-                        className={`w-5 h-5 ${isAlert && "animate-pulse"}`}
+                        className={`w-5 h-5 ${item.iconColor} group-hover:scale-110 transition-transform`}
                       />
                     </div>
-
-                    <div className="space-y-1">
-                      <h3 className="font-bold text-lg text-foreground tracking-tight flex items-center gap-2">
+                    <div className="space-y-1.5 flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className={`text-[9px] py-0 h-4 border uppercase tracking-wider ${item.tagColor}`}
+                        >
+                          {item.tag}
+                        </Badge>
+                        <span className="text-[10px] font-semibold text-muted-foreground">
+                          {item.date}
+                        </span>
+                      </div>
+                      <h3 className="font-bold text-sm text-foreground leading-tight truncate">
                         {item.title}
-                        {isAlert && (
-                          <span className="inline-flex items-center rounded-md bg-red-50 dark:bg-red-900/50 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-400 ring-1 ring-inset ring-red-600/10">
-                            Penting
-                          </span>
-                        )}
                       </h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed max-w-full">
+                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                         {item.content}
                       </p>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </FadeInWrapper>
 
         {/* --- ONGOING SECTION --- */}
-        <section className="space-y-8">
+        <section className="space-y-6 pt-4">
           <FadeInWrapper>
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-6">
-              <div className="space-y-2">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-4">
+              <div className="space-y-1">
                 <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
                   <Flame className="w-5 h-5" />
                   <span>Update Terbaru</span>
                 </div>
-                <h2 className="text-3xl font-black text-foreground tracking-tight">
+                <h2 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">
                   Sedang Tayang
                 </h2>
-                <p className="text-muted-foreground max-w-lg">
-                  Daftar anime musim ini yang sedang <i>on-going</i>. Tonton
-                  episode terbarunya sekarang.
-                </p>
               </div>
 
               <Button
                 variant="outline"
                 asChild
-                className="rounded-full border-border hover:bg-secondary group"
+                className="rounded-full border-border hover:bg-secondary group h-9 px-4 text-xs font-semibold"
               >
                 <Link href="/ongoing-anime">
                   Lihat Semua{" "}
-                  <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="w-3.5 h-3.5 ml-1.5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
             </div>
@@ -162,31 +152,27 @@ export default async function HomePage() {
         </section>
 
         {/* --- COMPLETED SECTION --- */}
-        <section className="space-y-8">
+        <section className="space-y-6 pt-4">
           <FadeInWrapper>
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-6">
-              <div className="space-y-2">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-4">
+              <div className="space-y-1">
                 <div className="flex items-center gap-2 text-amber-600 dark:text-amber-500 font-bold text-sm uppercase tracking-wider">
                   <Sparkles className="w-5 h-5" />
                   <span>Maraton Time</span>
                 </div>
-                <h2 className="text-3xl font-black text-foreground tracking-tight">
+                <h2 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">
                   Anime Tamat
                 </h2>
-                <p className="text-muted-foreground max-w-lg">
-                  Rekomendasi anime yang sudah selesai tayang (Completed). Cocok
-                  buat yang suka maraton!
-                </p>
               </div>
 
               <Button
                 variant="outline"
                 asChild
-                className="rounded-full border-border hover:bg-secondary group"
+                className="rounded-full border-border hover:bg-secondary group h-9 px-4 text-xs font-semibold"
               >
                 <Link href="/completed-anime">
                   Lihat Semua{" "}
-                  <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="w-3.5 h-3.5 ml-1.5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
             </div>
@@ -202,31 +188,27 @@ export default async function HomePage() {
 
         {/* --- BATCH SECTION --- */}
         {batchList.length > 0 && (
-          <section className="space-y-8">
+          <section className="space-y-6 pt-4">
             <FadeInWrapper>
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-6">
-                <div className="space-y-2">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-4">
+                <div className="space-y-1">
                   <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
                     <Layers className="w-5 h-5" />
                     <span>Koleksi Lengkap</span>
                   </div>
-                  <h2 className="text-3xl font-black text-foreground tracking-tight">
+                  <h2 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">
                     Anime Batch
                   </h2>
-                  <p className="text-muted-foreground max-w-lg">
-                    Download seluruh episode anime dalam satu paket dengan
-                    resolusi tinggi.
-                  </p>
                 </div>
 
                 <Button
                   variant="outline"
                   asChild
-                  className="rounded-full border-border hover:bg-secondary group"
+                  className="rounded-full border-border hover:bg-secondary group h-9 px-4 text-xs font-semibold"
                 >
                   <Link href="/batch-anime">
                     Lihat Semua{" "}
-                    <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                    <ArrowRight className="w-3.5 h-3.5 ml-1.5 transition-transform group-hover:translate-x-1" />
                   </Link>
                 </Button>
               </div>
@@ -242,22 +224,19 @@ export default async function HomePage() {
         )}
 
         {/* --- 3. GENERAL COMMENT SECTION --- */}
-        <section className="space-y-8 pt-10">
+        <section className="space-y-6 pt-10">
           <FadeInWrapper>
-            <div className="space-y-2 mb-6">
+            <div className="space-y-1">
               <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
                 <MessageCircle className="w-5 h-5" />
                 <span>Komunitas</span>
               </div>
-              <h2 className="text-3xl font-black text-foreground tracking-tight">
-                General
+              <h2 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">
+                General Chat
               </h2>
-              <p className="text-muted-foreground max-w-lg">
-                Tempat ngobrol santai atau sekadar menyapa.
-              </p>
             </div>
 
-            {/* Komponen Komentar Diupdate */}
+            {/* Komponen Komentar */}
             <CommentSection identifier="general" page_url="/" />
           </FadeInWrapper>
         </section>

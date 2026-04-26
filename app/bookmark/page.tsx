@@ -61,7 +61,7 @@ export default function BookmarkPage() {
 
               {/* Title */}
               <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight font-heading text-foreground">
-                Koleksi <span className="text-primary">Bookmark</span> Saya
+                Koleksi <span className="text-primary">Bookmark</span>
               </h1>
 
               <p className="text-muted-foreground text-sm md:text-base leading-relaxed">

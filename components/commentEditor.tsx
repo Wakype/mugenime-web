@@ -1,6 +1,6 @@
 "use client";
 
-import { useEditor, EditorContent, mergeAttributes } from "@tiptap/react";
+import { useEditor, EditorContent, mergeAttributes, Mark } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import ImageExtension from "@tiptap/extension-image";
@@ -33,9 +33,58 @@ import {
   Send,
   Loader2,
   Link as LinkIcon,
+  EyeOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
+
+declare module "@tiptap/react" {
+  interface Commands<ReturnType> {
+    spoiler: {
+      toggleSpoiler: () => ReturnType;
+    };
+  }
+}
+
+// Custom Mark Extension
+const Spoiler = Mark.create({
+  name: "spoiler",
+
+  parseHTML() {
+    return [
+      {
+        tag: "span[data-spoiler]",
+      },
+    ];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return [
+      "span",
+      mergeAttributes(HTMLAttributes, {
+        "data-spoiler": "true",
+        class: "spoiler-text",
+      }),
+      0,
+    ];
+  },
+
+  addCommands() {
+    return {
+      toggleSpoiler:
+        () =>
+        ({ commands }) => {
+          return commands.toggleMark(this.name);
+        },
+    };
+  },
+
+  addKeyboardShortcuts() {
+    return {
+      "Mod-Shift-s": () => this.editor.commands.toggleSpoiler(),
+    };
+  },
+});
 
 const UCImage = ImageExtension.extend({
   renderHTML({ HTMLAttributes }) {
@@ -129,6 +178,7 @@ export default function CommentEditor({
       }),
       Underline,
       Highlight.configure({ multicolor: true }),
+      Spoiler,
       UCImage.configure({
         inline: true,
         allowBase64: true,
@@ -151,7 +201,6 @@ export default function CommentEditor({
     },
   });
 
-  // Calculate the empty state dynamically instead of using useEffect
   const isEditorEmpty = editor ? editor.isEmpty : !initialContent;
 
   if (!editor) return null;
@@ -170,7 +219,6 @@ export default function CommentEditor({
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        // Ensure the result is strictly a string before applying
         const result = event.target?.result;
         if (typeof result === "string") {
           editor.chain().focus().setImage({ src: result }).run();
@@ -222,6 +270,13 @@ export default function CommentEditor({
             isActive={editor.isActive("highlight")}
             icon={Highlighter}
             tooltip="Highlight"
+          />
+
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleSpoiler().run()}
+            isActive={editor.isActive("spoiler")}
+            icon={EyeOff}
+            tooltip="Spoiler (Ctrl+Shift+S)"
           />
 
           <div className="w-px h-5 bg-border mx-1" />
@@ -297,7 +352,7 @@ export default function CommentEditor({
 
       <div className="flex items-center justify-between p-3 border-t border-border bg-muted/10">
         <span className="text-[10px] text-muted-foreground font-medium hidden sm:inline-block">
-          Mendukung Markdown, Gambar, dan GIF
+          Mendukung Markdown, Spoiler, Gambar, dan GIF
         </span>
         <div className="flex gap-2 w-full sm:w-auto justify-end">
           {onCancel && (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import {
   AnimeDetail,
   EpisodeDetail,
@@ -50,6 +50,7 @@ import Image from "next/image";
 import BatchDownload from "./batchDownload";
 import CommentSection from "./commentSection";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/utils/supabase/client";
 
 interface WatchViewProps {
   episode: EpisodeDetail;
@@ -73,7 +74,6 @@ export default function WatchView({
   const [selectedServerId, setSelectedServerId] = useState<string | null>(null);
 
   const activeRequestRef = useRef<string>("");
-  const addToHistory = useStore((state) => state.addToHistory);
 
   const isInvalid = !episode?.defaultStreamingUrl;
 
@@ -82,6 +82,68 @@ export default function WatchView({
   //   if (!url) return "";
   //   return `/api/image-proxy?url=${encodeURIComponent(url)}`;
   // };
+
+  const { addToHistory } = useStore();
+  const supabase = createClient();
+
+  let parentAnimeSlug = slug;
+  if (!parentAnimeSlug && episode.animeId) {
+    parentAnimeSlug = episode.animeId.replace("-sub-indo", "");
+  }
+
+  // --- FUNGSI SAVE HISTORY ---
+  const handleSaveHistory = useCallback(async () => {
+    if (isInvalid || !animeDetail) return;
+
+    const historyPayload = {
+      anime_slug: parentAnimeSlug,
+      anime_title: animeDetail.title,
+      episode_slug: episodeSlug,
+      episode_title: episode.title,
+      poster: animeDetail.poster || "",
+    };
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (session) {
+      // REGISTERED USER
+      await supabase.from("watch_history").upsert(
+        {
+          user_id: session.user.id,
+          ...historyPayload,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id, anime_slug, episode_slug" },
+      );
+    } else {
+      // GUEST USER
+      addToHistory({
+        ...historyPayload,
+        updated_at: Date.now(),
+      });
+    }
+  }, [
+    isInvalid,
+    animeDetail,
+    parentAnimeSlug,
+    episodeSlug,
+    episode.title,
+    supabase.auth,
+    addToHistory,
+  ]);
+
+  // --- TRIGGER HISTORY 1: 10 DETIK STAY DI HALAMAN ---
+  useEffect(() => {
+    if (isInvalid) return;
+
+    const timer = setTimeout(() => {
+      handleSaveHistory();
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, [episodeSlug, isInvalid, handleSaveHistory]);
 
   const parseDownloadTitle = (title: string) => {
     const match = new RegExp(/^(mp4|mkv)[\s_]+(\d+p)$/i).exec(title);
@@ -127,17 +189,7 @@ export default function WatchView({
     setSelectedServerId(null);
     setIsLoadingVideo(false);
     activeRequestRef.current = "";
-
-    const cleanTitle = episode.title.replace(/Episode\s+\d+.*/i, "").trim();
-
-    addToHistory({
-      title: cleanTitle,
-      slug: slug,
-      poster: animeDetail?.poster || "",
-      currentEpisode: episode.title,
-      url: `/watch/${slug}/${episodeSlug}`,
-    });
-  }, [episode, episodeSlug, addToHistory, isInvalid, animeDetail, slug]);
+  }, [episode, episodeSlug, isInvalid, animeDetail, slug]);
 
   const handleServerChange = async (urlId: string) => {
     if (urlId === selectedServerId) return;
@@ -164,11 +216,6 @@ export default function WatchView({
   };
 
   if (isInvalid) return null;
-
-  let parentAnimeSlug = slug;
-  if (!parentAnimeSlug && episode.animeId) {
-    parentAnimeSlug = episode.animeId.replace("-sub-indo", "");
-  }
 
   const displayEpisodeList =
     episode.info?.episodeList && episode.info.episodeList.length > 0
@@ -591,6 +638,8 @@ export default function WatchView({
                                         href={link.url}
                                         target="_blank"
                                         rel="noopener noreferrer"
+                                        // --- TRIGGER HISTORY 2: ONCLICK ---
+                                        onClick={() => handleSaveHistory()}
                                         className="flex items-center justify-center h-7 px-2 text-[10px] font-medium text-muted-foreground bg-muted/50 hover:bg-primary/10 hover:text-primary hover:border-primary/30 border border-border rounded transition-all truncate"
                                       >
                                         {link.title}
@@ -616,7 +665,10 @@ export default function WatchView({
 
       {/* 4. Comments */}
       <div className="mt-8 pt-8 border-t border-border">
-        <CommentSection identifier={episodeSlug} page_url={`/watch/${slug}/${episodeSlug}`}/>
+        <CommentSection
+          identifier={episodeSlug}
+          page_url={`/watch/${slug}/${episodeSlug}`}
+        />
       </div>
     </div>
   );

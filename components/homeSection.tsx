@@ -10,10 +10,10 @@ import { Anime } from "@/lib/types";
 // --- HERO SECTION COMPONENT ---
 export function HeroSection({
   heroAnime,
-  proxyUrl,
+  poster,
 }: Readonly<{
   heroAnime: Anime;
-  proxyUrl: string;
+  poster: string;
 }>) {
   if (!heroAnime) return null;
 
@@ -45,7 +45,7 @@ export function HeroSection({
         className="absolute inset-0 z-0"
       >
         <Image
-          src={proxyUrl}
+          src={poster}
           alt="Hero Background"
           fill
           className="object-cover opacity-30 dark:opacity-20 blur-sm"
@@ -127,9 +127,7 @@ export function HeroSection({
               size="lg"
               className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12 px-8 shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all text-base"
             >
-              <Link href={`/anime/${heroAnime.animeId}`}>
-                <PlayCircle className="w-5 h-5 mr-2" /> Tonton Sekarang
-              </Link>
+              <Link href={`/anime/${heroAnime.animeId}`}>Tonton Sekarang</Link>
             </Button>
             <Button
               asChild
@@ -164,7 +162,7 @@ export function HeroSection({
 
             <div className="relative w-[350px] aspect-3/4 rounded-xl overflow-hidden shadow-2xl ring-1 ring-border rotate-3 group-hover:rotate-0 transition-transform duration-500 bg-card">
               <Image
-                src={proxyUrl}
+                src={poster}
                 alt={heroAnime.title}
                 fill
                 className="object-cover"

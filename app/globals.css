@@ -177,13 +177,20 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Spoiler Base Style */
-span[data-spoiler] {
-  @apply bg-foreground text-transparent cursor-pointer rounded px-1.5 py-0.5 select-none transition-colors duration-200;
+/* Spoiler: teks tersembunyi by default */
+.spoiler-text {
+  background-color: hsl(var(--foreground));
+  color: transparent;
+  border-radius: 4px;
+  padding: 0.1em 0.3em;
+  cursor: pointer;
+  transition: color 0.3s ease, background-color 0.3s ease;
+  user-select: none; /* biar ga ke-select saat hover */
 }
 
-/* Spoiler Revealed Style */
-span[data-spoiler].spoiler-revealed {
-  @apply bg-muted text-foreground;
+/* Spoiler: teks terlihat saat hover */
+.spoiler-text:hover {
+  color: hsl(var(--background));
+  background-color: hsl(var(--foreground) / 0.15);
+  user-select: text;
 }
-

@@ -901,7 +901,7 @@ export default function CommentSection({
     : null;
 
   return (
-    <section className="relative w-full max-w-full mx-auto mt-8 border-t border-border pt-8">
+    <section className="relative w-full max-w-full mx-auto mt-5 border-t border-border pt-8">
       <AlertDialog
         open={!!commentToDelete}
         onOpenChange={(open) => !open && setCommentToDelete(null)}
@@ -980,7 +980,7 @@ export default function CommentSection({
             <MessageSquare className="w-5 h-5" />
           </div>
           <h3 className="text-2xl font-bold text-foreground tracking-tight">
-            Diskusi
+            Komentar
           </h3>
           <span className="bg-secondary text-muted-foreground text-xs font-bold px-2.5 py-1 rounded-full">
             {comments.length} Komentar

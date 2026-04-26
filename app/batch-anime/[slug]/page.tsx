@@ -72,7 +72,7 @@ function parseDownloadLinks(
 
       // Coba deteksi dari URL terlebih dahulu
       const resMatch = new RegExp(
-        /(360p|480p|720p|1080p|1440p|01-12|13-24)/,
+        /(360p|480p|720p|1080p|1440p|01-12|13-24|01-08|09-16)/,
       ).exec(url);
       const isSub = new RegExp(/(fontsubs|subtitle|subs)/).exec(url);
 

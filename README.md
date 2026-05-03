@@ -1,6 +1,6 @@
 <div align="center">
   <!-- Ganti link gambar di bawah dengan logo proyek Anda jika ada -->
-  <a href="https://mugenime.vercel.app/"><img src="https://i.ibb.co.com/7JcFYF2Q/Mugenime-Logo-stroke.png" alt="Mugenime Logo" width="500"></a>
+  <a href="https://mugenime.my.id"><img src="https://i.ibb.co.com/7JcFYF2Q/Mugenime-Logo-stroke.png" alt="Mugenime Logo" width="500"></a>
  
   
   <p>
@@ -21,125 +21,78 @@
 
 Download dan streaming anime subtitle Indonesia lengkap dalam format Mp4 dan MKV dengan berbagai resolusi (360p, 480p, 720p, dan 1080p) di platform gratis, tanpa iklan yang mengganggu, dan hemat kuota.
 
----
-
 ## 📸 Preview
 
-<!-- Ganti link gambar di bawah dengan Screenshot asli aplikasi Anda -->
-<img width="1903" height="1079" alt="mugenimeweb" src="https://github.com/user-attachments/assets/949357e6-32b6-4ed3-a172-0b229530b89f" />
-
-
----
+<a href="https://ibb.co.com/0ykfhsbP"><img width="100%" src="https://i.ibb.co.com/QvZ6rDws/preview.png" alt="preview" border="0"></a>
 
 ## 🚀 Fitur Utama
 
-- **📚 Katalog Lengkap**: Akses ribuan anime, baik yang sedang tayang (*Ongoing*) maupun yang sudah tamat (*Completed*).
-- **📥 Download Center**: Unduh anime per episode atau langsung satu paket (*Batch*) dengan berbagai pilihan resolusi.
-- **📅 Jadwal Rilis**: Pantau anime favorit yang rilis setiap hari secara *real-time*.
-- **🔍 Pencarian Cepat**: Fitur pencarian instan dengan *live suggestion*.
+- **📚 Katalog Lengkap**: Akses ribuan anime, baik yang sedang tayang (_Ongoing_) maupun yang sudah tamat (_Completed_).
+- **📥 Download Center**: Unduh anime per episode atau langsung satu paket (_Batch_) dengan berbagai pilihan resolusi.
+- **📅 Jadwal Rilis**: Pantau anime favorit yang rilis setiap hari secara _real-time_.
+- **🔍 Pencarian Cepat**: Fitur pencarian instan dengan _live suggestion_.
 - **🔖 Riwayat & Bookmark**: Simpan progres tontonan dan anime favorit di perangkat lokal (**Local Storage**) tanpa perlu login.
 - **🌗 Dark Mode**: Tampilan yang nyaman di mata dengan opsi tema gelap/terang.
 - **📱 Responsive Design**: Tampilan optimal di Desktop, Tablet, dan Mobile.
-
----
 
 ## 🛠 Tech Stack
 
 Project ini dibangun menggunakan ekosistem Next.js dan library modern untuk performa maksimal:
 
 ### Core
+
 - **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
 - **Runtime**: React 19
 
 ### Styling & UI
+
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
 - **Components**: [Shadcn UI](https://ui.shadcn.com/)
 - **Icons**: [Lucide React](https://lucide.dev/)
 
 ### State Management
-- **Local State**: [Zustand](https://github.com/pmndrs/zustand) (History/Bookmark)
 
----
+- **Local State**: [Zustand](https://github.com/pmndrs/zustand) (History/Bookmark)
 
 ## 📂 Struktur Halaman (Sitemap)
 
 Aplikasi ini memiliki struktur routing yang rapi menggunakan Next.js App Router:
 
-| Path | Deskripsi |
-| :--- | :--- |
-| `/` | **Home Page** (Hero, Ongoing, Completed, Announcement) |
-| `/anime/[slug]` | **Detail Anime** (Info, Sinopsis, List Episode, Batch Download) |
-| `/watch/[slug]/[episodeSlug]` | **Streaming Room** (Player, Server Switcher, Download Link) |
-| `/jadwal-anime` | **Jadwal Rilis** (Kalender rilis harian) |
-| `/ongoing-anime` | **List Ongoing** (Daftar anime yang sedang tayang) |
-| `/completed-anime` | **List Completed** (Daftar anime yang sudah tamat) |
-| `/list-anime` | **A-Z Directory** (Indeks anime berdasarkan abjad) |
-| `/genre-anime` | **Genre List** (Daftar semua genre) |
-| `/genre-anime/[slug]` | **Genre Detail** (Filter anime berdasarkan genre) |
-| `/search` | **Pencarian** (Hasil pencarian kata kunci) |
-| `/guide/download` | **Panduan Download** (Tutorial cara unduh) |
-| `/guide/streaming` | **Panduan Streaming** (Troubleshooting player) |
-| `/dmca` | **Legal & DMCA** (Disclaimer hak cipta) |
-| `/report` | **Lapor Masalah** (Pusat laporan link rusak/error) |
-
----
-
-## ⚙ Instalasi & Menjalankan Project
-
-Pastikan Anda sudah menginstal **Node.js (v20+)** dan **pnpm**.
-
-### 1. Clone Repository
-```bash
-git clone https://github.com/Wakype/mugenime-web.git
-cd mugenime-web
+```text
+/                                   (Home Page)
+├── /about                          (Tentang Kami)
+├── /anime
+│   └── /[slug]                     (Detail Anime)
+├── /batch-anime                    (Daftar Batch Anime)
+│   └── /[slug]                     (Detail Batch Anime)
+├── /bookmark                       (Daftar Bookmark)
+├── /completed-anime                (List Completed)
+├── /dmca                           (Legal & DMCA)
+├── /genre-anime                    (Daftar Semua Genre)
+│   └── /[genre]                    (Detail Genre)
+├── /guide
+│   ├── /download                   (Panduan Download)
+│   └── /streaming                  (Panduan Streaming)
+├── /history                        (Riwayat Tontonan)
+├── /jadwal-anime                   (Jadwal Rilis Harian)
+├── /list-anime                     (A-Z Directory)
+├── /ongoing-anime                  (List Ongoing)
+├── /privacy                        (Kebijakan Privasi)
+├── /profile                        (Profil Pengguna)
+├── /report                         (Lapor Masalah/Link Rusak)
+├── /search                         (Pencarian Anime)
+├── /terms                          (Syarat & Ketentuan)
+└── /watch
+    └── /[slug]
+        └── /[episodeSlug]          (Streaming Room)
 ```
 
-### 2. Install Dependencies
-```bash
-pnpm install
-```
+## 🤝 Credit
 
-### 3. Setup Environment Variables
-Buat file `.env.local` di root folder dan tambahkan konfigurasi berikut:
+- **Data Anime**: Diambil dari API publik **Sanka Vollerei**.
 
-```env
-# Base URL
-NEXT_PUBLIC_API_BASE_URL=YOUR_API_BASE_URL_HERE
-NEXT_PUBLIC_BASE_URL=YOUR_WEBSITE_BASE_URL_HERE
-```
-
-### 4. Jalankan Development Server
-```bash
-pnpm dev
-```
-Buka [http://localhost:3000](http://localhost:3000) di browser Anda.
-
-### 5. Build untuk Production
-```bash
-pnpm build
-pnpm start
-```
-
----
-
-## ⚠ Catatan Penting (API Rate Limit)
-
-> **Peringatan:** Aplikasi ini menggunakan API pihak ketiga (Sanka Vollerei) yang memiliki batasan ketat.
-
-*   **Rate Limit**: ~70 request / menit.
-*   **Strategi**: Aplikasi ini telah dikonfigurasi menggunakan fitur caching bawaan Next.js (`revalidate`) untuk meminimalisir request ke server asli dan menghindari pemblokiran IP (IP Ban).
-*   **Saran**: Jangan melakukan spam refresh atau load testing berlebihan pada environment production.
-
----
-
-## 🤝 Kredit
-
-*   **Data Anime**: Diambil dari API publik **Sanka Vollerei**.
-
----
-
-## 📄 Lisensi
+## 📄 Disclaimer
 
 Project ini dibuat untuk tujuan pembelajaran dan edukasi. Hak cipta konten anime (gambar, video, sinopsis) sepenuhnya milik pemegang hak cipta asli dan produsen anime terkait.
 

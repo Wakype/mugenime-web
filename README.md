@@ -23,7 +23,9 @@ Download dan streaming anime subtitle Indonesia lengkap dalam format Mp4 dan MKV
 
 ## 📸 Preview
 
-<a href="https://ibb.co.com/0ykfhsbP"><img width="100%" src="https://i.ibb.co.com/QvZ6rDws/preview.png" alt="preview" border="0"></a>
+<a href="https://mugenime.my.id">
+  <img width="3057" height="1912" alt="preview" src="https://github.com/user-attachments/assets/cb922dad-29cb-4d04-865c-d61dc060fbf4" />
+</a>
 
 ## 🚀 Fitur Utama
 

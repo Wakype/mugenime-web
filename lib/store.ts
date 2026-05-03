@@ -27,7 +27,6 @@ interface AppState {
   bookmarks: AnimeItem[];
   watchHistory: HistoryItem[];
 
-  // Actions
   addBookmark: (anime: AnimeItem) => void;
   removeBookmark: (slug: string) => void;
   isBookmarked: (slug: string) => boolean;
@@ -36,6 +35,9 @@ interface AppState {
   clearHistory: () => void;
   cleanupOldHistory: () => void;
   removeAnimeHistory: (animeSlug: string) => void;
+
+  isApiDown: boolean;
+  setApiDown: (status: boolean) => void;
 }
 
 // 30 Days in milliseconds (30 * 24 * 60 * 60 * 1000)
@@ -46,6 +48,9 @@ export const useStore = create<AppState>()(
     (set, get) => ({
       bookmarks: [],
       watchHistory: [],
+
+      isApiDown: false,
+      setApiDown: (status) => set({ isApiDown: status }),
 
       // --- Bookmark Logic ---
       addBookmark: (anime) =>

@@ -1,6 +1,13 @@
 "use client";
 
-import { useEditor, EditorContent, mergeAttributes, Mark } from "@tiptap/react";
+// Tambahkan Node pada import
+import {
+  useEditor,
+  EditorContent,
+  mergeAttributes,
+  Mark,
+  Node,
+} from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import ImageExtension from "@tiptap/extension-image";
@@ -45,6 +52,50 @@ declare module "@tiptap/react" {
     };
   }
 }
+
+// --- CUSTOM NODE: MENTION TAG ---
+const MentionTag = Node.create({
+  name: "mentionTag",
+  group: "inline",
+  inline: true,
+  selectable: true,
+  atom: true, // Membuatnya dihapus sekaligus saat ditekan backspace
+
+  addAttributes() {
+    return {
+      label: {
+        default: "",
+      },
+    };
+  },
+
+  parseHTML() {
+    return [
+      {
+        tag: "span[data-mention]",
+        getAttrs: (dom) => {
+          if (typeof dom === "string") return {};
+          return {
+            label: dom.getAttribute("data-label"),
+          };
+        },
+      },
+    ];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return [
+      "span",
+      mergeAttributes(HTMLAttributes, {
+        "data-mention": "true",
+        class:
+          "bg-primary/15 text-primary border border-primary/20 px-1.5 py-0.5 rounded-md font-bold mr-1 inline-block select-none pointer-events-none",
+        contenteditable: "false", // Mencegah teks di dalam tag bisa diedit
+      }),
+      HTMLAttributes.label,
+    ];
+  },
+});
 
 // Custom Mark Extension
 const Spoiler = Mark.create({
@@ -170,7 +221,7 @@ export default function CommentEditor({
 
   const editor = useEditor({
     immediatelyRender: false,
-    autofocus: autoFocus,
+    autofocus: autoFocus ? "end" : false,
     extensions: [
       StarterKit.configure({
         code: false,
@@ -183,6 +234,7 @@ export default function CommentEditor({
         inline: true,
         allowBase64: true,
       }),
+      MentionTag, // <--- Daftarkan Ekstensi MentionTag Disini
       Placeholder.configure({
         placeholder: "Tulis komentarmu di sini...",
         emptyEditorClass:
@@ -196,7 +248,7 @@ export default function CommentEditor({
     editorProps: {
       attributes: {
         class:
-          "prose dark:prose-invert prose-sm sm:prose-base max-w-none focus:outline-none min-h-[200px] max-h-[400px] overflow-y-auto p-4 prose-ul:list-disc prose-ol:list-decimal prose-ul:ml-4 prose-ol:ml-4 prose-p:my-1 prose-img:m-0",
+          "prose dark:prose-invert prose-sm sm:prose-base max-w-none focus:outline-none min-h-[150px] max-h-[400px] overflow-y-auto p-4 prose-ul:list-disc prose-ol:list-decimal prose-ul:ml-4 prose-ol:ml-4 prose-p:my-1 prose-img:m-0",
       },
     },
   });

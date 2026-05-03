@@ -1,11 +1,22 @@
+"use client";
 import Link from "next/link";
-import { AlertTriangle, Zap, CheckCircle2 } from "lucide-react";
+import { AlertTriangle, Zap, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useStore } from "@/lib/store";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const { isApiDown } = useStore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    useStore.persist.rehydrate();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
 
   return (
     <footer className="bg-muted/20 border-t border-border pt-16 pb-8">
@@ -15,10 +26,7 @@ export default function Footer() {
           {/* BRANDING & SOSMED */}
           <div className="lg:col-span-4 space-y-6">
             <div className="space-y-4">
-              <Link
-                href="/"
-                className="flex items-center gap-2 group shrink-0"
-              >
+              <Link href="/" className="flex items-center gap-2 group shrink-0">
                 <div className="relative h-8 md:h-10 w-auto aspect-1142/249">
                   <Image
                     src="/assets/logo.png"
@@ -184,7 +192,13 @@ export default function Footer() {
           {/* STATUS & LAPOR */}
           <div className="lg:col-span-3 space-y-6">
             {/* SYSTEM STATUS CARD */}
-            <div className="group p-4 rounded-xl bg-card border border-border transition-all hover:border-emerald-500/30 hover:shadow-sm">
+            <div
+              className={`group p-4 rounded-xl bg-card border transition-all hover:shadow-sm ${
+                mounted && isApiDown
+                  ? "border-red-500/30 hover:border-red-500/50"
+                  : "border-border hover:border-emerald-500/30"
+              }`}
+            >
               {/* Header Label */}
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
@@ -192,16 +206,34 @@ export default function Footer() {
                 </span>
                 {/* Pulsing Dot */}
                 <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                  <span
+                    className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                      mounted && isApiDown ? "bg-red-400" : "bg-emerald-400"
+                    }`}
+                  ></span>
+                  <span
+                    className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
+                      mounted && isApiDown ? "bg-red-500" : "bg-emerald-500"
+                    }`}
+                  ></span>
                 </span>
               </div>
 
               {/* Main Content */}
               <div className="flex items-center gap-3">
                 {/* Icon Box */}
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-background border border-border shadow-sm text-amber-500 transition-all">
-                  <Zap className="w-5 h-5 fill-amber-500" />
+                <div
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-background border shadow-sm transition-all ${
+                    mounted && isApiDown
+                      ? "border-red-500/30 text-red-500"
+                      : "border-border text-emerald-500"
+                  }`}
+                >
+                  <Zap
+                    className={`w-5 h-5 ${
+                      mounted && isApiDown ? "fill-red-500" : "fill-emerald-500"
+                    }`}
+                  />
                 </div>
 
                 {/* Text Info */}
@@ -210,16 +242,28 @@ export default function Footer() {
                     API Service
                   </p>
                   <div className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                    <p className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
-                      Operational (Stable)
-                    </p>
+                    {/* Render Status Berdasarkan isApiDown */}
+                    {mounted && isApiDown ? (
+                      <>
+                        <XCircle className="w-3 h-3 text-red-500" />
+                        <p className="text-[11px] font-medium text-red-600 dark:text-red-400">
+                          Maintenance / Down
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                        <p className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                          Operational (Stable)
+                        </p>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Lapor */}
+            {/* Lapor (Sama seperti sebelumnya) */}
             <div className="space-y-2">
               <p className="text-xs text-muted-foreground">
                 Menemukan link rusak, episode salah, atau error player?

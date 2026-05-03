@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
@@ -876,15 +877,27 @@ export default function CommentSection({
 
               {replyingToId === comment.id && (
                 <div className="mt-1 ml-4 md:ml-10">
-                  <CommentEditor
-                    onSubmit={(content) =>
-                      handleSubmitComment(content, comment.id)
-                    }
-                    onCancel={() => setReplyingToId(null)}
-                    submitLabel="Kirim Balasan"
-                    isLoading={isSubmitting}
-                    autoFocus={true}
-                  />
+                  {/* GENERATE INITIAL CONTENT UNTUK REPLY */}
+                  {(() => {
+                    const replyName = isDeleted
+                      ? "Pengguna"
+                      : comment.profiles?.full_name || "User";
+
+                    const replyContent = `<p><span data-mention="true" data-label="@${replyName}"></span>&nbsp;</p>`;
+
+                    return (
+                      <CommentEditor
+                        initialContent={replyContent}
+                        onSubmit={(content) =>
+                          handleSubmitComment(content, comment.id)
+                        }
+                        onCancel={() => setReplyingToId(null)}
+                        submitLabel="Kirim Balasan"
+                        isLoading={isSubmitting}
+                        autoFocus={true}
+                      />
+                    );
+                  })()}
                 </div>
               )}
 

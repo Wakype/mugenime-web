@@ -10,13 +10,12 @@ import {
   MessageCircle,
   Layers,
   Megaphone,
-  Package2,
 } from "lucide-react";
 import AnimeCard from "@/components/animeCard";
 import BatchAnimeCard from "@/components/batchAnimeCard";
 import { FadeInWrapper, HeroSection } from "@/components/homeSection";
 import CommentSection from "@/components/commentSection";
-import { Badge } from "@/components/ui/badge";
+import AnnouncementSlider from "@/components/announcementSlider";
 
 export const revalidate = 1800;
 
@@ -31,41 +30,14 @@ export default async function HomePage() {
   const completedList = data?.completed?.animeList.slice(0, 10) ?? [];
   const batchList = batchDataResponse?.anime_list?.slice(0, 9) ?? [];
 
-  // --- STRUKTUR DATA CHANGELOG COMPACT ---
-  const announcementList = [
-    {
-      id: 1,
-      date: "26 April 2026",
-      tag: "Baru",
-      tagColor: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-      icon: MessageCircle,
-      iconColor: "text-blue-500",
-      iconBg: "bg-blue-500/10",
-      title: "Fitur Komentar Sudah Tersedia!",
-      content: "Udah bisa komen di mugenime nih! tinggal login aja",
-    },
-    {
-      id: 2,
-      date: "20 April 2026",
-      tag: "Update",
-      tagColor: "bg-purple-500/10 text-purple-500 border-purple-500/20",
-      icon: Package2,
-      iconColor: "text-purple-500",
-      iconBg: "bg-purple-500/10",
-      title: "Halaman Batch",
-      content:
-        "Anime Batch sekarang punya halaman khusus. Download seluruh episode / movie anime disini.",
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-background pb-20 selection:bg-primary/30">
-      {/* --- 1. HERO SECTION --- */}
+      {/* --- HERO SECTION --- */}
       {heroAnime && (
         <HeroSection heroAnime={heroAnime} poster={heroAnime.poster} />
       )}
 
-      {/* --- 2. MAIN CONTENT --- */}
+      {/* --- MAIN CONTENT --- */}
       <div className="container mx-auto px-4 -mt-10 relative z-20 space-y-12">
         {/* --- COMPACT ANNOUNCEMENT SECTION --- */}
         <FadeInWrapper delay={0.2}>
@@ -75,44 +47,8 @@ export default async function HomePage() {
               <span>Pengumuman</span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {announcementList.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <div
-                    key={item.id}
-                    className="flex items-start gap-4 p-4 rounded-2xl bg-card border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300 group"
-                  >
-                    <div
-                      className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${item.iconBg}`}
-                    >
-                      <Icon
-                        className={`w-5 h-5 ${item.iconColor} group-hover:scale-110 transition-transform`}
-                      />
-                    </div>
-                    <div className="space-y-1.5 flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant="outline"
-                          className={`text-[9px] py-0 h-4 border uppercase tracking-wider ${item.tagColor}`}
-                        >
-                          {item.tag}
-                        </Badge>
-                        <span className="text-[10px] font-semibold text-muted-foreground">
-                          {item.date}
-                        </span>
-                      </div>
-                      <h3 className="font-bold text-sm text-foreground leading-tight truncate">
-                        {item.title}
-                      </h3>
-                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                        {item.content}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            {/* Render Slider Component */}
+            <AnnouncementSlider />
           </div>
         </FadeInWrapper>
 
@@ -223,7 +159,7 @@ export default async function HomePage() {
           </section>
         )}
 
-        {/* --- 3. GENERAL COMMENT SECTION --- */}
+        {/* --- GENERAL COMMENT SECTION --- */}
         <section className="space-y-6 pt-10">
           <FadeInWrapper>
             <div className="space-y-1">

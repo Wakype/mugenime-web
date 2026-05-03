@@ -35,9 +35,10 @@ interface AppState {
   addToHistory: (history: HistoryItem) => void;
   clearHistory: () => void;
   cleanupOldHistory: () => void;
+  removeAnimeHistory: (animeSlug: string) => void;
 }
 
-// 30 Hari dalam milidetik (30 * 24 * 60 * 60 * 1000)
+// 30 Days in milliseconds (30 * 24 * 60 * 60 * 1000)
 const THIRTY_DAYS_MS = 2592000000;
 
 export const useStore = create<AppState>()(
@@ -74,6 +75,7 @@ export const useStore = create<AppState>()(
               ),
           );
           updatedHistory = [newItem, ...updatedHistory];
+          // Keep only the latest 200 items
           updatedHistory = updatedHistory.slice(0, 200);
 
           return { watchHistory: updatedHistory };
@@ -81,7 +83,6 @@ export const useStore = create<AppState>()(
 
       clearHistory: () => set({ watchHistory: [] }),
 
-      // Fungsi untuk memfilter out data lama
       cleanupOldHistory: () =>
         set((state) => {
           const now = Date.now();
@@ -89,12 +90,19 @@ export const useStore = create<AppState>()(
             (item) => now - item.updated_at < THIRTY_DAYS_MS,
           );
 
-          // Hanya update state jika memang ada data yang dihapus (mencegah re-render sia-sia)
           if (freshHistory.length !== state.watchHistory.length) {
             return { watchHistory: freshHistory };
           }
           return state;
         }),
+
+      // Remove specific anime from history
+      removeAnimeHistory: (animeSlug) =>
+        set((state) => ({
+          watchHistory: state.watchHistory.filter(
+            (item) => item.anime_slug !== animeSlug,
+          ),
+        })),
     }),
     {
       name: "mugenime-storage",

@@ -6,38 +6,16 @@ import {
   Play,
   Trash2,
   Loader2,
-  Clock,
   MonitorPlay,
-  Film,
   Info,
-  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import Link from "next/link";
-import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
 import { useStore, HistoryItem } from "@/lib/store";
 import { toast } from "sonner";
-import { formatDistanceToNow } from "date-fns";
-import { id } from "date-fns/locale";
-
-interface GroupedHistory {
-  anime_slug: string;
-  anime_title: string;
-  poster: string;
-  last_updated: number;
-  episodes: {
-    episode_slug: string;
-    episode_title: string;
-    updated_at: number;
-  }[];
-}
+import { HistoryCard, GroupedHistory } from "@/components/historyCard";
 
 export default function HistoryPage() {
   const [historyData, setHistoryData] = useState<HistoryItem[]>([]);
@@ -45,7 +23,7 @@ export default function HistoryPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const supabase = createClient();
-  const { clearHistory: clearGuestHistory, cleanupOldHistory } = useStore();
+  const { clearHistory: clearGuestHistory, cleanupOldHistory, removeAnimeHistory } = useStore();
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -68,10 +46,10 @@ export default function HistoryPage() {
           setHistoryData(formatted);
         }
       } else {
-        // Untuk Guest: Panggil rehydrate, lalu bersihkan data usang, lalu set state
+        // For Guest: Rehydrate, cleanup old data, then set state
         useStore.persist.rehydrate();
         setTimeout(() => {
-          cleanupOldHistory(); // Hapus data > 30 hari di local storage
+          cleanupOldHistory(); // Remove data > 30 days from local storage
           setHistoryData(useStore.getState().watchHistory);
         }, 100);
       }
@@ -132,7 +110,27 @@ export default function HistoryPage() {
     }
     setHistoryData([]);
     setIsLoading(false);
-    toast.success("Riwayat tontonan berhasil dibersihkan");
+    toast.success("Semua riwayat tontonan berhasil dibersihkan");
+  };
+
+  // Function to handle specific anime deletion
+  const handleRemoveAnime = async (animeSlug: string) => {
+    if (isLoggedIn) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        await supabase
+          .from("watch_history")
+          .delete()
+          .match({ user_id: session.user.id, anime_slug: animeSlug });
+      }
+    } else {
+      removeAnimeHistory(animeSlug);
+    }
+    
+    setHistoryData((prev) => prev.filter((item) => item.anime_slug !== animeSlug));
+    toast.success("Riwayat anime berhasil dihapus");
   };
 
   let pageContent;
@@ -153,87 +151,11 @@ export default function HistoryPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <TooltipProvider delayDuration={100}>
           {groupedHistory.map((group) => (
-            <div
+            <HistoryCard
               key={group.anime_slug}
-              className="group flex flex-col sm:flex-row gap-5 p-4 sm:p-5 rounded-3xl bg-card border border-border shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-300"
-            >
-              <Link
-                href={`/anime/${group.anime_slug}`}
-                className="relative w-full sm:w-36 aspect-21/9 sm:aspect-3/4 rounded-2xl overflow-hidden shrink-0 bg-muted cursor-pointer block"
-              >
-                <Image
-                  src={group.poster || ""}
-                  alt={group.anime_title}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  sizes="(max-width: 640px) 100vw, 150px"
-                />
-                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent opacity-60 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <div className="w-10 h-10 bg-primary/90 backdrop-blur-sm text-white rounded-full flex items-center justify-center transform scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300 shadow-xl">
-                    <MonitorPlay className="w-5 h-5 ml-0.5" />
-                  </div>
-                </div>
-              </Link>
-
-              <div className="flex flex-col justify-start min-w-0 flex-1 py-1">
-                <h3 className="font-extrabold text-xl md:text-2xl text-foreground line-clamp-2 leading-tight group-hover:text-primary transition-colors">
-                  {group.anime_title}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1.5 font-medium">
-                  <Clock className="w-3.5 h-3.5 text-primary" />
-                  Terakhir ditonton{" "}
-                  {formatDistanceToNow(group.last_updated, {
-                    addSuffix: true,
-                    locale: id,
-                  })}
-                </p>
-
-                <div className="mt-auto pt-4 flex flex-col gap-2.5">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                    <Film className="w-3 h-3" /> Lanjutkan Menonton:
-                  </p>
-                  <div className="flex flex-wrap gap-2 max-h-[120px] overflow-y-auto custom-scrollbar pr-2 pb-2">
-                    {group.episodes.map((ep) => {
-                      const epMatch = new RegExp(/Episode\s+(\d+)/i).exec(
-                        ep.episode_title,
-                      );
-                      const displayTitle = epMatch
-                        ? `Eps ${epMatch[1]}`
-                        : ep.episode_title || "Eps ?";
-                      const timeAgo = formatDistanceToNow(ep.updated_at, {
-                        addSuffix: true,
-                        locale: id,
-                      });
-
-                      return (
-                        <Tooltip key={ep.episode_slug}>
-                          <TooltipTrigger asChild>
-                            <Link
-                              href={`/watch/${group.anime_slug}/${ep.episode_slug}`}
-                              className="group/btn flex flex-col items-center justify-center px-3 py-1.5 rounded-xl bg-secondary/60 border border-border/60 hover:bg-primary hover:border-primary transition-all cursor-pointer min-w-[70px] shadow-sm hover:shadow-primary/20"
-                            >
-                              <span className="flex items-center gap-1.5 text-xs font-extrabold text-foreground group-hover/btn:text-primary-foreground transition-colors">
-                                <Play className="w-3 h-3 text-primary group-hover/btn:text-primary-foreground fill-current transition-colors" />
-                                {displayTitle}
-                              </span>
-                              <span className="text-[9px] text-muted-foreground group-hover/btn:text-primary-foreground/80 font-medium mt-0.5 whitespace-nowrap transition-colors">
-                                {timeAgo}
-                              </span>
-                            </Link>
-                          </TooltipTrigger>
-                          <TooltipContent
-                            side="bottom"
-                            className="text-xs font-semibold"
-                          >
-                            <p>Ditonton {timeAgo}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
+              group={group}
+              onDelete={handleRemoveAnime}
+            />
           ))}
         </TooltipProvider>
       </div>
@@ -317,7 +239,6 @@ export default function HistoryPage() {
         {/* --- INFO CARDS --- */}
         {historyData.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Auto Cleanup Card */}
             <div className="flex items-start gap-3 p-4 rounded-2xl bg-primary/5 border border-primary/20 text-foreground shadow-sm">
               <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
               <div className="space-y-1">
@@ -332,7 +253,6 @@ export default function HistoryPage() {
               </div>
             </div>
 
-            {/* Tracking Logic Card */}
             <div className="flex items-start gap-3 p-4 rounded-2xl bg-primary/5 border border-primary/20 text-foreground shadow-sm">
               <MonitorPlay className="w-5 h-5 text-primary shrink-0 mt-0.5" />
               <div className="space-y-1">

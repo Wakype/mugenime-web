@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/navbar";
+// Hapus import Navbar biasa
+// import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import NextTopLoader from "nextjs-toploader";
 import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import ScrollToTop from "@/components/scrollToTop";
+import ToggleNavbar from "@/components/toggleNavbar";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -55,7 +57,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <NextTopLoader color="#4f39f6" />
-          <Navbar />
+
+          {/* Gunakan ToggleNavbar di sini */}
+          <ToggleNavbar />
+
           <main>{children}</main>
           <Footer />
           <ScrollToTop />

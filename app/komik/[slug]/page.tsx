@@ -1,22 +1,20 @@
-import { fetchAnime } from "@/lib/api";
-import { AnimeDetail, BatchResponse } from "@/lib/types";
-import AnimeCard from "@/components/animeCard";
+import { fetchKomik } from "@/lib/api";
+import { KomikDetailResponse, KomikDetail, KomikItem } from "@/lib/komikTypes";
+import KomikCard from "@/components/komikCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
-  Play,
+  BookOpen,
   Star,
   MonitorPlay,
   Info,
   Calendar,
-  Clock,
-  Layers,
-  Tv,
   Users,
-  Film,
   Tags,
   Home,
+  MapPin,
+  Flame,
 } from "lucide-react";
 import {
   Breadcrumb,
@@ -30,10 +28,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import BatchDownload from "@/components/batchDownload";
 import CommentSection from "@/components/commentSection";
 import ShareButton from "@/components/shareButton";
 import BookmarkButton from "@/components/bookmarkButton";
+import { getFormatWithFlag } from "@/lib/utils";
 
 export const revalidate = 3600;
 
@@ -41,128 +39,120 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
-function isAnimeDetail(data: unknown): data is AnimeDetail {
+// Type guard
+function isKomikDetail(data: unknown): data is KomikDetail {
   if (typeof data !== "object" || data === null) return false;
-  const d = data as AnimeDetail;
-  return (
-    typeof d.title === "string" &&
-    (typeof d.synopsis === "object" || typeof d.synopsis === "string") &&
-    "episodeList" in d &&
-    Array.isArray(d.episodeList)
-  );
+  const d = data as KomikDetail;
+  return typeof d.title === "string" && Array.isArray(d.readChapter);
 }
-
-// const getProxyUrl = (url: string) =>
-//   `/api/image-proxy?url=${encodeURIComponent(url)}`;
-
-const getSynopsisText = (synopsis: AnimeDetail["synopsis"]) => {
-  if (typeof synopsis === "string") return synopsis;
-  if (synopsis && Array.isArray(synopsis.paragraphs)) {
-    return synopsis.paragraphs.join(" ");
-  }
-  return "";
-};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   try {
-    const responseData = await fetchAnime<AnimeDetail>(`anime/anime/${slug}`);
-    if (!isAnimeDetail(responseData)) return { title: "Anime Not Found" };
+    const response = await fetchKomik<KomikDetailResponse>(`komik/${slug}`);
+    const komik = response?.data;
 
-    const anime = responseData;
-    const title = `Nonton ${anime.title} Sub Indo Gratis - Mugenime`;
-    const description = `Streaming anime ${anime.title} Subtitle Indonesia gratis resolusi 1080p, 720p, 480p. Download ${anime.title} sub indo lengkap di Mugenime.`;
+    if (!komik || !isKomikDetail(komik)) return { title: "Komik Not Found" };
+
+    const title = `Baca ${komik.title} Bahasa Indonesia - Mugenime`;
+    const description = `Baca komik ${komik.title} (${komik.nativeTitle}) chapter terbaru terjemahan Bahasa Indonesia gratis di Mugenime.`;
 
     return {
       title: title,
       description: description,
       alternates: {
-        canonical: `/anime/${slug}`,
+        canonical: `/komik/${slug}`,
       },
       openGraph: {
         title: title,
         description: description,
-        images: [anime.poster],
-        type: "video.tv_show",
+        images: [komik.cover],
+        type: "book",
         siteName: "Mugenime",
       },
       twitter: {
         card: "summary_large_image",
         title: title,
         description: description,
-        images: [anime.poster],
+        images: [komik.cover],
       },
     };
   } catch (e) {
     console.error(e);
-    return { title: "Anime Not Found - Mugenime" };
+    return { title: "Komik Not Found - Mugenime" };
   }
 }
 
-export default async function AnimeDetailPage({ params }: Readonly<Props>) {
+export default async function KomikDetailPage({ params }: Readonly<Props>) {
   const { slug } = await params;
-  let responseData: unknown;
+  let responseData: KomikDetailResponse | null = null;
 
   try {
-    responseData = await fetchAnime<AnimeDetail>(`anime/anime/${slug}`);
+    responseData = await fetchKomik<KomikDetailResponse>(`komik/${slug}`);
   } catch (error) {
-    console.error("Failed to fetch anime detail:", error);
+    console.error("Failed to fetch komik detail:", error);
     return notFound();
   }
 
-  if (!isAnimeDetail(responseData)) {
+  const komik = responseData?.data;
+
+  if (!komik || !isKomikDetail(komik)) {
     return notFound();
   }
 
-  const anime = responseData;
-  const synopsisText = getSynopsisText(anime.synopsis);
+  const chapterLists = komik.readChapter || [];
+  // Assuming chapters are sorted descending (newest first).
+  // The oldest/first chapter would be at the end of the array.
+  const firstChapter = chapterLists.length > 0 ? chapterLists.at(-1) : null;
+  const genres = komik.genres || [];
 
-  let batchData: BatchResponse | null = null;
-  if (anime.batch?.batchId) {
-    try {
-      batchData = await fetchAnime<BatchResponse>(
-        `anime/batch/${anime.batch.batchId}`,
-      );
-    } catch (error) {
-      console.error("Gagal mengambil data batch:", error);
-    }
-  }
+  const genreString = genres.map((g) => g.data.name).join(", ");
 
-  const episodeLists = anime.episodeList || [];
-  const firstEpisode = episodeLists.length > 0 ? episodeLists.at(-1) : null;
-  const genres = anime.genreList || [];
-
-  const genreString = genres.map((g) => g.title).join(", ");
-
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "TVSeries",
-    name: anime.title,
-    image: anime.poster,
-    description: synopsisText,
-    numberOfEpisodes: anime.episodes || episodeLists.length.toString(),
-    genre: genreString,
-    potentialAction: {
-      "@type": "WatchAction",
-      target: `https://www.mugenime.my.id/anime/${slug}`,
-    },
-  };
-
-  const animeData = {
-    title: anime.title,
+  // Mocking data structure for BookmarkButton consistency
+  const bookmarkData = {
+    title: komik.title,
     slug: slug,
-    poster: anime.poster,
-    type: anime.type,
-    rating: anime.score,
-    studios: anime.studios,
-    isBatch: false,
+    poster: komik.cover ?? "",
+    category: "komik" as const,
+    rating: komik.rating,
+    author: komik.author,
+    format: komik.format,
+    genres: genreString,
   };
+
+  // Map the 'recommended' data to match 'KomikItem' interface so we can reuse KomikCard
+  const recommendedMapped: KomikItem[] = (komik.recommended || []).map((r) => ({
+    title: r.title,
+    slug: r.slug,
+    cover: r.cover,
+    backgroundImage: r.cover,
+    rating: r.rating,
+    type: r.type,
+    isHot: r.isHot,
+    isRecommended: true,
+    chapters: [
+      {
+        chapterIndex: Number.parseInt(r.totalChapters) || 0,
+        createdAt: "",
+        updatedAt: "",
+      },
+    ],
+    createdAt: "",
+    updatedAt: "",
+    author: r.author,
+    format: r.format,
+    nativeTitle: r.nativeTitle,
+    releaseDate: "",
+    genres: [],
+  }));
+
+  const isValidBg = komik.backgroundImage?.startsWith("http");
 
   const PosterBlock = (
     <div className="group relative aspect-3/4 rounded-2xl overflow-hidden shadow-2xl ring-1 ring-border bg-muted">
       <Image
-        src={anime.poster ?? ""}
-        alt={anime.title}
+        src={komik.cover ?? ""}
+        alt={komik.title}
         fill
         className="object-cover transition-transform duration-500 group-hover:scale-105"
         sizes="(max-width: 768px) 60vw, 300px"
@@ -170,10 +160,10 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
         unoptimized
         referrerPolicy="no-referrer"
       />
-      <div className="absolute top-3 right-3 z-10">
+      <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
         <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/10 text-white text-sm font-bold shadow-lg">
           <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
-          <span>{anime.score || "N/A"}</span>
+          <span>{komik.rating || "N/A"}</span>
         </div>
       </div>
     </div>
@@ -181,15 +171,15 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
 
   const ButtonsBlock = (
     <div className="space-y-3">
-      {firstEpisode ? (
+      {firstChapter ? (
         <Button
           asChild
           size="lg"
           className="w-full rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12 transition-all"
         >
-          <Link href={`/watch/${slug}/${firstEpisode.episodeId}`}>
-            <Play className="w-5 h-5 mr-2 fill-current" />
-            Mulai Nonton (Eps. 1)
+          <Link href={`/komik/${slug}/chapter-${firstChapter.chapterIndex}`}>
+            <BookOpen fill="white" className="w-5 h-5 mr-2" />
+            Mulai Baca (Ch. {firstChapter.chapterIndex})
           </Link>
         </Button>
       ) : (
@@ -199,12 +189,12 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
           className="w-full rounded-xl"
           variant="secondary"
         >
-          Belum Tayang
+          Belum Ada Chapter
         </Button>
       )}
       <div className="grid grid-cols-2 gap-3">
-        <ShareButton title={anime.title} slug={slug} />
-        <BookmarkButton data={animeData} />
+        <ShareButton title={komik.title} slug={`komik/${slug}`} />
+        <BookmarkButton data={bookmarkData} />
       </div>
     </div>
   );
@@ -217,34 +207,34 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
       <Separator className="bg-border" />
       <div className="space-y-3 text-sm">
         <InfoRow
-          icon={<Tv className="w-4 h-4" />}
-          label="Tipe"
-          value={anime.type}
+          icon={<MapPin className="w-4 h-4" />}
+          label="Format"
+          value={komik.format}
         />
         <InfoRow
-          icon={<Layers className="w-4 h-4" />}
-          label="Episode"
-          value={anime.episodes ?? `${episodeLists.length}`}
+          icon={<BookOpen className="w-4 h-4" />}
+          label="Total Chapter"
+          value={komik.totalChapters}
         />
         <InfoRow
           icon={<Calendar className="w-4 h-4" />}
           label="Status"
-          value={anime.status}
-        />
-        <InfoRow
-          icon={<Clock className="w-4 h-4" />}
-          label="Durasi"
-          value={anime.duration}
+          value={komik.status}
         />
         <InfoRow
           icon={<Users className="w-4 h-4" />}
-          label="Studio"
-          value={anime.studios}
+          label="Author"
+          value={komik.author}
         />
         <InfoRow
-          icon={<Film className="w-4 h-4" />}
-          label="Produser"
-          value={anime.producers}
+          icon={<Calendar className="w-4 h-4" />}
+          label="Released"
+          value={komik.releaseDate}
+        />
+        <InfoRow
+          icon={<Flame className="w-4 h-4" />}
+          label="Adaptasi Anime"
+          value={komik.isAnimeAdapted ? "Ya" : "Tidak"}
         />
       </div>
     </div>
@@ -268,40 +258,43 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
               <Link
-                href="/list-anime"
+                href="/komik"
                 className="hover:text-primary transition-colors"
               >
-                Anime
+                Komik
               </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbPage className="font-medium text-foreground line-clamp-1 max-w-[200px] sm:max-w-none">
-              {anime.title}
+              {komik.title}
             </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
 
       <h1 className="text-3xl md:text-5xl font-black text-foreground leading-[1.15]">
-        {anime.title}
+        {komik.title}
       </h1>
 
-      {anime.japanese && (
+      {komik.nativeTitle && (
         <p className="text-lg text-muted-foreground font-medium font-serif italic">
-          {anime.japanese}
+          {komik.nativeTitle}
         </p>
       )}
 
       <div className="flex flex-wrap justify-center lg:justify-start gap-2 pt-2">
         {genres.map((genre) => (
-          <Link key={genre.genreId} href={`/genre-anime/${genre.genreId}`}>
+          <Link
+            key={genre.id}
+            href={`/genre-komik/${genre.data.name.toLowerCase()}`}
+          >
             <Badge
               variant="secondary"
               className="px-3 py-1 text-sm bg-secondary text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer border border-transparent hover:border-primary/20"
             >
-              {genre.title}
+              {genre.data.name}
             </Badge>
           </Link>
         ))}
@@ -315,8 +308,8 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
         <span className="w-1 h-6 bg-primary rounded-full mr-2 hidden lg:block"></span>
         Sinopsis
       </h3>
-      <div className="text-muted-foreground leading-relaxed text-base text-justify">
-        {synopsisText || "Sinopsis belum tersedia untuk anime ini."}
+      <div className="text-muted-foreground leading-relaxed text-base text-justify ">
+        {komik.synopsis || "Sinopsis belum tersedia untuk komik ini."}
       </div>
     </div>
   );
@@ -326,35 +319,36 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
       <div className="flex items-center justify-between border-b border-border pb-4">
         <h3 className="text-xl font-bold text-foreground flex items-center">
           <span className="w-1 h-6 bg-primary rounded-full mr-3"></span>
-          Daftar Episode
+          Daftar Chapter
         </h3>
         <Badge
           variant="outline"
           className="h-7 border-border text-muted-foreground"
         >
-          Total: {episodeLists.length}
+          Total: {chapterLists.length}
         </Badge>
       </div>
 
-      {episodeLists.length > 0 ? (
+      {chapterLists.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-          {episodeLists.toReversed().map((ep) => (
+          {/* Mapping original reversed (assuming API returns newest first) */}
+          {chapterLists.map((ep) => (
             <Link
-              key={ep.episodeId}
-              href={`/watch/${slug}/${ep.episodeId}`}
+              key={ep.id}
+              href={`/komik/${slug}/chapter-${ep.chapterIndex}`}
               className="group relative flex items-center justify-center p-3 h-16 bg-card border border-border hover:border-primary/50 rounded-lg transition-all hover:shadow-md hover:shadow-primary/5 overflow-hidden"
             >
               <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative z-10 flex flex-col items-center">
                 <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">
-                  Episode
+                  Chapter
                 </span>
                 <span className="text-lg font-bold text-foreground group-hover:text-primary">
-                  {ep.eps}
+                  {ep.chapterIndex}
                 </span>
               </div>
               <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:-translate-x-1">
-                <Play className="w-3 h-3 text-primary fill-primary" />
+                <BookOpen className="w-3 h-3 text-primary" />
               </div>
             </Link>
           ))}
@@ -363,7 +357,7 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
         <div className="py-12 text-center border-2 border-dashed border-border rounded-xl bg-muted/30">
           <MonitorPlay className="w-10 h-10 text-muted-foreground/50 mx-auto mb-3" />
           <p className="text-muted-foreground">
-            Belum ada episode yang tersedia.
+            Belum ada chapter yang tersedia.
           </p>
         </div>
       )}
@@ -372,21 +366,15 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
 
   const ExtrasBlock = (
     <div className="space-y-8">
-      {batchData && (
-        <div className="animate-in fade-in slide-in-from-bottom-4">
-          <BatchDownload batchData={batchData} />
-        </div>
-      )}
-
-      {anime.recommendedAnimeList && anime.recommendedAnimeList.length > 0 && (
+      {recommendedMapped && recommendedMapped.length > 0 && (
         <div className="space-y-6 pt-4">
           <h3 className="text-xl font-bold text-foreground flex items-center">
             <span className="w-1 h-6 bg-primary rounded-full mr-3"></span>
-            Rekomendasi
+            Rekomendasi Serupa
           </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-8">
-            {anime.recommendedAnimeList.map((rec) => (
-              <AnimeCard key={rec.animeId} anime={rec} />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-8">
+            {recommendedMapped.map((rec) => (
+              <KomikCard key={rec.slug} comic={rec} />
             ))}
           </div>
         </div>
@@ -396,46 +384,43 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
         <div className="space-y-2">
           <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
             <Tags className="w-4 h-4 text-primary shrink-0" />
-            Nonton {anime.title} Sub Indo Gratis
+            Baca {komik.title} Bahasa Indonesia
           </h2>
           <div className="text-sm text-muted-foreground leading-relaxed text-justify">
-            Nonton streaming anime <b>{anime.title}</b> Subtitle Indonesia
-            terlengkap dan terbaru di Mugenime. Kamu bisa download{" "}
-            <b>{anime.title}</b> sub indo dengan kualitas HD 720p, 1080p, hingga
-            paket hemat 360p dan 480p. Tersedia format MP4 dan MKV yang bisa
-            diakses gratis. Jangan lupa tonton juga anime dari studio{" "}
-            {anime.studios} dan genre {genreString} lainnya hanya disini.
+            Baca komik <b>{komik.title}</b> terjemahan Bahasa Indonesia
+            terlengkap dan terbaru di Mugenime. Kamu bisa membaca chapter
+            terbaru dari <b>{komik.title}</b> secara gratis dengan kualitas
+            gambar yang tajam. Jangan lupa untuk menjelajahi karya{" "}
+            {komik.format} dari {komik.author}
+            lainnya hanya disini.
           </div>
         </div>
         <div className="pt-2 border-t border-border">
           <p className="text-xs text-muted-foreground/80 leading-normal">
             <span className="font-bold text-muted-foreground">Keywords: </span>
-            Nonton {anime.title}, Streaming {anime.title} Sub Indo, Download{" "}
-            {anime.title} Subtitle Indonesia, {anime.title} Episode Terakhir,{" "}
-            {anime.title} Batch Sub Indo, {anime.title} 360p 480p 720p 1080p,
-            Streaming Anime Sub Indo Gratis.
+            Baca {komik.title}, {komik.title} Bahasa Indonesia, Download{" "}
+            {komik.title} PDF, {komik.title} Chapter Terbaru,{" "}
+            {getFormatWithFlag(komik.format)} Bahasa Indo.
           </p>
         </div>
       </div>
 
       <div className="pt-2">
-        <CommentSection identifier={slug} page_url={`/anime/${slug}`} />
+        <CommentSection
+          identifier={`komik-${slug}`}
+          page_url={`/komik/${slug}`}
+        />
       </div>
     </div>
   );
 
   return (
     <div className="relative min-h-screen bg-background pb-20">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-
       {/* --- HERO BACKGROUND --- */}
       <div className="absolute top-0 left-0 z-0 w-full h-[50vh] md:h-[60vh] overflow-hidden pointer-events-none">
         <div className="absolute inset-0">
           <Image
-            src={anime.poster ?? ""}
+            src={isValidBg ? komik.backgroundImage : (komik.cover ?? "")}
             alt="Background"
             fill
             className="object-cover opacity-50 dark:opacity-20 blur scale-110"
@@ -452,7 +437,7 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
       <div className="container mx-auto px-4 pt-[5vh] md:pt-[15vh] relative z-10">
         {/* MOBILE LAYOUT */}
         <div className="flex flex-col gap-6 lg:hidden">
-          <div className="max-w-full w-full mx-auto">{PosterBlock}</div>
+          <div className="max-w-[200px] w-full mx-auto">{PosterBlock}</div>
           {HeaderBlock}
           {SynopsisBlock}
           {ButtonsBlock}
@@ -500,7 +485,7 @@ function InfoRow({
         <span>{label}</span>
       </div>
       <span
-        className="font-medium text-foreground text-right max-w-[150px] group-hover:text-primary transition-colors"
+        className="font-medium text-foreground text-right capitalize max-w-[150px] group-hover:text-primary transition-colors"
         title={value}
       >
         {value}

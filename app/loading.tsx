@@ -2,7 +2,6 @@ import { Moon } from "lucide-react";
 
 export default function Loading() {
   return (
-    // Menggunakan bg-background
     <div className="relative min-h-[70vh] flex flex-col items-center justify-center bg-background overflow-hidden">
       {/* 1. BACKGROUND DECORATION */}
       {/* Grid Pattern: Menggunakan currentColor agar adaptif */}
@@ -32,7 +31,7 @@ export default function Loading() {
             Memuat Mugenime...
           </h3>
           <p className="text-xs text-muted-foreground font-medium">
-            Nonton anime gratis tanpa iklan, sabar yaa...
+            Nonton anime dan baca komik gratis tanpa iklan, sabar yaa...
           </p>
         </div>
       </div>

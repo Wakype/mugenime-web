@@ -1,17 +1,21 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
-export interface AnimeItem {
+export interface BookmarkItem {
   title: string;
   slug: string;
   poster: string;
+  category?: "anime" | "komik";
   type?: string;
   url?: string;
-  rating?: string;
   currentEpisode?: string;
   lastWatchedAt?: number;
   studios?: string;
   isBatch?: boolean;
+  author?: string;
+  genres?: string;
+  format?: string;
+  rating?: string;
 }
 
 export interface HistoryItem {
@@ -24,10 +28,10 @@ export interface HistoryItem {
 }
 
 interface AppState {
-  bookmarks: AnimeItem[];
+  bookmarks: BookmarkItem[];
   watchHistory: HistoryItem[];
 
-  addBookmark: (anime: AnimeItem) => void;
+  addBookmark: (item: BookmarkItem) => void;
   removeBookmark: (slug: string) => void;
   isBookmarked: (slug: string) => boolean;
 
@@ -53,11 +57,10 @@ export const useStore = create<AppState>()(
       setApiDown: (status) => set({ isApiDown: status }),
 
       // --- Bookmark Logic ---
-      addBookmark: (anime) =>
+      addBookmark: (item) =>
         set((state) => {
-          if (state.bookmarks.some((item) => item.slug === anime.slug))
-            return state;
-          return { bookmarks: [anime, ...state.bookmarks] };
+          if (state.bookmarks.some((b) => b.slug === item.slug)) return state;
+          return { bookmarks: [item, ...state.bookmarks] };
         }),
 
       removeBookmark: (slug) =>

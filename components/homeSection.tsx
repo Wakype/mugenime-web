@@ -36,7 +36,7 @@ export function HeroSection({
   };
 
   return (
-    <section className="relative w-full min-h-[85vh] flex items-center justify-center overflow-hidden bg-background">
+    <section className="relative w-full min-h-[80vh] flex items-center justify-center overflow-hidden bg-background">
       {/* Background Layer */}
       <motion.div
         initial={{ opacity: 0, scale: 1.1 }}
@@ -54,11 +54,12 @@ export function HeroSection({
           referrerPolicy="no-referrer"
         />
         {/* Gradient Overlay menyesuaikan 'bg-background' */}
-        <div className="absolute inset-0 bg-linear-to-t from-background via-background/40 to-transparent" />
-        <div className="absolute inset-0 bg-linear-to-r from-background/90 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-background via-background/0 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-r from-background/70 via-transparent to-transparent" />
 
         {/* Grid Pattern Overlay */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,currentColor_1px,transparent_1px),linear-gradient(to_bottom,currentColor_1px,transparent_1px)] bg-size-[40px_40px] text-muted-foreground/10 pointer-events-none" />
+        <div className="absolute inset-0 bg-linear-to-t from-background via-background/70 to-transparent" />
       </motion.div>
 
       {/* Hero Content */}
@@ -125,7 +126,7 @@ export function HeroSection({
             <Button
               asChild
               size="lg"
-              className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12 px-8 shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all text-base"
+              className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12 px-8 transition-all text-base"
             >
               <Link href={`/anime/${heroAnime.animeId}`}>Tonton Sekarang</Link>
             </Button>

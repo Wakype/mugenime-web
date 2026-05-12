@@ -5,10 +5,10 @@ import { Bookmark } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useStore, AnimeItem } from "@/lib/store";
+import { useStore, BookmarkItem } from "@/lib/store";
 
 interface BookmarkButtonProps {
-  data?: AnimeItem;
+  data?: BookmarkItem;
   className?: string;
 }
 
@@ -59,8 +59,6 @@ export default function BookmarkButton({
     <Button
       onClick={handleToggle}
       size="lg"
-      // Default = Primary Color (Bookmarked)
-      // Outline = Bordered (Not Bookmarked)
       variant={isBookmarked ? "default" : "outline"}
       className={cn(
         "w-full rounded-xl transition-all duration-300 gap-2 shadow-sm cursor-pointer",

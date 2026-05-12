@@ -1,10 +1,10 @@
-import { fetchAnime } from "@/lib/api";
-import { OngoingResponse } from "@/lib/types";
+import { fetchKomik } from "@/lib/api";
+import { LatestKomikResponse } from "@/lib/komikTypes";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { Calendar, ChevronLeft, ChevronRight, Zap } from "lucide-react";
-import OngoingCard from "@/components/ongoingCard";
+import KomikCard from "@/components/komikCard";
 import { cn } from "@/lib/utils";
 
 export const revalidate = 1800;
@@ -13,7 +13,7 @@ interface PageProps {
   searchParams: Promise<{ page?: string }>;
 }
 
-export default async function OngoingPage({
+export default async function UpdateKomikPage({
   searchParams,
 }: Readonly<PageProps>) {
   const params = await searchParams;
@@ -29,15 +29,24 @@ export default async function OngoingPage({
   ];
   const currentDayName = daysMap[new Date().getDay()];
 
-  const response = await fetchAnime<OngoingResponse>(
-    `anime/ongoing-anime?page=${currentPage}`,
+  // Fetch data using the provided API wrapper
+  const response = await fetchKomik<LatestKomikResponse>(
+    `latest?page=${currentPage}`,
   );
 
-  const { pagination, animeList } = response;
-  const { totalPages } = pagination;
+  // Extract data array and pagination metadata
+  const komikList = response?.data?.data || [];
+  const meta = response?.data?.meta || { total: 0, page: 1, lastPage: 1 };
+  const totalPages = meta.lastPage;
 
-  // --- LOGIC PAGINATION DESKTOP  ---
-  const generateDesktopPagination = () => {
+  // Pagination navigation states
+  const hasPrevPage = currentPage > 1;
+  const hasNextPage = currentPage < totalPages;
+  const prevPage = currentPage - 1;
+  const nextPage = currentPage + 1;
+
+  // --- LOGIC PAGINATION (Digunakan untuk Mobile & Desktop) ---
+  const generatePagination = () => {
     const pages = [];
     const maxVisible = 5;
 
@@ -63,29 +72,6 @@ export default async function OngoingPage({
     return pages;
   };
 
-  // --- LOGIC PAGINATION MOBILE ---
-  // Menampilkan: [Current-2, Current-1, Current, Current+1, Current+2]
-  // Maksimal 5 tombol angka agar muat di layar HP
-  const generateMobilePagination = () => {
-    const pages = [];
-    let start = Math.max(1, currentPage - 2);
-    let end = Math.min(totalPages, currentPage + 2);
-
-    // Geser window jika berada di awal halaman (biar tetap menampilkan 5 angka jika ada)
-    if (currentPage <= 3) {
-      end = Math.min(5, totalPages);
-    }
-    // Geser window jika berada di akhir halaman
-    if (currentPage >= totalPages - 2) {
-      start = Math.max(1, totalPages - 4);
-    }
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    return pages;
-  };
-
   return (
     <div className="min-h-screen pb-20 py-10 bg-background">
       <div className="container mx-auto px-4 space-y-10">
@@ -100,14 +86,14 @@ export default async function OngoingPage({
               <div className="space-y-3">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-wider w-fit">
                   <Zap className="w-3.5 h-3.5" />
-                  Anime Ongoing
+                  Update Terbaru
                 </div>
                 <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight font-heading text-foreground">
-                  Anime <span className="text-primary">Sedang Tayang</span>
+                  Komik <span className="text-primary">Baru Rilis</span>
                 </h1>
                 <p className="text-muted-foreground text-sm md:text-base leading-relaxed max-w-2xl">
-                  Daftar anime musim ini yang sedang on-going. Pantau episode
-                  terbaru favoritmu agar tidak ketinggalan!
+                  Daftar chapter komik terbaru yang rilis dan diperbarui hari
+                  ini. Pantau terus agar tidak ketinggalan cerita favoritmu!
                 </p>
               </div>
             </div>
@@ -139,16 +125,21 @@ export default async function OngoingPage({
         </div>
 
         {/* --- GRID CONTENT --- */}
-        {animeList && animeList.length > 0 ? (
+        {komikList && komikList.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-8">
-            {animeList.map((anime) => (
-              <OngoingCard key={anime.animeId} anime={anime} />
+            {komikList.map((komik, idx) => (
+              <KomikCard
+                key={komik.slug}
+                comic={komik}
+                index={idx}
+                showChaptersList={true}
+              />
             ))}
           </div>
         ) : (
           <div className="text-center py-20 text-muted-foreground">
             Data tidak ditemukan. Silakan coba refresh atau kembali ke halaman
-            1.
+            sebelumnya.
           </div>
         )}
 
@@ -162,13 +153,13 @@ export default async function OngoingPage({
             <Button
               variant="outline"
               size="icon"
-              disabled={!pagination.hasPrevPage}
-              asChild={pagination.hasPrevPage}
+              disabled={!hasPrevPage}
+              asChild={hasPrevPage}
               className="h-9 w-9 shrink-0 rounded-lg border-border hover:bg-muted text-muted-foreground"
             >
-              {pagination.hasPrevPage ? (
+              {hasPrevPage ? (
                 <Link
-                  href={`/ongoing-anime?page=${pagination.prevPage}`}
+                  href={`/update-komik?page=${prevPage}`}
                   aria-label="Halaman Sebelumnya"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -178,24 +169,35 @@ export default async function OngoingPage({
               )}
             </Button>
 
-            {/* Deretan Angka (Mobile Logic) */}
-            <div className="flex items-center justify-center gap-1 overflow-hidden">
-              {generateMobilePagination().map((page) => {
+            {/* Deretan Angka (Mobile Logic sekarang pakai generatePagination) */}
+            <div className="flex items-center justify-center gap-0.5 sm:gap-1 overflow-hidden">
+              {generatePagination().map((page, idx) => {
+                if (page === "...") {
+                  return (
+                    <span
+                      key={`mob-ellipsis-${idx}`}
+                      className="px-1 text-muted-foreground text-xs select-none"
+                    >
+                      ...
+                    </span>
+                  );
+                }
+
                 const isCurrent = page === currentPage;
                 return (
                   <Button
-                    key={page}
+                    key={`mob-${page}`}
                     variant={isCurrent ? "default" : "ghost"}
                     size="icon"
                     asChild
                     className={cn(
-                      "h-9 w-9 rounded-lg text-xs font-bold transition-all",
+                      "h-8 w-8 sm:h-9 sm:w-9 rounded-lg text-xs font-bold transition-all",
                       isCurrent
                         ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-md"
                         : "text-muted-foreground hover:bg-muted",
                     )}
                   >
-                    <Link href={`/ongoing-anime?page=${page}`}>{page}</Link>
+                    <Link href={`/update-komik?page=${page}`}>{page}</Link>
                   </Button>
                 );
               })}
@@ -205,13 +207,13 @@ export default async function OngoingPage({
             <Button
               variant="outline"
               size="icon"
-              disabled={!pagination.hasNextPage}
-              asChild={pagination.hasNextPage}
+              disabled={!hasNextPage}
+              asChild={hasNextPage}
               className="h-9 w-9 shrink-0 rounded-lg border-border hover:bg-muted text-muted-foreground"
             >
-              {pagination.hasNextPage ? (
+              {hasNextPage ? (
                 <Link
-                  href={`/ongoing-anime?page=${pagination.nextPage}`}
+                  href={`/update-komik?page=${nextPage}`}
                   aria-label="Halaman Selanjutnya"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -226,12 +228,12 @@ export default async function OngoingPage({
           <div className="hidden md:flex items-center justify-center gap-2">
             <Button
               variant="outline"
-              disabled={!pagination.hasPrevPage}
-              asChild={pagination.hasPrevPage}
-              className="h-10 gap-2 border-border hover:bg-muted text-muted-foreground hover:text-foreground px-4"
+              disabled={!hasPrevPage}
+              asChild={hasPrevPage}
+              className="h-10 gap-2 border-border hover:bg-muted text-muted-foreground hover:text-foreground px-4 cursor-pointer"
             >
-              {pagination.hasPrevPage ? (
-                <Link href={`/ongoing-anime?page=${pagination.prevPage}`}>
+              {hasPrevPage ? (
+                <Link href={`/update-komik?page=${prevPage}`}>
                   <ChevronLeft className="w-4 h-4" /> Sebelumnya
                 </Link>
               ) : (
@@ -242,11 +244,11 @@ export default async function OngoingPage({
             </Button>
 
             <div className="flex items-center gap-1 mx-4">
-              {generateDesktopPagination().map((page, idx) => {
+              {generatePagination().map((page, idx) => {
                 if (page === "...") {
                   return (
                     <span
-                      key={`ellipsis-${idx}`}
+                      key={`desk-ellipsis-${idx}`}
                       className="px-2 text-muted-foreground select-none"
                     >
                       ...
@@ -257,18 +259,18 @@ export default async function OngoingPage({
                 const isCurrent = page === currentPage;
                 return (
                   <Button
-                    key={idx}
+                    key={`desk-${page}`}
                     variant={isCurrent ? "default" : "ghost"}
                     size="icon"
                     asChild
                     className={cn(
-                      "w-10 h-10 rounded-lg transition-all",
+                      "w-10 h-10 rounded-lg transition-all cursor-pointer",
                       isCurrent
                         ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground",
                     )}
                   >
-                    <Link href={`/ongoing-anime?page=${page}`}>{page}</Link>
+                    <Link href={`/update-komik?page=${page}`}>{page}</Link>
                   </Button>
                 );
               })}
@@ -276,12 +278,12 @@ export default async function OngoingPage({
 
             <Button
               variant="outline"
-              disabled={!pagination.hasNextPage}
-              asChild={pagination.hasNextPage}
-              className="h-10 gap-2 border-border hover:bg-muted text-muted-foreground hover:text-foreground px-4"
+              disabled={!hasNextPage}
+              asChild={hasNextPage}
+              className="h-10 gap-2 border-border hover:bg-muted text-muted-foreground hover:text-foreground px-4 cursor-pointer"
             >
-              {pagination.hasNextPage ? (
-                <Link href={`/ongoing-anime?page=${pagination.nextPage}`}>
+              {hasNextPage ? (
+                <Link href={`/update-komik?page=${nextPage}`}>
                   Selanjutnya <ChevronRight className="w-4 h-4" />
                 </Link>
               ) : (

@@ -33,6 +33,7 @@ export default async function HomePage() {
     return (
       <div className="min-h-screen bg-background pb-20 selection:bg-primary/30">
         <ApiStatusUpdater isDown={true} />
+
         <div className="relative min-h-[90vh] flex flex-col items-center justify-center p-6 overflow-hidden">
           {/* Background Grid Pattern */}
           <div className="absolute inset-0 bg-[linear-gradient(to_right,currentColor_1px,transparent_1px),linear-gradient(to_bottom,currentColor_1px,transparent_1px)] bg-size-[24px_24px] text-muted-foreground/5 pointer-events-none" />
@@ -98,18 +99,15 @@ export default async function HomePage() {
 
       {/* --- MAIN CONTENT --- */}
       <div className="container mx-auto px-4 -mt-10 relative z-20 space-y-12">
-        {/* --- COMPACT ANNOUNCEMENT SECTION --- */}
-        {/* <FadeInWrapper delay={0.2}> */}
+        {/* --- ANNOUNCEMENT SECTION --- */}
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
             <Megaphone className="w-4 h-4" />
             <span>Pengumuman</span>
           </div>
 
-          {/* Render Slider Component */}
           <AnnouncementSlider />
         </div>
-        {/* </FadeInWrapper> */}
 
         {/* --- ONGOING SECTION --- */}
         <section className="space-y-6 pt-4">
@@ -231,7 +229,6 @@ export default async function HomePage() {
               </h2>
             </div>
 
-            {/* Komponen Komentar */}
             <CommentSection identifier="general" page_url="/" />
           </FadeInWrapper>
         </section>

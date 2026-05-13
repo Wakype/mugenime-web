@@ -1,11 +1,51 @@
 "use client";
 import Link from "next/link";
-import { AlertTriangle, Zap, CheckCircle2, XCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import {
+  AlertTriangle,
+  Zap,
+  CheckCircle2,
+  XCircle,
+  Calendar,
+  Package2,
+  Tags,
+  List,
+  Home,
+  Flame,
+  Compass,
+  Library,
+  BookOpen,
+  Tv,
+} from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useStore } from "@/lib/store";
+import { cn } from "@/lib/utils";
+
+const animeLinks = [
+  { name: "Jadwal Rilis", href: "/jadwal-anime", icon: Calendar },
+  { name: "Ongoing", href: "/ongoing-anime", icon: Zap },
+  { name: "Completed", href: "/completed-anime", icon: CheckCircle2 },
+  { name: "Batch", href: "/batch-anime", icon: Package2 },
+  { name: "Genre", href: "/genre-anime", icon: Tags },
+  { name: "List A–Z", href: "/list", icon: List },
+];
+
+const komikLinks = [
+  { name: "Beranda Komik", href: "/komik", icon: Home, badge: true },
+  { name: "Update Terbaru", href: "/update-komik", icon: Zap, badge: true },
+  { name: "Format Komik", href: "/format-komik", icon: Library, badge: true },
+  { name: "Popular", href: "/popular-komik", icon: Flame, badge: true },
+  { name: "Explore", href: "/explore-komik", icon: Compass, badge: true },
+  { name: "Genre", href: "/genre-komik", icon: Tags, badge: true },
+];
+
+const panduanLinks = [
+  { name: "Tentang Kami", href: "/about" },
+  { name: "Cara Streaming", href: "/guide/streaming" },
+  { name: "Cara Download", href: "/guide/download" },
+  { name: "DMCA / Copyright", href: "/dmca" },
+];
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -14,246 +54,206 @@ export default function Footer() {
 
   useEffect(() => {
     useStore.persist.rehydrate();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
   return (
-    <footer className="bg-muted/20 border-t border-border pt-16 pb-8">
-      <div className="container mx-auto px-4">
-        {/* --- TOP SECTION --- */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-12">
-          {/* BRANDING & SOSMED */}
-          <div className="lg:col-span-4 space-y-6">
-            <div className="space-y-4">
-              <Link href="/" className="flex items-center gap-2 group shrink-0">
-                <div className="relative h-8 md:h-10 w-auto aspect-1142/249">
-                  <Image
-                    src="/assets/logo.png"
-                    alt="Mugenime Logo"
-                    fill
-                    className="object-contain transition-transform duration-300 -mt-0.5"
-                    priority
-                    sizes="(max-width: 768px) 120px, 160px"
-                  />
-                </div>
-              </Link>
-              <p className="text-muted-foreground text-sm leading-relaxed max-w-sm text-justify">
-                Download dan streaming anime subtitle Indonesia lengkap dalam
-                format MP4 dan MKV dengan berbagai resolusi di platform gratis,
-                tanpa iklan yang mengganggu, dan hemat kuota.
-              </p>
-            </div>
+    <footer className="border-t border-white/6 bg-background pt-14 pb-8">
+      <div className="container mx-auto px-4 lg:px-8">
+        {/* TOP GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-6 mb-12">
+          {/* BRAND */}
+          <div className="lg:col-span-4 space-y-5">
+            <Link href="/" className="flex items-center gap-2.5 group w-fit">
+              <div className="relative h-9 w-auto aspect-1142/249">
+                <Image
+                  src="/assets/logo.png"
+                  alt="Mugenime Logo"
+                  fill
+                  className="object-contain"
+                  priority
+                  sizes="(max-width: 768px) 120px, 160px"
+                />
+              </div>
+            </Link>
 
-            {/* Social Links */}
-            <div className="flex items-center gap-4">
-              <SocialLink
+            <p className="text-sm leading-relaxed text-justify text-white/35 max-w-[300px]">
+              Download dan streaming anime subtitle Indonesia lengkap, format
+              MP4 &amp; MKV, tanpa iklan yang mengganggu, dan hemat kuota.
+            </p>
+
+            {/* Socials */}
+            <div className="flex items-center gap-2">
+              <SocialButton
                 href="https://www.facebook.com/profile.php?id=61584752845992"
-                icon={
-                  <div className="w-5 h-5 relative">
-                    <Image
-                      width={20}
-                      height={20}
-                      src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'%3E%3Cpath d='M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z'/%3E%3C/svg%3E"
-                      alt="Facebook"
-                      className=""
-                    />
-                  </div>
-                }
                 label="Facebook"
-              />
-              <SocialLink
-                href="#"
-                icon={
-                  <div className="w-5 h-5 relative">
-                    <Image
-                      width={20}
-                      height={20}
-                      src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'%3E%3Cpath d='M7.0301.084c-1.2768.0602-2.1487.264-2.911.5634-.7888.3075-1.4575.72-2.1228 1.3877-.6652.6677-1.075 1.3368-1.3802 2.127-.2954.7638-.4956 1.6365-.552 2.914-.0564 1.2775-.0689 1.6882-.0626 4.947.0062 3.2586.0206 3.6671.0825 4.9473.061 1.2765.264 2.1482.5635 2.9107.308.7889.72 1.4573 1.388 2.1228.6679.6655 1.3365 1.0743 2.1285 1.38.7632.295 1.6361.4961 2.9134.552 1.2773.056 1.6884.069 4.9462.0627 3.2578-.0062 3.668-.0207 4.9478-.0814 1.28-.0607 2.147-.2652 2.9098-.5633.7889-.3086 1.4578-.72 2.1228-1.3881.665-.6682 1.0745-1.3378 1.3795-2.1284.2957-.7632.4966-1.636.552-2.9124.056-1.2809.0692-1.6898.063-4.948-.0063-3.2583-.021-3.6668-.0817-4.9465-.0607-1.2797-.264-2.1487-.5633-2.9117-.3084-.7889-.72-1.4568-1.3876-2.1228C21.2982 1.33 20.628.9208 19.8378.6165 19.074.321 18.2017.1197 16.9244.0645 15.6471.0093 15.236-.005 11.977.0014 8.718.0076 8.31.0215 7.0301.0839m.1402 21.6932c-1.17-.0509-1.8053-.2453-2.2287-.408-.5606-.216-.96-.4771-1.3819-.895-.422-.4178-.6811-.8186-.9-1.378-.1644-.4234-.3624-1.058-.4171-2.228-.0595-1.2645-.072-1.6442-.079-4.848-.007-3.2037.0053-3.583.0607-4.848.05-1.169.2456-1.805.408-2.2282.216-.5613.4762-.96.895-1.3816.4188-.4217.8184-.6814 1.3783-.9003.423-.1651 1.0575-.3614 2.227-.4171 1.2655-.06 1.6447-.072 4.848-.079 3.2033-.007 3.5835.005 4.8495.0608 1.169.0508 1.8053.2445 2.228.408.5608.216.96.4754 1.3816.895.4217.4194.6816.8176.9005 1.3787.1653.4217.3617 1.056.4169 2.2263.0602 1.2655.0739 1.645.0796 4.848.0058 3.203-.0055 3.5834-.061 4.848-.051 1.17-.245 1.8055-.408 2.2294-.216.5604-.4763.96-.8954 1.3814-.419.4215-.8181.6811-1.3783.9-.4224.1649-1.0577.3617-2.2262.4174-1.2656.0595-1.6448.072-4.8493.079-3.2045.007-3.5825-.006-4.848-.0608M16.953 5.5864A1.44 1.44 0 1 0 18.39 4.144a1.44 1.44 0 0 0-1.437 1.4424M5.8385 12.012c.0067 3.4032 2.7706 6.1557 6.173 6.1493 3.4026-.0065 6.157-2.7701 6.1506-6.1733-.0065-3.4032-2.771-6.1565-6.174-6.1498-3.403.0067-6.156 2.771-6.1496 6.1738M8 12.0077a4 4 0 1 1 4.008 3.9921A3.9996 3.9996 0 0 1 8 12.0077'/%3E%3C/svg%3E"
-                      alt="Instagram"
-                      className=""
-                    />
-                  </div>
-                }
-                label="Instagram"
-              />
-              <SocialLink
-                href="#"
-                icon={
-                  <div className="w-5 h-5 relative">
-                    <Image
-                      width={20}
-                      height={20}
-                      src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'%3E%3Cpath d='M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z'/%3E%3C/svg%3E"
-                      alt="Discord"
-                      className=""
-                    />
-                  </div>
-                }
-                label="Discord"
-              />
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103v3.325s-.733-.045-1.468-.045c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.673 3.667h-3.246v8.245C4.604 22.236 2 17.436 2 12.044 2 6.477 6.477 2 12.044 2S22.087 6.477 22.087 12.044c0 5.628-3.874 10.35-9.101 11.647z" />
+                </svg>
+              </SocialButton>
+              <SocialButton href="#" label="Instagram">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="2" y="2" width="20" height="20" rx="5" />
+                  <circle cx="12" cy="12" r="4" />
+                  <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" />
+                </svg>
+              </SocialButton>
+              <SocialButton href="#" label="Discord">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.1.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
+                </svg>
+              </SocialButton>
             </div>
           </div>
 
-          {/* EXPLORE */}
-          <div className="lg:col-span-2 space-y-6">
-            <h3 className="font-bold text-foreground">Jelajahi</h3>
-            <ul className="space-y-3 text-sm text-muted-foreground">
-              <li>
-                <Link
-                  href="/jadwal-anime"
-                  className="hover:text-primary transition-colors"
-                >
-                  Jadwal Rilis
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/ongoing-anime"
-                  className="hover:text-primary transition-colors"
-                >
-                  Sedang Tayang
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/completed-anime"
-                  className="hover:text-primary transition-colors"
-                >
-                  Anime Tamat
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/batch-anime"
-                  className="hover:text-primary transition-colors"
-                >
-                  Batch Anime
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/genre-anime"
-                  className="hover:text-primary transition-colors"
-                >
-                  Daftar Genre
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/list-anime"
-                  className="hover:text-primary transition-colors"
-                >
-                  List Anime
-                </Link>
-              </li>
+          {/* ANIME LINKS */}
+          <div className="lg:col-span-2 space-y-5">
+            <div className="flex items-center gap-2">
+              <Tv className="w-3.5 h-3.5 text-primary" />
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-white/30">
+                Anime
+              </h3>
+            </div>
+            <ul className="space-y-2.5">
+              {animeLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="group flex items-center gap-2.5 text-[13.5px] text-white/50 hover:text-white transition-colors"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary/60 group-hover:bg-primary transition-colors flex-shrink-0" />
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* BANTUAN */}
-          <div className="lg:col-span-3 space-y-6">
-            <h3 className="font-bold text-foreground">Panduan & Bantuan</h3>
-            <ul className="space-y-3 text-sm text-muted-foreground">
-              <li>
-                <Link
-                  href="/about"
-                  className="flex items-center gap-2 hover:text-primary transition-colors"
-                >
-                  Tentang Kami
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/guide/streaming"
-                  className="flex items-center gap-2 hover:text-primary transition-colors"
-                >
-                  Cara Streaming
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/guide/download"
-                  className="flex items-center gap-2 hover:text-primary transition-colors"
-                >
-                  Cara Download
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/dmca"
-                  className="flex items-center gap-2 hover:text-primary transition-colors"
-                >
-                  DMCA / Copyright
-                </Link>
-              </li>
+          {/* KOMIK LINKS */}
+          <div className="lg:col-span-2 space-y-5">
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-3.5 h-3.5 text-primary" />
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-white/30">
+                Komik
+              </h3>
+            </div>
+            <ul className="space-y-2.5">
+              {komikLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="group flex items-center gap-2.5 text-[13.5px] text-white/50 hover:text-white transition-colors"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary/60 group-hover:bg-primary transition-colors flex-shrink-0" />
+                    {link.name}
+                    {link.badge && (
+                      <span className="text-[9px] font-bold bg-violet-500/20 text-violet-300 px-1.5 py-0.5 rounded tracking-wide">
+                        NEW
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* STATUS & LAPOR */}
-          <div className="lg:col-span-3 space-y-6">
-            {/* SYSTEM STATUS CARD */}
+          {/* PANDUAN LINKS */}
+          <div className="lg:col-span-2 space-y-5">
+            <h3 className="text-[11px] font-bold uppercase tracking-widest text-white/30">
+              Panduan
+            </h3>
+            <ul className="space-y-2.5">
+              {panduanLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-[13.5px] text-white/50 hover:text-white transition-colors"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* STATUS + REPORT */}
+          <div className="lg:col-span-2 space-y-3">
+            {/* Status Card */}
             <div
-              className={`group p-4 rounded-xl bg-card border transition-all hover:shadow-sm ${
+              className={cn(
+                "rounded-2xl border p-4 transition-colors",
                 mounted && isApiDown
-                  ? "border-red-500/30 hover:border-red-500/50"
-                  : "border-border hover:border-emerald-500/30"
-              }`}
+                  ? "border-red-500/20 bg-red-500/[0.04]"
+                  : "border-white/[0.07] bg-white/[0.03]",
+              )}
             >
-              {/* Header Label */}
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-white/25">
                   System Status
                 </span>
-                {/* Pulsing Dot */}
-                <span className="relative flex h-2.5 w-2.5">
+                <span className="relative flex h-2 w-2">
                   <span
-                    className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                      mounted && isApiDown ? "bg-red-400" : "bg-emerald-400"
-                    }`}
-                  ></span>
+                    className={cn(
+                      "absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping",
+                      mounted && isApiDown ? "bg-red-400" : "bg-emerald-400",
+                    )}
+                  />
                   <span
-                    className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
-                      mounted && isApiDown ? "bg-red-500" : "bg-emerald-500"
-                    }`}
-                  ></span>
+                    className={cn(
+                      "relative inline-flex rounded-full h-2 w-2",
+                      mounted && isApiDown ? "bg-red-500" : "bg-emerald-500",
+                    )}
+                  />
                 </span>
               </div>
 
-              {/* Main Content */}
               <div className="flex items-center gap-3">
-                {/* Icon Box */}
                 <div
-                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-background border shadow-sm transition-all ${
+                  className={cn(
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border",
                     mounted && isApiDown
-                      ? "border-red-500/30 text-red-500"
-                      : "border-border text-emerald-500"
-                  }`}
+                      ? "border-red-500/20 bg-red-500/10 text-red-400"
+                      : "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",
+                  )}
                 >
-                  <Zap
-                    className={`w-5 h-5 ${
-                      mounted && isApiDown ? "fill-red-500" : "fill-emerald-500"
-                    }`}
-                  />
+                  <Zap className="w-4 h-4" />
                 </div>
-
-                {/* Text Info */}
-                <div className="space-y-0.5">
-                  <p className="text-sm font-bold text-foreground leading-none">
+                <div>
+                  <p className="text-[13px] font-semibold text-white/80 leading-none mb-1">
                     API Service
                   </p>
-                  <div className="flex items-center gap-1.5">
-                    {/* Render Status Berdasarkan isApiDown */}
+                  <div className="flex items-center gap-1">
                     {mounted && isApiDown ? (
                       <>
-                        <XCircle className="w-3 h-3 text-red-500" />
-                        <p className="text-[11px] font-medium text-red-600 dark:text-red-400">
+                        <XCircle className="w-3 h-3 text-red-400" />
+                        <p className="text-[11px] font-medium text-red-400">
                           Maintenance / Down
                         </p>
                       </>
                     ) : (
                       <>
-                        <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                        <p className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                        <p className="text-[11px] font-medium text-emerald-400">
                           Operational (Stable)
                         </p>
                       </>
@@ -263,49 +263,45 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* Lapor (Sama seperti sebelumnya) */}
-            <div className="space-y-2">
-              <p className="text-xs text-muted-foreground">
-                Menemukan link rusak, episode salah, atau error player?
-              </p>
-              <Button
-                variant="outline"
-                className="w-full border-red-200 hover:bg-red-50 text-red-600 hover:text-red-700 dark:border-red-900/50 dark:bg-red-950/10 dark:hover:bg-red-950/30 dark:text-red-400 justify-start"
-                asChild
-              >
-                <Link href="/report">
-                  <AlertTriangle className="w-4 h-4 mr-2" />
-                  Lapor Link Rusak / Error
-                </Link>
-              </Button>
-            </div>
+            {/* Report Button */}
+            <Link
+              href="/report"
+              className="flex items-center gap-2.5 w-full px-4 py-2.5 rounded-xl border border-rose-500/20 bg-rose-500/[0.06] text-rose-400 text-[13px] font-medium hover:bg-rose-500/[0.12] hover:border-rose-500/30 transition-all"
+            >
+              <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+              Lapor Link Rusak / Error
+            </Link>
           </div>
         </div>
 
-        <Separator className="bg-border" />
+        {/* DIVIDER */}
+        <Separator className="bg-white/[0.06]" />
 
-        {/* --- BOTTOM SECTION --- */}
-        <div className="mt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
-          <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">
-              &copy; {currentYear} 🌙 Mugenime.
+        {/* BOTTOM */}
+        <div className="mt-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <p className="text-[12px] text-white/40">
+              <span className="text-white/55 font-medium">
+                © {currentYear} Mugenime.
+              </span>{" "}
+              Semua hak dilindungi.
             </p>
-            <p className="text-[10px] text-muted-foreground/80 max-w-xl">
+            <p className="text-[11px] text-white/20 max-w-md">
               Mugenime tidak menyimpan file video di server sendiri. Semua
               konten disediakan oleh pihak ketiga non-afiliasi.
             </p>
           </div>
 
-          <div className="flex gap-6">
+          <div className="flex gap-5">
             <Link
               href="/terms"
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="text-[12px] text-white/25 hover:text-white/60 transition-colors"
             >
               Terms
             </Link>
             <Link
               href="/privacy"
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="text-[12px] text-white/25 hover:text-white/60 transition-colors"
             >
               Privacy
             </Link>
@@ -316,14 +312,14 @@ export default function Footer() {
   );
 }
 
-function SocialLink({
+function SocialButton({
   href,
-  icon,
   label,
+  children,
 }: Readonly<{
   href: string;
-  icon: React.ReactNode;
   label: string;
+  children: React.ReactNode;
 }>) {
   return (
     <a
@@ -331,9 +327,9 @@ function SocialLink({
       target="_blank"
       rel="noopener noreferrer"
       aria-label={label}
-      className="p-2 rounded-full bg-secondary text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all border border-transparent hover:border-primary/20"
+      className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.04] text-white/50 hover:bg-violet-500/15 hover:border-violet-500/30 hover:text-violet-300 transition-all"
     >
-      {icon}
+      {children}
     </a>
   );
 }

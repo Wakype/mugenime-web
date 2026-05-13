@@ -43,6 +43,8 @@ export interface KomikItem {
   isHot: boolean;
   isRecommended: boolean;
   chapters: Chapter[];
+  totalChapters?: string;
+  status?: string;
   createdAt: string;
   updatedAt: string;
   author: string;

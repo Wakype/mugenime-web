@@ -291,18 +291,18 @@ export default function Navbar() {
       className={cn(
         "sticky top-0 z-50 w-full transition-all duration-300",
         scrolled
-          ? "bg-background/85 backdrop-blur-2xl border-b border-border/50 shadow-[0_2px_24px_rgba(0,0,0,0.07)]"
+          ? "bg-background border-b border-border/50 shadow-[0_2px_24px_rgba(0,0,0,0.07)]"
           : "bg-background border-b border-border/40",
       )}
       onMouseLeave={handleNavMouseLeave}
     >
-      <div className="container mx-auto px-4 h-[65px] flex items-center justify-between gap-4">
+      <div className="container mx-auto px-4 h-[65px] flex items-center justify-between gap-10">
         {/* Logo */}
         <Link
           href={logoHref}
           className="flex items-center gap-2 group shrink-0 relative z-50"
         >
-          <div className="relative h-[40px] w-auto aspect-1142/249 group-hover:opacity-75 transition-opacity duration-200">
+          <div className="relative h-[35px] w-auto aspect-1142/249 group-hover:opacity-75 transition-opacity duration-200">
             <Image
               src="/assets/logo.png"
               alt="Mugenime Logo"
@@ -420,7 +420,7 @@ export default function Navbar() {
         {/* Right Actions */}
         <div className="flex items-center gap-1.5 flex-1 justify-end relative z-50">
           {/* Search */}
-          <div className="hidden md:block w-full max-w-[180px] lg:max-w-[230px] transition-all focus-within:max-w-[270px]">
+          <div className="hidden md:block w-full max-w-[220px] lg:max-w-[300px] transition-all duration-300 focus-within:max-w-[340px]">
             <SearchInput />
           </div>
 
@@ -841,7 +841,7 @@ export default function Navbar() {
             transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
             onMouseEnter={handleMegaMouseEnter}
             onMouseLeave={handleNavMouseLeave}
-            className="hidden lg:block absolute top-full left-0 w-full z-40 bg-background/96 backdrop-blur-2xl border-b border-border/50 shadow-[0_12px_40px_rgba(0,0,0,0.06)]"
+            className="hidden lg:block absolute top-full left-0 w-full z-40 bg-background border-b border-border/50 shadow-[0_12px_40px_rgba(0,0,0,0.07)]"
           >
             <div className="container mx-auto px-4 py-6">
               <div className="flex gap-10">
@@ -849,10 +849,7 @@ export default function Navbar() {
                 <div className="w-40 shrink-0 flex flex-col gap-3 py-0.5">
                   <div
                     className={cn(
-                      "inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider w-fit",
-                      activeMegaLink.accentLight === "violet"
-                        ? "bg-violet-500/10 text-violet-600 dark:text-violet-400"
-                        : "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+                      "inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider w-fit bg-primary/10 text-primary dark:text-primary",
                     )}
                   >
                     <activeMegaLink.icon className="w-3.5 h-3.5" />
@@ -860,11 +857,11 @@ export default function Navbar() {
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {activeMegaLink.accentLight === "violet"
-                      ? "Jelajahi dunia anime dari berbagai genre dan kategori."
+                      ? "Nonton anime dari berbagai kategori."
                       : "Baca manga, manhwa, dan manhua favoritmu."}
                   </p>
                   <p className="text-[10px] text-muted-foreground/40 font-medium mt-auto">
-                    {activeMegaLink.children.length} kategori tersedia
+                    {activeMegaLink.children.length} halaman tersedia
                   </p>
                 </div>
 

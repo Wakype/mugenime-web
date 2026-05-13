@@ -20,6 +20,7 @@ import { FadeInWrapper, HeroSection } from "@/components/homeSection";
 import CommentSection from "@/components/commentSection";
 import AnnouncementSlider from "@/components/announcementSlider";
 import ApiStatusUpdater from "@/components/apiStatusUpdater";
+import MobileWelcomeDialog from "@/components/mobileWelcomeDialog";
 
 export const revalidate = 1800;
 
@@ -91,6 +92,9 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-background pb-20 selection:bg-primary/30">
       <ApiStatusUpdater isDown={false} />
+
+      {/* --- MOBILE DIALOG POPUP --- */}
+      <MobileWelcomeDialog />
 
       {/* --- HERO SECTION --- */}
       {heroAnime && (

@@ -1,12 +1,14 @@
-import { searchAnimeAction } from "@/app/actions";
+import { searchAnimeAction, searchKomikAction } from "@/app/actions";
 import { fetchKS } from "@/lib/api";
 import { SearchResult } from "@/lib/types";
 import { KS_SearchResponse } from "@/lib/batchAnimeTypes";
+import { KomikItem } from "@/lib/komikTypes";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import Image from "next/image";
 import BatchAnimeCard from "@/components/batchAnimeCard";
+import KomikCard from "@/components/komikCard";
 import {
   Search,
   Frown,
@@ -28,17 +30,18 @@ export default async function SearchPage({
   const params = await searchParams;
   const query = params.q || "";
 
-  // Fetch secara paralel
-  const [results, batchResponse] = await Promise.all([
+  // Fetch data in parallel
+  const [results, batchResponse, komikResults] = await Promise.all([
     searchAnimeAction(query).catch(() => [] as SearchResult[]),
-    fetchKS<KS_SearchResponse>(
-      `search/${encodeURIComponent(query)}`,
-    ).catch(() => null),
+    fetchKS<KS_SearchResponse>(`search/${encodeURIComponent(query)}`).catch(
+      () => null,
+    ),
+    searchKomikAction(query).catch(() => [] as KomikItem[]),
   ]);
 
   const batchResults = batchResponse?.anime_list || [];
 
-  const totalFound = results.length + batchResults.length;
+  const totalFound = results.length + batchResults.length + komikResults.length;
   const hasResults = totalFound > 0;
 
   return (
@@ -66,8 +69,8 @@ export default async function SearchPage({
 
                 <p className="text-muted-foreground text-sm md:text-base leading-relaxed max-w-2xl">
                   {hasResults
-                    ? `Ditemukan ${totalFound} judul anime yang cocok dengan kata kunci pencarian Anda. Klik pada kartu untuk mulai menonton atau mengunduh.`
-                    : `Maaf, kami tidak dapat menemukan anime dengan kata kunci tersebut. Coba gunakan judul lain atau periksa ejaan.`}
+                    ? `Ditemukan ${totalFound} judul yang cocok dengan kata kunci pencarian Anda. Klik pada kartu untuk mulai membaca atau menonton.`
+                    : `Maaf, kami tidak dapat menemukan judul dengan kata kunci tersebut. Coba gunakan judul lain atau periksa ejaan.`}
                 </p>
               </div>
             </div>
@@ -88,7 +91,7 @@ export default async function SearchPage({
 
                 <div className="relative z-10 mt-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
                   <p className="text-xs font-semibold text-primary">
-                    Judul Anime & Batch
+                    Anime, Batch & Komik
                   </p>
                 </div>
               </div>
@@ -102,7 +105,6 @@ export default async function SearchPage({
             {/* --- 1. REGULAR ANIME GRID --- */}
             {results.length > 0 && (
               <div className="space-y-8">
-                {/* SECTION HEADER BARU UNTUK REGULAR ANIME */}
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-5">
                   <div className="space-y-1">
                     <h2 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">
@@ -124,7 +126,6 @@ export default async function SearchPage({
                       href={anime.url}
                       className="group relative flex flex-col gap-3"
                     >
-                      {/* Poster Wrapper */}
                       <div className="relative aspect-3/4 w-full overflow-hidden rounded-xl bg-muted shadow-sm transition-all duration-300 group-hover:-translate-y-1.5 group-hover:shadow-xl group-hover:shadow-primary/10 border border-border">
                         <Image
                           src={
@@ -170,7 +171,6 @@ export default async function SearchPage({
                         </div>
                       </div>
 
-                      {/* Info Text */}
                       <div className="space-y-1.5 px-1">
                         <h3 className="font-bold text-sm md:text-base leading-snug text-foreground line-clamp-2 group-hover:text-primary transition-colors">
                           {anime.title}
@@ -200,7 +200,6 @@ export default async function SearchPage({
             {/* --- 2. BATCH ANIME GRID --- */}
             {batchResults.length > 0 && (
               <div className="space-y-8">
-                {/* SECTION HEADER BARU UNTUK BATCH ANIME */}
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-5">
                   <div className="space-y-1">
                     <h2 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">
@@ -222,6 +221,37 @@ export default async function SearchPage({
                 </div>
               </div>
             )}
+
+            {/* --- 3. KOMIK GRID --- */}
+            {komikResults.length > 0 && (
+              <div className="space-y-8">
+                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-5">
+                  <div className="space-y-1">
+                    <h2 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">
+                      Komik
+                    </h2>
+                  </div>
+                  <Badge
+                    variant="secondary"
+                    className="rounded-full px-3 py-1 text-xs font-medium border-border/50 shadow-sm whitespace-nowrap"
+                  >
+                    {komikResults.length} Ditemukan
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
+                  {komikResults.map((komik, idx) => (
+                    <KomikCard
+                      key={komik.slug}
+                      comic={komik}
+                      index={idx}
+                      viewType="grid"
+                      showChaptersList
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           /* --- EMPTY STATE --- */
@@ -236,7 +266,7 @@ export default async function SearchPage({
               Waduh, tidak ketemu nih!
             </h2>
             <p className="text-muted-foreground max-w-md mb-8">
-              Kami tidak dapat menemukan anime dengan kata kunci{" "}
+              Kami tidak dapat menemukan anime atau komik dengan kata kunci{" "}
               <span className="font-semibold text-foreground">
                 &quot;{query}&quot;
               </span>

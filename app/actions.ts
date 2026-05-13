@@ -1,7 +1,8 @@
 "use server";
 
-import { fetchAnime } from "@/lib/api";
+import { fetchAnime, fetchKomik } from "@/lib/api";
 import { AnimeDetail, SearchResult } from "@/lib/types";
+import { AdvanceSearchKomikResponse, KomikItem } from "@/lib/komikTypes";
 
 interface ApiSearchRawItem {
   title: string;
@@ -17,11 +18,11 @@ interface ApiSearchResponse {
 }
 
 export async function getAnimeDetailAction(
-  slug: string
+  slug: string,
 ): Promise<AnimeDetail | null> {
   try {
     const data = await fetchAnime<AnimeDetail>(`anime/anime/${slug}`, {
-      next: { revalidate: 86400 }, // Cache 24 jam (ISR)
+      next: { revalidate: 86400 },
     });
     return data;
   } catch (error) {
@@ -31,27 +32,23 @@ export async function getAnimeDetailAction(
 }
 
 export async function searchAnimeAction(
-  keyword: string
+  keyword: string,
 ): Promise<SearchResult[]> {
   if (!keyword || keyword.trim().length < 3) return [];
 
   try {
-    // 1. Fetch data
-    // Karena lib/api.ts otomatis return json.data, maka tipe kembaliannya adalah { animeList: [...] }
     const res = await fetchAnime<ApiSearchResponse>(
-      `anime/search/${encodeURIComponent(keyword)}`
+      `anime/search/${encodeURIComponent(keyword)}`,
     );
 
-    // 2. Cek apakah animeList ada dan berbentuk array
     if (res && Array.isArray(res.animeList)) {
-      // 3. Lakukan Mapping dari format API ke format SearchResult (Frontend)
       return res.animeList.map((item) => ({
         title: item.title,
-        slug: item.animeId, // Mapping: animeId -> slug
+        slug: item.animeId,
         poster: item.poster,
         status: item.status,
-        rating: item.score, // Mapping: score -> rating
-        genres: item.genreList, // Mapping: genreList -> genres
+        rating: item.score,
+        genres: item.genreList,
         url: `/anime/${item.animeId}`,
       }));
     }
@@ -59,6 +56,21 @@ export async function searchAnimeAction(
     return [];
   } catch (error) {
     console.error("Search Error:", error);
+    return [];
+  }
+}
+
+export async function searchKomikAction(keyword: string): Promise<KomikItem[]> {
+  if (!keyword || keyword.trim().length < 3) return [];
+
+  try {
+    const res = await fetchKomik<AdvanceSearchKomikResponse>(
+      `advanceSearch?page=1&take=5&sort=latest&sortOrder=desc&search=${encodeURIComponent(keyword)}`,
+    );
+
+    return res?.data?.data || [];
+  } catch (error) {
+    console.error("Komik Search Error:", error);
     return [];
   }
 }

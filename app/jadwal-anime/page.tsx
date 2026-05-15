@@ -7,7 +7,18 @@ import ScheduleCard from "@/components/scheduleCard";
 export const revalidate = 3600;
 
 export default async function JadwalPage() {
-  const scheduleData = await fetchAnime<ScheduleDay[]>("anime/schedule");
+  const scheduleData = await fetchAnime<ScheduleDay[]>("anime/schedule").catch(
+    (err) => {
+      console.error("Failed to fetch jadwal anime:", err);
+      return null;
+    },
+  );
+
+  if (!scheduleData) {
+    throw new Error(
+      "Gagal memuat jadwal tayang anime. Server API mungkin sedang sibuk atau lambat, silakan muat ulang (refresh) halaman ini.",
+    );
+  }
 
   const daysMap: { [key: number]: string } = {
     1: "Senin",

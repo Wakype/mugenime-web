@@ -96,7 +96,7 @@ const navLinks = [
       },
       {
         name: "List (A-Z)",
-        href: "/list",
+        href: "/list-anime",
         icon: List,
         description: "Daftar lengkap semua judul anime sesuai abjad.",
       },

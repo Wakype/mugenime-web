@@ -126,8 +126,8 @@ export default function WatchView({
         toggleTheaterMode();
       }
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    globalThis.addEventListener("keydown", handleKeyDown);
+    return () => globalThis.removeEventListener("keydown", handleKeyDown);
   }, [toggleTheaterMode]);
 
   // Normalize and group download links

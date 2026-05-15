@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 
 export const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export const KS_BASE_URL = process.env.NEXT_PUBLIC_KS_API_BASE_URL;
-export const MANGA_BASE_URL = process.env.MANGA_API;
+export const MANGA_BASE_URL = process.env.NEXT_PUBLIC_MANGA_API;
 export const BYPASS_SECRET = process.env.BYPASS_SECRET;
 
 export interface ApiResponse<T> {

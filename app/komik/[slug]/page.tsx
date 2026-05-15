@@ -91,13 +91,15 @@ export default async function KomikDetailPage({ params }: Readonly<Props>) {
     responseData = await fetchKomik<KomikDetailResponse>(`komik/${slug}`);
   } catch (error) {
     console.error("Failed to fetch komik detail:", error);
-    return notFound();
+    return null;
   }
 
   const komik = responseData?.data;
 
   if (!komik || !isKomikDetail(komik)) {
-    return notFound();
+    throw new Error(
+      "Gagal memuat data komik. Server API mungkin sedang sibuk atau lambat, silakan muat ulang (refresh) halaman ini.",
+    );
   }
 
   const chapterLists = komik.readChapter || [];
@@ -108,7 +110,6 @@ export default async function KomikDetailPage({ params }: Readonly<Props>) {
 
   const genreString = genres.map((g) => g.data.name).join(", ");
 
-  // Mocking data structure for BookmarkButton consistency
   const bookmarkData = {
     title: komik.title,
     slug: slug,
@@ -120,7 +121,6 @@ export default async function KomikDetailPage({ params }: Readonly<Props>) {
     genres: genreString,
   };
 
-  // Map the 'recommended' data to match 'KomikItem' interface so we can reuse KomikCard
   const recommendedMapped: KomikItem[] = (komik.recommended || []).map((r) => ({
     title: r.title,
     slug: r.slug,

@@ -1,6 +1,5 @@
 import { fetchKomik } from "@/lib/api";
 import { ReadKomikChapterResponse } from "@/lib/komikTypes";
-import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import CommentSection from "@/components/commentSection";
 import ComicReader from "@/components/comicReader";
@@ -42,21 +41,19 @@ export default async function ReadKomikPage({ params }: Readonly<Props>) {
   const { slug, chapter } = await params;
   const chapterNumber = chapter.replace("chapter-", "");
 
-  let responseData: ReadKomikChapterResponse | null = null;
-
-  try {
-    responseData = await fetchKomik<ReadKomikChapterResponse>(
-      `komik/${slug}/${chapterNumber}`,
-    );
-  } catch (error) {
+  const responseData = await fetchKomik<ReadKomikChapterResponse>(
+    `komik/${slug}/${chapterNumber}`,
+  ).catch((error) => {
     console.error("Failed to fetch read chapter:", error);
-    return notFound();
-  }
+    return null;
+  });
 
   const data = responseData?.data;
 
   if (!data) {
-    return notFound();
+    throw new Error(
+      "Gagal memuat chapter komik. Server API mungkin sedang sibuk atau lambat, silakan muat ulang (refresh) halaman ini.",
+    );
   }
 
   return (

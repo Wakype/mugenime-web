@@ -19,11 +19,19 @@ export default async function BatchAnimePage({
 
   const response = await fetchKS<KS_LatestResponse>(
     `latest?page=${currentPage}`,
-  );
+  ).catch((err) => {
+    console.error("Failed to fetch batch anime:", err);
+    return null;
+  });
+
+  if (!response?.anime_list) {
+    throw new Error(
+      "Gagal memuat daftar anime batch. Server API mungkin sedang sibuk atau lambat, silakan muat ulang (refresh) halaman ini.",
+    );
+  }
 
   const animeList = response?.anime_list || [];
 
-  // Manual Pagination Logic
   const hasPrevPage = currentPage > 1;
   const hasNextPage = animeList.length > 0;
 

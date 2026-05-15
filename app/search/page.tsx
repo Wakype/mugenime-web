@@ -30,18 +30,26 @@ export default async function SearchPage({
   const params = await searchParams;
   const query = params.q || "";
 
-  // Fetch data in parallel
   const [results, batchResponse, komikResults] = await Promise.all([
-    searchAnimeAction(query).catch(() => [] as SearchResult[]),
+    searchAnimeAction(query).catch(() => null),
     fetchKS<KS_SearchResponse>(`search/${encodeURIComponent(query)}`).catch(
       () => null,
     ),
-    searchKomikAction(query).catch(() => [] as KomikItem[]),
+    searchKomikAction(query).catch(() => null),
   ]);
 
-  const batchResults = batchResponse?.anime_list || [];
+  if (results === null && batchResponse === null && komikResults === null) {
+    throw new Error(
+      "Gagal melakukan pencarian. Server API mungkin sedang sibuk atau lambat, silakan muat ulang (refresh) halaman ini.",
+    );
+  }
 
-  const totalFound = results.length + batchResults.length + komikResults.length;
+  const safeResults = results || [];
+  const batchResults = batchResponse?.anime_list || [];
+  const safeKomikResults = komikResults || [];
+
+  const totalFound =
+    safeResults.length + batchResults.length + safeKomikResults.length;
   const hasResults = totalFound > 0;
 
   return (

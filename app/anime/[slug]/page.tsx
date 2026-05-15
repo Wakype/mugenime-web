@@ -52,9 +52,6 @@ function isAnimeDetail(data: unknown): data is AnimeDetail {
   );
 }
 
-// const getProxyUrl = (url: string) =>
-//   `/api/image-proxy?url=${encodeURIComponent(url)}`;
-
 const getSynopsisText = (synopsis: AnimeDetail["synopsis"]) => {
   if (typeof synopsis === "string") return synopsis;
   if (synopsis && Array.isArray(synopsis.paragraphs)) {
@@ -101,17 +98,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AnimeDetailPage({ params }: Readonly<Props>) {
   const { slug } = await params;
-  let responseData: unknown;
 
-  try {
-    responseData = await fetchAnime<AnimeDetail>(`anime/anime/${slug}`);
-  } catch (error) {
-    console.error("Failed to fetch anime detail:", error);
-    return notFound();
-  }
+  const responseData = await fetchAnime<AnimeDetail>(
+    `anime/anime/${slug}`,
+  ).catch((err) => {
+    console.error("Failed to fetch anime detail:", err);
+    return null;
+  });
 
-  if (!isAnimeDetail(responseData)) {
-    return notFound();
+  if (!responseData || !isAnimeDetail(responseData)) {
+    throw new Error(
+      "Gagal memuat detail anime. Server API mungkin sedang sibuk atau lambat, silakan muat ulang (refresh) halaman ini.",
+    );
   }
 
   const anime = responseData;

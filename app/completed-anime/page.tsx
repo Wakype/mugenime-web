@@ -6,54 +6,58 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import CompletedCard from "@/components/completedAnimeCard";
 
-// Cache 1 jam
 export const revalidate = 3600;
 
 interface PageProps {
   searchParams: Promise<{ page?: string }>;
 }
 
-export default async function CompletedPage({ searchParams }: PageProps) {
-  // 1. Pagination Logic
+export default async function CompletedPage({
+  searchParams,
+}: Readonly<PageProps>) {
   const params = await searchParams;
   const currentPage = Number(params.page) || 1;
 
-  // 2. Fetch Data
   const response = await fetchAnime<CompleteAnimeResponse>(
     `anime/complete-anime/?page=${currentPage}`,
-  );
+  ).catch((err) => {
+    console.error("Failed to fetch completed anime:", err);
+    return null;
+  });
+
+  if (!response) {
+    throw new Error(
+      "Gagal memuat daftar anime tamat. Server API mungkin sedang sibuk atau lambat, silakan muat ulang (refresh) halaman ini.",
+    );
+  }
 
   const { pagination, animeList } = response;
   const { totalPages } = pagination;
 
-  // --- LOGIC PAGINATION DESKTOP (Full) ---
   const generateDesktopPagination = () => {
     const pages = [];
     const maxVisible = 5;
 
     if (totalPages <= maxVisible) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else if (currentPage <= 3) {
+      pages.push(1, 2, 3, "...", totalPages);
+    } else if (currentPage >= totalPages - 2) {
+      pages.push(1, "...", totalPages - 2, totalPages - 1, totalPages);
     } else {
-      if (currentPage <= 3) {
-        pages.push(1, 2, 3, "...", totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(1, "...", totalPages - 2, totalPages - 1, totalPages);
-      } else {
-        pages.push(
-          1,
-          "...",
-          currentPage - 1,
-          currentPage,
-          currentPage + 1,
-          "...",
-          totalPages,
-        );
-      }
+      pages.push(
+        1,
+        "...",
+        currentPage - 1,
+        currentPage,
+        currentPage + 1,
+        "...",
+        totalPages,
+      );
     }
     return pages;
   };
 
-  // --- LOGIC PAGINATION MOBILE (Neighbors Only) ---
   const generateMobilePagination = () => {
     const pages = [];
     let start = Math.max(1, currentPage - 2);

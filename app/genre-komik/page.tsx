@@ -20,7 +20,6 @@ export default async function GenreKomikPage({
   const params = await searchParams;
   const currentPage = Number(params.page) || 1;
 
-  // Tangkap parameter genre dari URL
   const rawGenre = params.genre;
   const selectedGenres = Array.isArray(rawGenre)
     ? rawGenre
@@ -28,13 +27,11 @@ export default async function GenreKomikPage({
       ? [rawGenre]
       : [];
 
-  // Fetch List Semua Genre
   const genresRes = await fetchKomik<GenresResponse>("genres").catch(
     () => null,
   );
   const genreList = genresRes?.data || [];
 
-  // Bangun parameter kueri untuk Advance Search API
   const apiParams = new URLSearchParams();
   apiParams.set("page", currentPage.toString());
   apiParams.set("take", "24");
@@ -42,22 +39,28 @@ export default async function GenreKomikPage({
   apiParams.set("sortOrder", "desc");
   selectedGenres.forEach((g) => apiParams.append("genreIds", g));
 
-  // Fetch Hasil Pencarian Komik
   const searchRes = await fetchKomik<AdvanceSearchKomikResponse>(
     `advanceSearch?${apiParams.toString()}`,
-  ).catch(() => null);
+  ).catch((err) => {
+    console.error("Failed to fetch komik by genre:", err);
+    return null;
+  });
+
+  if (!searchRes?.data) {
+    throw new Error(
+      "Gagal memuat daftar komik berdasarkan genre. Server API mungkin sedang sibuk atau lambat, silakan muat ulang (refresh) halaman ini.",
+    );
+  }
 
   const komikList = searchRes?.data?.data || [];
   const meta = searchRes?.data?.meta || { total: 0, page: 1, lastPage: 1 };
   const totalPages = meta.lastPage;
 
-  // Pagination navigation states
   const hasPrevPage = currentPage > 1;
   const hasNextPage = currentPage < totalPages;
   const prevPage = currentPage - 1;
   const nextPage = currentPage + 1;
 
-  // Helper membuat URL Paginasi agar filter genre tidak hilang
   const createPageUrl = (page: number | string) => {
     const urlParams = new URLSearchParams();
     urlParams.set("page", page.toString());
@@ -65,7 +68,6 @@ export default async function GenreKomikPage({
     return `/genre-komik?${urlParams.toString()}`;
   };
 
-  // --- LOGIC PAGINATION ---
   const generatePagination = () => {
     const pages = [];
     const maxVisible = 5;

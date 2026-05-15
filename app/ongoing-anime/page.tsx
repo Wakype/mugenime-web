@@ -31,12 +31,20 @@ export default async function OngoingPage({
 
   const response = await fetchAnime<OngoingResponse>(
     `anime/ongoing-anime?page=${currentPage}`,
-  );
+  ).catch((err) => {
+    console.error("Failed to fetch ongoing anime:", err);
+    return null;
+  });
+
+  if (!response) {
+    throw new Error(
+      "Gagal memuat daftar anime ongoing. Server API mungkin sedang sibuk atau lambat, silakan muat ulang (refresh) halaman ini.",
+    );
+  }
 
   const { pagination, animeList } = response;
   const { totalPages } = pagination;
 
-  // --- LOGIC PAGINATION DESKTOP  ---
   const generateDesktopPagination = () => {
     const pages = [];
     const maxVisible = 5;
@@ -63,19 +71,14 @@ export default async function OngoingPage({
     return pages;
   };
 
-  // --- LOGIC PAGINATION MOBILE ---
-  // Menampilkan: [Current-2, Current-1, Current, Current+1, Current+2]
-  // Maksimal 5 tombol angka agar muat di layar HP
   const generateMobilePagination = () => {
     const pages = [];
     let start = Math.max(1, currentPage - 2);
     let end = Math.min(totalPages, currentPage + 2);
 
-    // Geser window jika berada di awal halaman (biar tetap menampilkan 5 angka jika ada)
     if (currentPage <= 3) {
       end = Math.min(5, totalPages);
     }
-    // Geser window jika berada di akhir halaman
     if (currentPage >= totalPages - 2) {
       start = Math.max(1, totalPages - 4);
     }

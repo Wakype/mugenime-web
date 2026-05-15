@@ -21,32 +21,37 @@ export default async function PopularKomikPage({
   const currentPage = Number(params.page) || 1;
   const currentCategory = (params.category as string) || "trending";
 
-  // Bangun parameter kueri
   const apiParams = new URLSearchParams();
   apiParams.set("category", currentCategory);
   apiParams.set("take", "25");
   apiParams.set("page", currentPage.toString());
 
-  // Fetch API Popular
   const response = await fetchKomik<PopularKomikResponse>(
     `popular?${apiParams.toString()}`,
-  );
+  ).catch((err) => {
+    console.error("Failed to fetch popular komik:", err);
+    return null;
+  });
+
+  if (!response?.data) {
+    throw new Error(
+      "Gagal memuat peringkat komik populer. Server API mungkin sedang sibuk atau lambat, silakan muat ulang (refresh) halaman ini.",
+    );
+  }
 
   const rawPopularList = response?.data?.data || [];
   const meta = response?.data?.meta;
 
-  // MAPPING: Sesuaikan struktur PopularKomikItem agar menjadi KomikItem
-  // supaya bisa langsung dirender oleh komponen KomikCard milikmu.
   const komikList: KomikItem[] = rawPopularList.map((item) => ({
     title: item.data.title,
     slug: item.data.slug,
-    cover: item.data.coverImage, // Mapping coverImage ke cover
+    cover: item.data.coverImage,
     backgroundImage: item.data.backgroundImage,
-    rating: String(item.data.rating), // Konversi angka ke string
+    rating: String(item.data.rating),
     type: item.data.type,
     isHot: item.data.isHot,
     isRecommended: false,
-    chapters: [], // API popular tidak mengembalikan array chapters
+    chapters: [],
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
     author: item.data.author,
@@ -56,18 +61,15 @@ export default async function PopularKomikPage({
     genres: item.data.genres,
   }));
 
-  // Fallback property pagination
   const totalPages = Number(
     meta?.lastPage || Math.ceil(Number(meta?.total || 0) / 25) || 1,
   );
 
-  // Pagination navigation states
   const hasPrevPage = currentPage > 1;
   const hasNextPage = currentPage < totalPages;
   const prevPage = currentPage - 1;
   const nextPage = currentPage + 1;
 
-  // Helper untuk membuat URL Paginasi
   const createPageUrl = (page: number | string) => {
     const urlParams = new URLSearchParams();
     urlParams.set("category", currentCategory);
@@ -75,7 +77,6 @@ export default async function PopularKomikPage({
     return `/popular?${urlParams.toString()}`;
   };
 
-  // --- LOGIC PAGINATION ---
   const generatePagination = () => {
     const pages = [];
     const maxVisible = 5;

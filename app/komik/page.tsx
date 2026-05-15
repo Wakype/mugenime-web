@@ -12,19 +12,16 @@ import AnnouncementSlider from "@/components/announcementSlider";
 export const revalidate = 1800;
 
 export default async function KomikHomePage() {
-  const response = await fetchKomik<KomikHomeResponse>("home").catch(
-    () => null,
-  );
+  const response = await fetchKomik<KomikHomeResponse>("home").catch((err) => {
+    console.error("Failed to fetch komik home:", err);
+    return null;
+  });
+
   const data = response?.data;
 
   if (!data) {
-    return (
-      <div className="min-h-screen bg-background pb-20 selection:bg-primary/30">
-        <ApiStatusUpdater isDown={true} />
-        <div className="flex items-center justify-center min-h-[70vh]">
-          <p className="text-muted-foreground">Gagal memuat data komik.</p>
-        </div>
-      </div>
+    throw new Error(
+      "Gagal memuat beranda komik. Server API mungkin sedang sibuk atau lambat, silakan muat ulang (refresh) halaman ini.",
     );
   }
 

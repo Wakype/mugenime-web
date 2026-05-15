@@ -29,23 +29,28 @@ export default async function UpdateKomikPage({
   ];
   const currentDayName = daysMap[new Date().getDay()];
 
-  // Fetch data using the provided API wrapper
   const response = await fetchKomik<LatestKomikResponse>(
     `latest?page=${currentPage}`,
-  );
+  ).catch((err) => {
+    console.error("Failed to fetch update komik:", err);
+    return null;
+  });
 
-  // Extract data array and pagination metadata
+  if (!response?.data) {
+    throw new Error(
+      "Gagal memuat daftar komik terbaru. Server API mungkin sedang sibuk atau lambat, silakan muat ulang (refresh) halaman ini.",
+    );
+  }
+
   const komikList = response?.data?.data || [];
   const meta = response?.data?.meta || { total: 0, page: 1, lastPage: 1 };
   const totalPages = meta.lastPage;
 
-  // Pagination navigation states
   const hasPrevPage = currentPage > 1;
   const hasNextPage = currentPage < totalPages;
   const prevPage = currentPage - 1;
   const nextPage = currentPage + 1;
 
-  // --- LOGIC PAGINATION (Digunakan untuk Mobile & Desktop) ---
   const generatePagination = () => {
     const pages = [];
     const maxVisible = 5;

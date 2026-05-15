@@ -32,36 +32,31 @@ export default async function WatchPage({ params }: Readonly<Props>) {
   let animeData: AnimeDetail | null = null;
   let batchData: BatchResponse | null = null;
 
-  try {
-    // 1. Fetch Data Episode
-    episodeData = await fetchAnime<EpisodeDetail>(
-      `anime/episode/${episodeSlug}`,
-    );
-
-    try {
-      // 2. Fetch Data Anime Detail
-      animeData = await fetchAnime<AnimeDetail>(`anime/anime/${slug}`);
-
-      // 3. Fetch Batch (Jika ada batchId di animeDetail)
-      if (animeData?.batch?.batchId) {
-        try {
-          batchData = await fetchAnime<BatchResponse>(
-            `anime/batch/${animeData.batch.batchId}`,
-          );
-        } catch (error_) {
-          console.warn("[WatchPage] Gagal fetch batch:", error_);
-        }
-      }
-    } catch (err) {
-      console.warn(`[Sidebar Info] Gagal fetch detail anime: ${slug}`, err);
-    }
-  } catch (error) {
+  episodeData = await fetchAnime<EpisodeDetail>(
+    `anime/episode/${episodeSlug}`,
+  ).catch((error) => {
     console.error("Error fetching episode data:", error);
-    return notFound();
-  }
+    return null;
+  });
 
   if (!episodeData) {
-    return notFound();
+    throw new Error(
+      "Gagal memuat video episode. Server API mungkin sedang sibuk atau lambat, silakan muat ulang (refresh) halaman ini.",
+    );
+  }
+
+  try {
+    animeData = await fetchAnime<AnimeDetail>(`anime/anime/${slug}`).catch(
+      () => null,
+    );
+
+    if (animeData?.batch?.batchId) {
+      batchData = await fetchAnime<BatchResponse>(
+        `anime/batch/${animeData.batch.batchId}`,
+      ).catch(() => null);
+    }
+  } catch (err) {
+    console.warn(`[Sidebar Info] Gagal fetch detail anime: ${slug}`, err);
   }
 
   return (

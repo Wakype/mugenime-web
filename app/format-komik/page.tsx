@@ -20,7 +20,6 @@ export default async function FormatKomikPage({
   const params = await searchParams;
   const currentPage = Number(params.page) || 1;
 
-  // Tangkap parameter format yang bisa berupa string tunggal atau array
   const rawFormat = params.format;
   const selectedFormats = Array.isArray(rawFormat)
     ? rawFormat
@@ -28,7 +27,6 @@ export default async function FormatKomikPage({
       ? [rawFormat]
       : [];
 
-  // Bangun parameter kueri untuk API Advance Search
   const apiParams = new URLSearchParams();
   apiParams.set("page", currentPage.toString());
   apiParams.set("take", "25");
@@ -36,27 +34,32 @@ export default async function FormatKomikPage({
   apiParams.set("sortOrder", "desc");
   selectedFormats.forEach((f) => apiParams.append("format", f));
 
-  // Fetch API
   const response = await fetchKomik<AdvanceSearchKomikResponse>(
     `advanceSearch?${apiParams.toString()}`,
-  );
+  ).catch((err) => {
+    console.error("Failed to fetch format komik:", err);
+    return null;
+  });
+
+  if (!response?.data) {
+    throw new Error(
+      "Gagal memuat koleksi komik berdasarkan format. Server API mungkin sedang sibuk atau lambat, silakan muat ulang (refresh) halaman ini.",
+    );
+  }
 
   const komikList = response?.data?.data || [];
   const meta = response?.data?.meta;
   const hasNextPageAPI = response?.data?.hasNextPage || false;
 
-  // Fallback property jika struktur API berbeda
   const totalPages = Number(
     meta?.lastPage || Math.ceil(Number(meta?.total || 0) / 25) || 1,
   );
 
-  // Pagination navigation states
   const hasPrevPage = currentPage > 1;
   const hasNextPage = currentPage < totalPages || hasNextPageAPI;
   const prevPage = currentPage - 1;
   const nextPage = currentPage + 1;
 
-  // Helper untuk membuat URL Paginasi dengan mempertahankan filter format yang sedang aktif
   const createPageUrl = (page: number | string) => {
     const urlParams = new URLSearchParams();
     urlParams.set("page", page.toString());
@@ -64,7 +67,6 @@ export default async function FormatKomikPage({
     return `/format-komik?${urlParams.toString()}`;
   };
 
-  // --- LOGIC PAGINATION ---
   const generatePagination = () => {
     const pages = [];
     const maxVisible = 5;

@@ -6,7 +6,19 @@ import { Library, ArrowUpRight } from "lucide-react";
 export const revalidate = 86400;
 
 export default async function ListAnimePage() {
-  const response = await fetchAnime<AnimeListResponse>("anime/unlimited");
+  const response = await fetchAnime<AnimeListResponse>("anime/unlimited").catch(
+    (err) => {
+      console.error("Failed to fetch anime list A-Z:", err);
+      return null;
+    },
+  );
+
+  if (!response?.list) {
+    throw new Error(
+      "Gagal memuat daftar indeks Anime A-Z. Server API mungkin sedang sibuk atau lambat, silakan muat ulang (refresh) halaman ini.",
+    );
+  }
+
   const animeGroups = response.list;
 
   return (

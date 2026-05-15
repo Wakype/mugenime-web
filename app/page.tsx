@@ -26,9 +26,18 @@ export const revalidate = 1800;
 
 export default async function HomePage() {
   const [data, batchDataResponse] = await Promise.all([
-    fetchAnime<HomeData>("anime/home").catch(() => null),
+    fetchAnime<HomeData>("anime/home").catch((err) => {
+      console.error("Failed to fetch anime home:", err);
+      return null;
+    }),
     fetchKS<KS_LatestResponse>("latest?page=1").catch(() => null),
   ]);
+
+  if (!data?.ongoing) {
+    throw new Error(
+      "Gagal memuat beranda Anime. Server API mungkin sedang sibuk atau lambat, silakan muat ulang (refresh) halaman ini.",
+    );
+  }
 
   if (!data?.ongoing) {
     return (

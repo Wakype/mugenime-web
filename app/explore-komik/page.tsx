@@ -45,9 +45,18 @@ export default async function ExploreKomikPage({
   const [komikRes, genresRes] = await Promise.all([
     fetchKomik<AdvanceSearchKomikResponse>(
       `advanceSearch?${apiParams.toString()}`,
-    ),
-    fetchKomik<GenresResponse>("genres"),
+    ).catch((err) => {
+      console.error("Failed to fetch explore komik:", err);
+      return null;
+    }),
+    fetchKomik<GenresResponse>("genres").catch(() => null),
   ]);
+
+  if (!komikRes?.data) {
+    throw new Error(
+      "Gagal memuat hasil pencarian komik. Server API mungkin sedang sibuk atau lambat, silakan muat ulang (refresh) halaman ini.",
+    );
+  }
 
   const komikList = komikRes?.data?.data || [];
   const meta = komikRes?.data?.meta;

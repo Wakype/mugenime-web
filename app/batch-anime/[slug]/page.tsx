@@ -182,17 +182,18 @@ export default async function BatchAnimeDetailPage({
   params,
 }: Readonly<Props>) {
   const { slug } = await params;
-  let responseData: KS_DetailResponse;
 
-  try {
-    responseData = await fetchKS<KS_DetailResponse>(`detail/${slug}`);
-  } catch (error) {
-    console.error("Failed to fetch anime detail:", error);
-    return notFound();
-  }
+  const responseData = await fetchKS<KS_DetailResponse>(`detail/${slug}`).catch(
+    (err) => {
+      console.error("Failed to fetch batch anime detail:", err);
+      return null;
+    },
+  );
 
-  if (responseData.status !== "success" || !responseData.detail) {
-    return notFound();
+  if (responseData?.status !== "success" || !responseData.detail) {
+    throw new Error(
+      "Gagal memuat detail anime batch. Server API mungkin sedang sibuk atau lambat, silakan muat ulang (refresh) halaman ini.",
+    );
   }
 
   const anime = responseData.detail;
@@ -336,7 +337,10 @@ export default async function BatchAnimeDetailPage({
       <div className="flex items-start gap-3 p-4 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400">
         <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
         <p className="text-sm leading-relaxed text-justify">
-          <strong>Informasi:</strong> Susunan resolusi pada link download terkadang bisa sedikit berantakan atau tidak sesuai urutan. Mohon untuk mengecek kembali dengan teliti resolusi pada link tujuan sebelum mulai mengunduh.
+          <strong>Informasi:</strong> Susunan resolusi pada link download
+          terkadang bisa sedikit berantakan atau tidak sesuai urutan. Mohon
+          untuk mengecek kembali dengan teliti resolusi pada link tujuan sebelum
+          mulai mengunduh.
         </p>
       </div>
 
@@ -517,7 +521,10 @@ export default async function BatchAnimeDetailPage({
           {DownloadBlock}
           {TagsBlock}
           <div className="pt-4">
-            <CommentSection identifier={slug} page_url={`/batch-anime/${slug}`}/>
+            <CommentSection
+              identifier={slug}
+              page_url={`/batch-anime/${slug}`}
+            />
           </div>
         </div>
 
@@ -531,7 +538,10 @@ export default async function BatchAnimeDetailPage({
             {DownloadBlock}
             {TagsBlock}
             <div className="pt-4">
-              <CommentSection identifier={slug} page_url={`/batch-anime/${slug}`}/>
+              <CommentSection
+                identifier={slug}
+                page_url={`/batch-anime/${slug}`}
+              />
             </div>
           </div>
 

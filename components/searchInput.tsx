@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -40,9 +41,18 @@ export default function SearchInput({
   const [results, setResults] = useState<SearchResult[]>([]);
   const [batchResults, setBatchResults] = useState<KS_AnimeItem[]>([]);
   const [komikResults, setKomikResults] = useState<KomikItem[]>([]);
+
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+
+  // ─── Independent Loading States ──────────────────────────────────────────
+  const [isAnimeLoading, setIsAnimeLoading] = useState(false);
+  const [isBatchLoading, setIsBatchLoading] = useState(false);
+  const [isKomikLoading, setIsKomikLoading] = useState(false);
+
+  // Global loading state (true jika salah satu masih fetch)
+  const isLoading = isAnimeLoading || isBatchLoading || isKomikLoading;
+
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -57,37 +67,44 @@ export default function SearchInput({
   }, [query]);
 
   useEffect(() => {
-    const fetchResults = async () => {
-      if (debouncedQuery.length < 3) {
+    if (debouncedQuery.length < 3) {
+      setResults([]);
+      setBatchResults([]);
+      setKomikResults([]);
+      return;
+    }
+
+    setIsAnimeLoading(true);
+    setIsBatchLoading(true);
+    setIsKomikLoading(true);
+    setIsOpen(true);
+
+    // Fetch Anime Series
+    searchAnimeAction(debouncedQuery)
+      .then((data) => setResults(data || []))
+      .catch((err) => {
+        console.error("Anime search error:", err);
         setResults([]);
+      })
+      .finally(() => setIsAnimeLoading(false));
+
+    // Fetch Batch / Movie
+    fetchKS<KS_SearchResponse>(`search/${encodeURIComponent(debouncedQuery)}`)
+      .then((data) => setBatchResults(data?.anime_list || []))
+      .catch((err) => {
+        console.error("Batch search error:", err);
         setBatchResults([]);
+      })
+      .finally(() => setIsBatchLoading(false));
+
+    // Fetch Komik
+    searchKomikAction(debouncedQuery)
+      .then((data) => setKomikResults(data || []))
+      .catch((err) => {
+        console.error("Komik search error:", err);
         setKomikResults([]);
-        return;
-      }
-
-      setIsLoading(true);
-
-      try {
-        const [stdData, ksData, komikData] = await Promise.all([
-          searchAnimeAction(debouncedQuery).catch(() => []),
-          fetchKS<KS_SearchResponse>(
-            `search/${encodeURIComponent(debouncedQuery)}`,
-          ).catch(() => null),
-          searchKomikAction(debouncedQuery).catch(() => []),
-        ]);
-
-        setResults(stdData || []);
-        setBatchResults(ksData?.anime_list || []);
-        setKomikResults(komikData || []);
-      } catch (error) {
-        console.error("Search error:", error);
-      } finally {
-        setIsLoading(false);
-        setIsOpen(true);
-      }
-    };
-
-    fetchResults();
+      })
+      .finally(() => setIsKomikLoading(false));
   }, [debouncedQuery]);
 
   useEffect(() => {
@@ -184,7 +201,6 @@ export default function SearchInput({
     return (
       <div className="flex flex-col gap-1 p-2">
         {results.map((anime) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const genresText = anime.genres
             ?.map((g: any) => g?.genreId || g?.name || "")
             .filter(Boolean)
@@ -263,7 +279,6 @@ export default function SearchInput({
     return (
       <div className="flex flex-col gap-1 p-2">
         {batchResults.map((anime) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const genresText = anime.genres
             ?.map((g: any) => g?.name || "")
             .filter(Boolean)
@@ -336,7 +351,6 @@ export default function SearchInput({
         {komikResults.map((komik) => {
           const latestChapter = getLatestChapter(komik.chapters);
           const genresText = komik.genres
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ?.map((g: any) => g?.data?.name || g?.name || "")
             .filter(Boolean)
             .join(", ");
@@ -410,28 +424,23 @@ export default function SearchInput({
     );
   };
 
-  // ─── Loading skeleton ────────────────────────────────────────────────────
-  const renderLoading = () => (
-    // Make sure the skeleton grid also follows the correct flex-1 constraints
-    <div className="flex-none md:flex-1 md:min-h-0 flex flex-col md:grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/40">
-      {[0, 1, 2].map((i) => (
-        <div key={i} className="flex flex-col gap-3 p-4">
-          {[...Array(5)].map((_, j) => (
-            <div key={j} className="flex items-center gap-3 animate-pulse">
-              <div className="w-12 h-[68px] rounded-lg bg-muted shrink-0" />
-              <div className="flex-1 space-y-2">
-                <div className="h-3 bg-muted rounded w-4/5" />
-                <div className="h-2.5 bg-muted rounded w-3/5" />
-                <div className="h-2 bg-muted rounded w-2/5" />
-              </div>
-            </div>
-          ))}
+  // ─── Single Column Loading skeleton ──────────────────────────────────────
+  const renderColLoading = () => (
+    <div className="flex flex-col gap-3 p-4">
+      {[...new Array(5)].map((_, j) => (
+        <div key={j} className="flex items-center gap-3 animate-pulse">
+          <div className="w-12 h-[68px] rounded-lg bg-muted shrink-0" />
+          <div className="flex-1 space-y-2">
+            <div className="h-3 bg-muted rounded w-4/5" />
+            <div className="h-2.5 bg-muted rounded w-3/5" />
+            <div className="h-2 bg-muted rounded w-2/5" />
+          </div>
         </div>
       ))}
     </div>
   );
 
-  // ─── Empty state ─────────────────────────────────────────────────────────
+  // ─── Global Empty state ──────────────────────────────────────────────────
   const renderEmpty = () => (
     <div className="py-20 text-center flex flex-col items-center gap-4">
       <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center">
@@ -455,7 +464,7 @@ export default function SearchInput({
       <form onSubmit={handleSubmit} className="relative">
         <div
           className={cn(
-            "absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-primary/25 via-primary/15 to-primary/25 blur-sm transition-opacity duration-300 pointer-events-none",
+            "absolute -inset-0.5 rounded-2xl bg-linear-to-r from-primary/25 via-primary/15 to-primary/25 blur-sm transition-opacity duration-300 pointer-events-none",
             isFocused ? "opacity-100" : "opacity-0",
           )}
         />
@@ -560,14 +569,11 @@ export default function SearchInput({
             )}
           </div>
 
-          {/* Body Container — Fixed: Added flex flex-col to pass down the height constraint properly */}
+          {/* Body Container */}
           <div className="flex-1 flex flex-col overflow-y-auto md:overflow-hidden min-h-0">
-            {isLoading ? (
-              <div className="h-full">{renderLoading()}</div>
-            ) : !hasAnyResults ? (
+            {!isLoading && !hasAnyResults ? (
               renderEmpty()
             ) : (
-              // Fixed: Added flex-1 and min-h-0 so the grid row honors the parent max height
               <div className="flex-none md:flex-1 md:min-h-0 flex flex-col md:grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/40">
                 {/* Col 1: Anime Series */}
                 <div className="flex flex-col flex-none md:h-full md:min-h-0">
@@ -579,12 +585,15 @@ export default function SearchInput({
                       </span>
                     </div>
                     <span className="text-xs font-mono text-muted-foreground/40">
-                      {results.length}
+                      {isAnimeLoading ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        results.length
+                      )}
                     </span>
                   </div>
-                  {/* Fixed: Added md:flex-1 md:min-h-0 to make the internal container scrollable */}
                   <div className="flex-none md:flex-1 md:min-h-0 overflow-visible md:overflow-y-auto overscroll-contain pb-2 md:pb-0">
-                    {renderAnimeCol()}
+                    {isAnimeLoading ? renderColLoading() : renderAnimeCol()}
                   </div>
                 </div>
 
@@ -598,11 +607,15 @@ export default function SearchInput({
                       </span>
                     </div>
                     <span className="text-xs font-mono text-muted-foreground/40">
-                      {batchResults.length}
+                      {isBatchLoading ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        batchResults.length
+                      )}
                     </span>
                   </div>
                   <div className="flex-none md:flex-1 md:min-h-0 overflow-visible md:overflow-y-auto overscroll-contain pb-2 md:pb-0">
-                    {renderBatchCol()}
+                    {isBatchLoading ? renderColLoading() : renderBatchCol()}
                   </div>
                 </div>
 
@@ -616,11 +629,15 @@ export default function SearchInput({
                       </span>
                     </div>
                     <span className="text-xs font-mono text-muted-foreground/40">
-                      {komikResults.length}
+                      {isKomikLoading ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        komikResults.length
+                      )}
                     </span>
                   </div>
                   <div className="flex-none md:flex-1 md:min-h-0 overflow-visible md:overflow-y-auto overscroll-contain pb-2 md:pb-0">
-                    {renderKomikCol()}
+                    {isKomikLoading ? renderColLoading() : renderKomikCol()}
                   </div>
                 </div>
               </div>

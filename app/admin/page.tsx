@@ -57,7 +57,7 @@ export default async function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20 pt-[10vh]">
+    <div className="min-h-screen bg-background pb-20 py-10">
       <div className="container mx-auto px-4 space-y-10">
         {/* HEADER */}
         <div className="relative rounded-3xl bg-card border border-border p-6 md:p-10 shadow-sm overflow-hidden">

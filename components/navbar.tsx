@@ -201,7 +201,10 @@ export default function Navbar() {
     };
     supabase.auth
       .getSession()
-      .then(({ data: { session } }) => handleUserSession(session?.user));
+      .then(({ data: { session } }) => handleUserSession(session?.user))
+      .catch((err) => {
+        console.error("Error getting session in Navbar:", err);
+      });
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_e, s) => handleUserSession(s?.user));

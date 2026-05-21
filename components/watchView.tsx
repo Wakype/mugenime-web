@@ -72,20 +72,25 @@ export default function WatchView({
       poster: animeDetail.poster || "",
     };
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-    if (session) {
-      await supabase.from("watch_history").upsert(
-        {
-          user_id: session.user.id,
-          ...historyPayload,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id, anime_slug, episode_slug" },
-      );
-    } else {
+      if (session) {
+        await supabase.from("watch_history").upsert(
+          {
+            user_id: session.user.id,
+            ...historyPayload,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id, anime_slug, episode_slug" },
+        );
+      } else {
+        addToHistory({ ...historyPayload, updated_at: Date.now() });
+      }
+    } catch (error) {
+      console.error("Error saving watch history, falling back to local storage:", error);
       addToHistory({ ...historyPayload, updated_at: Date.now() });
     }
   }, [

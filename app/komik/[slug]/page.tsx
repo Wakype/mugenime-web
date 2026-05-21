@@ -26,7 +26,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import CommentSection from "@/components/commentSection";
 import ShareButton from "@/components/shareButton";

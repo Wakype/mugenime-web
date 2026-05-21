@@ -55,33 +55,39 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-      if (!session) {
+        if (!session) {
+          router.push("/");
+          return;
+        }
+
+        // Fetch the latest profile data from the database
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name, avatar_url")
+          .eq("id", session.user.id)
+          .single();
+
+        setUser(session.user);
+
+        // Use database values first, fallback to metadata if db is somehow empty
+        setFullName(
+          profile?.full_name || session.user.user_metadata?.full_name || "",
+        );
+        setAvatarUrl(
+          profile?.avatar_url || session.user.user_metadata?.avatar_url || "",
+        );
+      } catch (error) {
+        console.error("Error fetching user session/profile in ProfilePage:", error);
+        toast.error("Gagal memuat profil. Silakan coba lagi.");
         router.push("/");
-        return;
+      } finally {
+        setIsLoading(false);
       }
-
-      // Fetch the latest profile data from the database
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("full_name, avatar_url")
-        .eq("id", session.user.id)
-        .single();
-
-      setUser(session.user);
-
-      // Use database values first, fallback to metadata if db is somehow empty
-      setFullName(
-        profile?.full_name || session.user.user_metadata?.full_name || "",
-      );
-      setAvatarUrl(
-        profile?.avatar_url || session.user.user_metadata?.avatar_url || "",
-      );
-
-      setIsLoading(false);
     };
     fetchUser();
   }, [router, supabase]); // Supabase client itself is stable, so it's safe as dependency

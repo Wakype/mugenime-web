@@ -27,33 +27,44 @@ export default function HistoryPage() {
 
   useEffect(() => {
     const fetchHistory = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-      if (session) {
-        setIsLoggedIn(true);
-        const { data, error } = await supabase
-          .from("watch_history")
-          .select("*")
-          .order("updated_at", { ascending: false });
+        if (session) {
+          setIsLoggedIn(true);
+          const { data, error } = await supabase
+            .from("watch_history")
+            .select("*")
+            .order("updated_at", { ascending: false });
 
-        if (!error && data) {
-          const formatted = data.map((item) => ({
-            ...item,
-            updated_at: new Date(item.updated_at).getTime(),
-          }));
-          setHistoryData(formatted);
+          if (!error && data) {
+            const formatted = data.map((item) => ({
+              ...item,
+              updated_at: new Date(item.updated_at).getTime(),
+            }));
+            setHistoryData(formatted);
+          }
+        } else {
+          // For Guest: Rehydrate, cleanup old data, then set state
+          useStore.persist.rehydrate();
+          setTimeout(() => {
+            cleanupOldHistory(); // Remove data > 30 days from local storage
+            setHistoryData(useStore.getState().watchHistory);
+          }, 100);
         }
-      } else {
-        // For Guest: Rehydrate, cleanup old data, then set state
+      } catch (error) {
+        console.error("Error fetching watch history:", error);
+        // Fallback to guest history
         useStore.persist.rehydrate();
         setTimeout(() => {
-          cleanupOldHistory(); // Remove data > 30 days from local storage
+          cleanupOldHistory();
           setHistoryData(useStore.getState().watchHistory);
         }, 100);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     fetchHistory();
@@ -95,42 +106,53 @@ export default function HistoryPage() {
 
   const handleClearAll = async () => {
     setIsLoading(true);
-    if (isLoggedIn) {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session) {
-        await supabase
-          .from("watch_history")
-          .delete()
-          .eq("user_id", session.user.id);
+    try {
+      if (isLoggedIn) {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (session) {
+          await supabase
+            .from("watch_history")
+            .delete()
+            .eq("user_id", session.user.id);
+        }
+      } else {
+        clearGuestHistory();
       }
-    } else {
-      clearGuestHistory();
+      setHistoryData([]);
+      toast.success("Semua riwayat tontonan berhasil dibersihkan");
+    } catch (error) {
+      console.error("Error clearing watch history:", error);
+      toast.error("Gagal membersihkan riwayat tontonan");
+    } finally {
+      setIsLoading(false);
     }
-    setHistoryData([]);
-    setIsLoading(false);
-    toast.success("Semua riwayat tontonan berhasil dibersihkan");
   };
 
   // Function to handle specific anime deletion
   const handleRemoveAnime = async (animeSlug: string) => {
-    if (isLoggedIn) {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session) {
-        await supabase
-          .from("watch_history")
-          .delete()
-          .match({ user_id: session.user.id, anime_slug: animeSlug });
+    try {
+      if (isLoggedIn) {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (session) {
+          await supabase
+            .from("watch_history")
+            .delete()
+            .match({ user_id: session.user.id, anime_slug: animeSlug });
+        }
+      } else {
+        removeAnimeHistory(animeSlug);
       }
-    } else {
-      removeAnimeHistory(animeSlug);
+      
+      setHistoryData((prev) => prev.filter((item) => item.anime_slug !== animeSlug));
+      toast.success("Riwayat anime berhasil dihapus");
+    } catch (error) {
+      console.error("Error removing anime from history:", error);
+      toast.error("Gagal menghapus riwayat anime");
     }
-    
-    setHistoryData((prev) => prev.filter((item) => item.anime_slug !== animeSlug));
-    toast.success("Riwayat anime berhasil dihapus");
   };
 
   let pageContent;

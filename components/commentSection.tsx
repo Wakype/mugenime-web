@@ -253,9 +253,14 @@ export default function CommentSection({
       }
     };
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      syncAuthData(session?.user || null);
-    });
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        syncAuthData(session?.user || null);
+      })
+      .catch((err) => {
+        console.error("Error getting session in CommentSection:", err);
+        setIsAuthLoading(false);
+      });
 
     const {
       data: { subscription },

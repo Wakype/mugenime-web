@@ -1,4 +1,4 @@
-"use client"; // Error components must be Client Components
+"use client";
 
 import { useEffect } from "react";
 import Link from "next/link";
@@ -13,7 +13,6 @@ export default function Error({
   reset: () => void;
 }>) {
   useEffect(() => {
-    // Log error ke layanan reporting (opsional)
     console.error("Next.js Error Boundary caught:", error);
   }, [error]);
 

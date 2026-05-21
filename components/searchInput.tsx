@@ -12,7 +12,6 @@ import {
   Layers,
   BookOpen,
   ArrowRight,
-  Sparkles,
   Tv,
   BookMarked,
 } from "lucide-react";
@@ -472,7 +471,7 @@ export default function SearchInput({
           className={cn(
             "relative flex items-center rounded-xl border transition-all duration-300 overflow-hidden",
             isFocused
-              ? "bg-background border-primary/40 shadow-lg shadow-primary/10"
+              ? "bg-background border-primary/40"
               : "bg-secondary/60 border-border/60 hover:border-border",
           )}
         >
@@ -553,7 +552,7 @@ export default function SearchInput({
               {isLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin text-primary" />
               ) : (
-                <Sparkles className="w-4 h-4 text-muted-foreground/50" />
+                <Search className="w-4 h-4 text-muted-foreground/50" />
               )}
               <span className="text-sm text-muted-foreground">
                 Hasil untuk{" "}

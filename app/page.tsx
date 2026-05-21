@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-html-link-for-pages */
-import { fetchAnime, fetchKS } from "@/lib/api";
+import { fetchAnime, fetchKomik, fetchKS } from "@/lib/api";
 import { HomeData } from "@/lib/types";
 import { KS_LatestResponse } from "@/lib/batchAnimeTypes";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,8 @@ import CommentSection from "@/components/commentSection";
 import AnnouncementSlider from "@/components/announcementSlider";
 import ApiStatusUpdater from "@/components/apiStatusUpdater";
 import MobileWelcomeDialog from "@/components/mobileWelcomeDialog";
+import { KomikHomeResponse } from "@/lib/komikTypes";
+import NewestKomikSection from "@/components/newestKomikSection";
 
 export const revalidate = 1800;
 
@@ -32,6 +34,15 @@ export default async function HomePage() {
     }),
     fetchKS<KS_LatestResponse>("latest?page=1").catch(() => null),
   ]);
+
+  const responseKomik = await fetchKomik<KomikHomeResponse>("home").catch(
+    (err) => {
+      console.error("Failed to fetch komik home:", err);
+      return null;
+    },
+  );
+
+  const dataKomik = responseKomik?.data;
 
   if (!data?.ongoing) {
     throw new Error(
@@ -97,6 +108,7 @@ export default async function HomePage() {
   const ongoingList = data.ongoing.animeList.slice(1, 11) ?? [];
   const completedList = data.completed?.animeList.slice(0, 10) ?? [];
   const batchList = batchDataResponse?.anime_list?.slice(0, 9) ?? [];
+  const newestList = dataKomik?.newest ?? [];
 
   return (
     <div className="min-h-screen bg-background pb-20 selection:bg-primary/30">
@@ -129,10 +141,10 @@ export default async function HomePage() {
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
                   <Flame className="w-5 h-5" />
-                  <span>Update Terbaru</span>
+                  <span>Update Anime</span>
                 </div>
                 <h2 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">
-                  Sedang Tayang
+                  Anime Ongoing
                 </h2>
               </div>
 
@@ -157,12 +169,17 @@ export default async function HomePage() {
           </div>
         </section>
 
+        {/* --- NEWEST SECTION --- */}
+        <section>
+          <NewestKomikSection newestList={newestList} />
+        </section>
+
         {/* --- COMPLETED SECTION --- */}
         <section className="space-y-6 pt-4">
           <FadeInWrapper>
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-4">
               <div className="space-y-1">
-                <div className="flex items-center gap-2 text-amber-600 dark:text-amber-500 font-bold text-sm uppercase tracking-wider">
+                <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
                   <Sparkles className="w-5 h-5" />
                   <span>Maraton Time</span>
                 </div>
@@ -203,7 +220,7 @@ export default async function HomePage() {
                     <span>Koleksi Lengkap</span>
                   </div>
                   <h2 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">
-                    Anime Batch
+                    Anime Batch / Movie
                   </h2>
                 </div>
 

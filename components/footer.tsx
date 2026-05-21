@@ -58,7 +58,7 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer className="border-t border-white/6 bg-background pt-14 pb-8">
+    <footer className="border-t border-foreground/6 bg-background pt-14 pb-8">
       <div className="container mx-auto px-4 lg:px-8">
         {/* TOP GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-6 mb-12">
@@ -77,7 +77,7 @@ export default function Footer() {
               </div>
             </Link>
 
-            <p className="text-sm leading-relaxed text-justify text-white/35 max-w-[300px]">
+            <p className="text-sm leading-relaxed text-justify text-foreground/35 max-w-[300px]">
               Download dan streaming anime subtitle Indonesia lengkap, format
               MP4 &amp; MKV, tanpa iklan yang mengganggu, dan hemat kuota.
             </p>
@@ -130,7 +130,7 @@ export default function Footer() {
           <div className="lg:col-span-2 space-y-5">
             <div className="flex items-center gap-2">
               <Tv className="w-3.5 h-3.5 text-primary" />
-              <h3 className="text-[11px] font-bold uppercase tracking-widest text-white/30">
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-foreground/30">
                 Anime
               </h3>
             </div>
@@ -139,9 +139,9 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="group flex items-center gap-2.5 text-[13.5px] text-white/50 hover:text-white transition-colors"
+                    className="group flex items-center gap-2.5 text-[13.5px] text-foreground/50 hover:text-foreground transition-colors"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary/60 group-hover:bg-primary transition-colors flex-shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary/60 group-hover:bg-primary transition-colors shrink-0" />
                     {link.name}
                   </Link>
                 </li>
@@ -153,7 +153,7 @@ export default function Footer() {
           <div className="lg:col-span-2 space-y-5">
             <div className="flex items-center gap-2">
               <BookOpen className="w-3.5 h-3.5 text-primary" />
-              <h3 className="text-[11px] font-bold uppercase tracking-widest text-white/30">
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-foreground/30">
                 Komik
               </h3>
             </div>
@@ -162,12 +162,12 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="group flex items-center gap-2.5 text-[13.5px] text-white/50 hover:text-white transition-colors"
+                    className="group flex items-center gap-2.5 text-[13.5px] text-foreground/50 hover:text-foreground transition-colors"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary/60 group-hover:bg-primary transition-colors flex-shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary/60 group-hover:bg-primary transition-colors shrink-0" />
                     {link.name}
                     {link.badge && (
-                      <span className="text-[9px] font-bold bg-violet-500/20 text-violet-300 px-1.5 py-0.5 rounded tracking-wide">
+                      <span className="text-[9px] font-bold bg-violet-500/20 text-violet-500 dark:text-violet-300 px-1.5 py-0.5 rounded tracking-wide">
                         NEW
                       </span>
                     )}
@@ -179,7 +179,7 @@ export default function Footer() {
 
           {/* PANDUAN LINKS */}
           <div className="lg:col-span-2 space-y-5">
-            <h3 className="text-[11px] font-bold uppercase tracking-widest text-white/30">
+            <h3 className="text-[11px] font-bold uppercase tracking-widest text-foreground/30">
               Panduan
             </h3>
             <ul className="space-y-2.5">
@@ -187,7 +187,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-[13.5px] text-white/50 hover:text-white transition-colors"
+                    className="text-[13.5px] text-foreground/50 hover:text-foreground transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -203,12 +203,12 @@ export default function Footer() {
               className={cn(
                 "rounded-2xl border p-4 transition-colors",
                 mounted && isApiDown
-                  ? "border-red-500/20 bg-red-500/[0.04]"
-                  : "border-white/[0.07] bg-white/[0.03]",
+                  ? "border-red-500/20 bg-red-500/4"
+                  : "border-foreground/[0.07] bg-foreground/3",
               )}
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-white/25">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-foreground/25">
                   System Status
                 </span>
                 <span className="relative flex h-2 w-2">
@@ -232,28 +232,28 @@ export default function Footer() {
                   className={cn(
                     "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border",
                     mounted && isApiDown
-                      ? "border-red-500/20 bg-red-500/10 text-red-400"
-                      : "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",
+                      ? "border-red-500/20 bg-red-500/10 text-red-500 dark:text-red-400"
+                      : "border-emerald-500/20 bg-emerald-500/10 text-emerald-500 dark:text-emerald-400",
                   )}
                 >
                   <Zap className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-[13px] font-semibold text-white/80 leading-none mb-1">
+                  <p className="text-[13px] font-semibold text-foreground/80 leading-none mb-1">
                     API Service
                   </p>
                   <div className="flex items-center gap-1">
                     {mounted && isApiDown ? (
                       <>
-                        <XCircle className="w-3 h-3 text-red-400" />
-                        <p className="text-[11px] font-medium text-red-400">
+                        <XCircle className="w-3 h-3 text-red-500 dark:text-red-400" />
+                        <p className="text-[11px] font-medium text-red-500 dark:text-red-400">
                           Maintenance / Down
                         </p>
                       </>
                     ) : (
                       <>
-                        <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                        <p className="text-[11px] font-medium text-emerald-400">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-500 dark:text-emerald-400" />
+                        <p className="text-[11px] font-medium text-emerald-500 dark:text-emerald-400">
                           Operational (Stable)
                         </p>
                       </>
@@ -266,27 +266,27 @@ export default function Footer() {
             {/* Report Button */}
             <Link
               href="/report"
-              className="flex items-center gap-2.5 w-full px-4 py-2.5 rounded-xl border border-rose-500/20 bg-rose-500/[0.06] text-rose-400 text-[13px] font-medium hover:bg-rose-500/[0.12] hover:border-rose-500/30 transition-all"
+              className="flex items-center gap-2.5 w-full px-4 py-2.5 rounded-xl border border-rose-500/20 bg-rose-500/6 text-rose-500 dark:text-rose-400 text-[13px] font-medium hover:bg-rose-500/12 hover:border-rose-500/30 transition-all"
             >
-              <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+              <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
               Lapor Link Rusak / Error
             </Link>
           </div>
         </div>
 
         {/* DIVIDER */}
-        <Separator className="bg-white/[0.06]" />
+        <Separator className="bg-foreground/6" />
 
         {/* BOTTOM */}
         <div className="mt-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="space-y-1">
-            <p className="text-[12px] text-white/40">
-              <span className="text-white/55 font-medium">
+            <p className="text-[12px] text-foreground/40">
+              <span className="text-foreground/60 font-medium">
                 © {currentYear} Mugenime.
               </span>{" "}
               Semua hak dilindungi.
             </p>
-            <p className="text-[11px] text-white/20 max-w-md">
+            <p className="text-[11px] text-foreground/25">
               Mugenime tidak menyimpan file video di server sendiri. Semua
               konten disediakan oleh pihak ketiga non-afiliasi.
             </p>
@@ -295,13 +295,13 @@ export default function Footer() {
           <div className="flex gap-5">
             <Link
               href="/terms"
-              className="text-[12px] text-white/25 hover:text-white/60 transition-colors"
+              className="text-[12px] text-foreground/25 hover:text-foreground/60 transition-colors"
             >
               Terms
             </Link>
             <Link
               href="/privacy"
-              className="text-[12px] text-white/25 hover:text-white/60 transition-colors"
+              className="text-[12px] text-foreground/25 hover:text-foreground/60 transition-colors"
             >
               Privacy
             </Link>
@@ -327,7 +327,7 @@ function SocialButton({
       target="_blank"
       rel="noopener noreferrer"
       aria-label={label}
-      className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.04] text-white/50 hover:bg-violet-500/15 hover:border-violet-500/30 hover:text-violet-300 transition-all"
+      className="flex h-9 w-9 items-center justify-center rounded-xl border border-foreground/[0.07] bg-foreground/4 text-foreground/50 hover:bg-violet-500/15 hover:border-violet-500/30 hover:text-violet-500 dark:hover:text-violet-300 transition-all"
     >
       {children}
     </a>

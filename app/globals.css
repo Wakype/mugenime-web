@@ -7,9 +7,11 @@
 /* DEFINISI VARIABEL WARNA */
 :root {
   /* --- LIGHT MODE --- */
-  --background: 0 0% 100%; /* White */
+  /* Diubah ke Soft Zinc agar tidak terlalu menyilaukan */
+  --background: 0 0% 100%;
   --foreground: 240 10% 3.9%; /* Zinc 950 */
 
+  /* Card dan Popover dibiarkan putih murni agar kontras dengan background */
   --card: 0 0% 100%;
   --card-foreground: 240 10% 3.9%;
 
@@ -35,6 +37,7 @@
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 0 0% 98%;
 
+  /* Border dibuat sedikit lebih gelap (Zinc-200) agar terlihat di atas background baru */
   --border: 240 5.9% 90%;
   --input: 240 5.9% 90%;
   --ring: 243 75% 59%; /* Samakan dengan Primary */
@@ -184,7 +187,9 @@ html {
   border-radius: 4px;
   padding: 0.1em 0.3em;
   cursor: pointer;
-  transition: color 0.3s ease, background-color 0.3s ease;
+  transition:
+    color 0.3s ease,
+    background-color 0.3s ease;
   user-select: none; /* biar ga ke-select saat hover */
 }
 

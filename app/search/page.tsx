@@ -1,8 +1,6 @@
 import { searchAnimeAction, searchKomikAction } from "@/app/actions";
 import { fetchKS } from "@/lib/api";
-import { SearchResult } from "@/lib/types";
 import { KS_SearchResponse } from "@/lib/batchAnimeTypes";
-import { KomikItem } from "@/lib/komikTypes";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -30,7 +28,7 @@ export default async function SearchPage({
   const params = await searchParams;
   const query = params.q || "";
 
-  const [results, batchResponse, komikResults] = await Promise.all([
+  const [rawResults, batchResponse, rawKomikResults] = await Promise.all([
     searchAnimeAction(query).catch(() => null),
     fetchKS<KS_SearchResponse>(`search/${encodeURIComponent(query)}`).catch(
       () => null,
@@ -38,18 +36,21 @@ export default async function SearchPage({
     searchKomikAction(query).catch(() => null),
   ]);
 
-  if (results === null && batchResponse === null && komikResults === null) {
+  if (
+    rawResults === null &&
+    batchResponse === null &&
+    rawKomikResults === null
+  ) {
     throw new Error(
       "Gagal melakukan pencarian. Server API mungkin sedang sibuk atau lambat, silakan muat ulang (refresh) halaman ini.",
     );
   }
 
-  const safeResults = results || [];
+  const results = rawResults || [];
   const batchResults = batchResponse?.anime_list || [];
-  const safeKomikResults = komikResults || [];
+  const komikResults = rawKomikResults || [];
 
-  const totalFound =
-    safeResults.length + batchResults.length + safeKomikResults.length;
+  const totalFound = results.length + batchResults.length + komikResults.length;
   const hasResults = totalFound > 0;
 
   return (

@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "dev-https": "next dev --experimental-https",
+    "dev:clean": "rm -rf .next && next dev",
+    "dev:clean-https": "rm -rf .next && next dev --experimental-https",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"

@@ -58,7 +58,9 @@ export default async function KomikHomePage() {
 
           {/* --- NEWEST SECTION --- */}
           {newestList.length > 0 && (
-            <NewestKomikSection newestList={newestList} />
+            <section>
+              <NewestKomikSection newestList={newestList} />
+            </section>
           )}
 
           {/* --- COMMENT SECTION --- */}

@@ -5,14 +5,26 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 
-// Admin client khusus untuk bypass RLS pada aksi krusial
-const supabaseAdmin = createAdminClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!, // Prod
-  // process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY!, // local
-);
+// Helper untuk membuat admin client secara lazy dengan fallback environment variables
+function getAdminClient() {
+  const supabaseUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const serviceKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+  if (!supabaseUrl) {
+    throw new Error("SUPABASE_URL is not set");
+  }
+
+  return createAdminClient(supabaseUrl, serviceKey || "");
+}
 
 export async function adminDeleteComment(commentId: string) {
+  const supabaseAdmin = getAdminClient();
+
   // Cek apakah komentar ini punya balasan (child comments)
   const { data: replies } = await supabaseAdmin
     .from("comments")
@@ -64,6 +76,7 @@ export async function updateUserRole(targetUserId: string, newRole: string) {
     return { error: "Hanya Superadmin yang dapat mengubah role." };
   }
 
+  const supabaseAdmin = getAdminClient();
   const { error } = await supabaseAdmin
     .from("profiles")
     .update({ role: newRole })

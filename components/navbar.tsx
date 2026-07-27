@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useTheme } from "next-themes";
-import { createClient } from "@/utils/supabase/client";
+import { useAuth } from "@/context/auth-context";
 import {
   Home,
   Calendar,
@@ -155,76 +155,19 @@ export default function Navbar() {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const pathname = usePathname();
-  const [user, setUser] = useState<any>(null);
-  const supabase = useMemo(() => createClient(), []);
+  const { user, loginWithGoogle, logout: handleLogout } = useAuth();
+  const handleLoginGoogle = () => {
+    loginWithGoogle();
+  };
   const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const onScroll = () => setScrolled(window.scrollY > 12);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  useEffect(() => {
-    let isMounted = true;
-    setMounted(true);
-    const handleUserSession = async (sessionUser: any) => {
-      if (!sessionUser) {
-        if (isMounted) setUser(null);
-        return;
-      }
-      try {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role, full_name, avatar_url")
-          .eq("id", sessionUser.id)
-          .single();
-        if (isMounted)
-          setUser({
-            ...sessionUser,
-            role: profile?.role || "user",
-            db_full_name:
-              profile?.full_name || sessionUser.user_metadata?.full_name,
-            db_avatar_url:
-              profile?.avatar_url || sessionUser.user_metadata?.avatar_url,
-          });
-      } catch {
-        if (isMounted)
-          setUser({
-            ...sessionUser,
-            role: "user",
-            db_full_name: sessionUser.user_metadata?.full_name,
-            db_avatar_url: sessionUser.user_metadata?.avatar_url,
-          });
-      }
-    };
-    supabase.auth
-      .getSession()
-      .then(({ data: { session } }) => handleUserSession(session?.user))
-      .catch((err) => {
-        console.error("Error getting session in Navbar:", err);
-      });
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_e, s) => handleUserSession(s?.user));
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
-  }, [supabase]);
-
-  const handleLoginGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${globalThis.location.origin}${globalThis.location.pathname}`,
-      },
-    });
-  };
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-  };
 
   const handleNavMouseEnter = (name: string, hasChildren: boolean) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -504,7 +447,7 @@ export default function Navbar() {
                       )}
                     </div>
                     <span className="text-xs font-semibold text-foreground max-w-[80px] truncate">
-                      {user.db_full_name?.split(" ")[0] || "Pengguna"}
+                      {user.db_full_name || "Pengguna"}
                     </span>
                     <ChevronDown className="w-3 h-3 text-muted-foreground/70 transition-transform group-data-[state=open]:rotate-180" />
                   </button>

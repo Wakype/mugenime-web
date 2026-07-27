@@ -176,7 +176,7 @@ export default async function KomikDetailPage({ params }: Readonly<Props>) {
           size="lg"
           className="w-full rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12 transition-all"
         >
-          <Link href={`/komik/${slug}/chapter-${firstChapter.chapterIndex}`}>
+          <Link href={`/komik/${slug}/chapter-${firstChapter.chapterIndex}`} prefetch={false}>
             <BookOpen fill="white" className="w-5 h-5 mr-2" />
             Mulai Baca (Ch. {firstChapter.chapterIndex})
           </Link>
@@ -335,6 +335,7 @@ export default async function KomikDetailPage({ params }: Readonly<Props>) {
             <Link
               key={ep.id}
               href={`/komik/${slug}/chapter-${ep.chapterIndex}`}
+              prefetch={false}
               className="group relative flex items-center justify-center p-3 h-16 bg-card border border-border hover:border-primary/50 rounded-lg transition-all hover:shadow-md hover:shadow-primary/5 overflow-hidden"
             >
               <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />

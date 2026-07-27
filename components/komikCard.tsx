@@ -44,6 +44,7 @@ export default function KomikCard({
           {/* List Image */}
           <Link
             href={`/komik/${comic.slug}`}
+            prefetch={false}
             className="relative w-24 sm:w-28 shrink-0 aspect-[3/4.2] overflow-hidden rounded-lg group"
           >
             {isValidCover ? (
@@ -71,6 +72,7 @@ export default function KomikCard({
           <div className="flex flex-col flex-1 min-w-0">
             <Link
               href={`/komik/${comic.slug}`}
+              prefetch={false}
               className="group-hover:text-primary transition-colors block mb-2"
             >
               <h3 className="font-bold text-base leading-snug line-clamp-2">
@@ -107,6 +109,7 @@ export default function KomikCard({
                     <Link
                       key={ch.chapterIndex}
                       href={`/komik/${comic.slug}/chapter-${ch.chapterIndex}`}
+                      prefetch={false}
                       className="flex items-center justify-between bg-background hover:bg-secondary border border-border/50 rounded-md px-2.5 py-1.5 transition-colors group/ch"
                     >
                       <span className="text-[11px] font-semibold text-foreground group-hover/ch:text-primary">
@@ -137,6 +140,7 @@ export default function KomikCard({
     >
       <Link
         href={`/komik/${comic.slug}`}
+        prefetch={false}
         className="group space-y-3 flex-1 flex flex-col"
       >
         <motion.div
@@ -251,6 +255,7 @@ export default function KomikCard({
             <Link
               key={ch.chapterIndex}
               href={`/komik/${comic.slug}/chapter-${ch.chapterIndex}`}
+              prefetch={false}
               className="flex items-center justify-between bg-secondary/30 hover:bg-secondary/70 border border-border/50 rounded-md px-2.5 py-1.5 transition-colors group/ch"
             >
               <span className="text-[11px] sm:text-xs font-semibold text-foreground group-hover/ch:text-primary">

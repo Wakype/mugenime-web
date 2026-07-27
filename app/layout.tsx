@@ -11,6 +11,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import ScrollToTop from "@/components/scrollToTop";
 import ToggleNavbar from "@/components/toggleNavbar";
 
+import { AuthProvider } from "@/context/auth-context";
+
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
@@ -50,23 +52,25 @@ export default function RootLayout({
       className={`${inter.variable} ${outfit.variable}`}
     >
       <body className="font-sans antialiased scroll-smooth">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <NextTopLoader color="#4f39f6" />
+        <AuthProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <NextTopLoader color="#4f39f6" />
 
-          {/* Gunakan ToggleNavbar di sini */}
-          <ToggleNavbar />
+            {/* Gunakan ToggleNavbar di sini */}
+            <ToggleNavbar />
 
-          <main>{children}</main>
-          <Footer />
-          <ScrollToTop />
-          <Toaster position="top-center" richColors />
-          <Analytics />
-        </ThemeProvider>
+            <main>{children}</main>
+            <Footer />
+            <ScrollToTop />
+            <Toaster position="top-center" richColors />
+            <Analytics />
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

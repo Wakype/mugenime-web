@@ -116,7 +116,7 @@ export default function KomikHero({
                         size="lg"
                         className="rounded-full px-8 font-bold border-0"
                       >
-                        <Link href={`/komik/${hero.slug}`}>Mulai Membaca</Link>
+                        <Link href={`/komik/${hero.slug}`} prefetch={false}>Mulai Membaca</Link>
                       </Button>
                     </div>
                   </div>

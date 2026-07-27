@@ -44,51 +44,26 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import Image from "next/image";
-import { createClient } from "@/utils/supabase/client";
+import { useAuth, ExtendedUser } from "@/context/auth-context";
+import {
+  getCommentsAndReactions,
+  postComment,
+  updateCommentContent,
+  deleteCommentByUser,
+  toggleCommentVote,
+  togglePageReaction,
+  CommentData,
+  PageReaction,
+  CommentProfile as Profile,
+} from "@/services/comment-service";
 import CommentEditor from "./commentEditor";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
-import { User } from "@supabase/supabase-js";
 import { adminDeleteComment } from "@/app/admin/actions";
 
 interface CommentSectionProps {
   identifier: string;
   page_url: string;
-}
-
-interface Profile {
-  full_name: string | null;
-  avatar_url: string | null;
-  role?: string;
-}
-
-interface CommentVote {
-  user_id: string;
-  vote_type: 1 | -1;
-}
-
-interface CommentData {
-  id: string;
-  page_slug: string;
-  user_id: string;
-  content: string;
-  parent_id: string | null;
-  created_at: string;
-  profiles: Profile | null;
-  comment_votes: CommentVote[] | null;
-}
-
-interface PageReaction {
-  id: string;
-  page_slug: string;
-  user_id: string;
-  reaction_type: string;
-}
-
-interface ExtendedUser extends User {
-  role?: string;
-  db_full_name?: string;
-  db_avatar_url?: string;
 }
 
 type SortOption = "newest" | "oldest" | "popular";
@@ -189,10 +164,7 @@ export default function CommentSection({
   identifier,
   page_url,
 }: Readonly<CommentSectionProps>) {
-  const supabase = useMemo(() => createClient(), []);
-
-  const [user, setUser] = useState<ExtendedUser | null>(null);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const { user, isAuthLoading, loginWithGoogle } = useAuth();
 
   const [comments, setComments] = useState<CommentData[]>([]);
   const [pageReactions, setPageReactions] = useState<PageReaction[]>([]);
@@ -210,116 +182,24 @@ export default function CommentSection({
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("newest");
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const syncAuthData = async (sessionUser: User | null) => {
-      if (!sessionUser) {
-        if (isMounted) {
-          setUser(null);
-          setIsAuthLoading(false);
-        }
-        return;
-      }
-      try {
-        // 2. Fetch full_name dan avatar_url
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role, full_name, avatar_url")
-          .eq("id", sessionUser.id)
-          .single();
-
-        if (isMounted) {
-          setUser({
-            ...sessionUser,
-            role: profile?.role || "user",
-            db_full_name:
-              profile?.full_name || sessionUser.user_metadata?.full_name,
-            db_avatar_url:
-              profile?.avatar_url || sessionUser.user_metadata?.avatar_url,
-          });
-          setIsAuthLoading(false);
-        }
-      } catch {
-        if (isMounted) {
-          setUser({
-            ...sessionUser,
-            role: "user",
-            db_full_name: sessionUser.user_metadata?.full_name,
-            db_avatar_url: sessionUser.user_metadata?.avatar_url,
-          });
-          setIsAuthLoading(false);
-        }
-      }
-    };
-
-    supabase.auth.getSession()
-      .then(({ data: { session } }) => {
-        syncAuthData(session?.user || null);
-      })
-      .catch((err) => {
-        console.error("Error getting session in CommentSection:", err);
-        setIsAuthLoading(false);
-      });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      syncAuthData(session?.user || null);
-    });
-
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
-  }, [supabase]);
+  const handleLoginGoogle = async () => {
+    await loginWithGoogle();
+  };
 
   const fetchPageData = useCallback(
     async (showGlobalLoader = true) => {
       if (showGlobalLoader) setIsLoadingComments(true);
-
-      try {
-        const [commentsRes, reactionsRes] = await Promise.all([
-          supabase
-            .from("comments")
-            .select(
-              `*, profiles:user_id (full_name, avatar_url, role), comment_votes (user_id, vote_type)`,
-            )
-            .eq("page_slug", identifier)
-            .order("created_at", { ascending: false }),
-          supabase
-            .from("page_reactions")
-            .select("*")
-            .eq("page_slug", identifier),
-        ]);
-
-        if (!commentsRes.error && commentsRes.data) {
-          setComments(commentsRes.data as unknown as CommentData[]);
-        }
-        if (!reactionsRes.error && reactionsRes.data) {
-          setPageReactions(reactionsRes.data as PageReaction[]);
-        }
-      } catch (err) {
-        console.error("fetchPageData error:", err);
-      } finally {
-        if (showGlobalLoader) setIsLoadingComments(false);
-      }
+      const res = await getCommentsAndReactions(identifier);
+      setComments(res.comments);
+      setPageReactions(res.reactions);
+      if (showGlobalLoader) setIsLoadingComments(false);
     },
-    [identifier, supabase],
+    [identifier],
   );
 
   useEffect(() => {
     fetchPageData();
-  }, [fetchPageData, user?.id]);
-
-  const handleLoginGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${globalThis.location.origin}${globalThis.location.pathname}`,
-      },
-    });
-  };
+  }, [fetchPageData]);
 
   const handleSubmitComment = async (
     htmlContent: string,
@@ -330,12 +210,12 @@ export default function CommentSection({
     setIsSubmitting(true);
     setPendingComment({ parentId, content: htmlContent });
 
-    const { error } = await supabase.from("comments").insert({
-      page_slug: identifier,
-      page_url: page_url,
-      user_id: user.id,
+    const { error } = await postComment({
+      identifier,
+      pageUrl: page_url,
+      userId: user.id,
       content: htmlContent,
-      parent_id: parentId,
+      parentId,
     });
 
     if (error) {
@@ -351,12 +231,14 @@ export default function CommentSection({
   };
 
   const handleUpdateComment = async (commentId: string, newContent: string) => {
+    if (!user) return;
     setIsSubmitting(true);
-    const { error } = await supabase
-      .from("comments")
-      .update({ content: newContent })
-      .eq("id", commentId)
-      .eq("user_id", user?.id);
+
+    const { error } = await updateCommentContent({
+      commentId,
+      userId: user.id,
+      newContent,
+    });
 
     if (error) {
       toast.error("Gagal memperbarui komentar.");
@@ -379,26 +261,15 @@ export default function CommentSection({
       else toast.success("Komentar berhasil dihapus oleh Admin.");
     } else {
       const hasReplies = comments.some((c) => c.parent_id === commentToDelete);
+      const { error } = await deleteCommentByUser({
+        commentId: commentToDelete,
+        userId: user.id,
+        hasReplies,
+        deletedPlaceholder: DELETED_PLACEHOLDER,
+      });
 
-      if (hasReplies) {
-        const { error } = await supabase
-          .from("comments")
-          .update({ content: DELETED_PLACEHOLDER })
-          .eq("id", commentToDelete)
-          .eq("user_id", user.id);
-
-        if (error) toast.error("Gagal menghapus komentar.");
-        else toast.success("Komentar berhasil dihapus.");
-      } else {
-        const { error } = await supabase
-          .from("comments")
-          .delete()
-          .eq("id", commentToDelete)
-          .eq("user_id", user.id);
-
-        if (error) toast.error("Gagal menghapus komentar.");
-        else toast.success("Komentar berhasil dihapus.");
-      }
+      if (error) toast.error("Gagal menghapus komentar.");
+      else toast.success("Komentar berhasil dihapus.");
     }
 
     await fetchPageData(false);
@@ -413,28 +284,18 @@ export default function CommentSection({
       (v) => v.user_id === user.id,
     );
 
-    if (existingVote) {
-      if (existingVote.vote_type === voteType) {
-        await supabase
-          .from("comment_votes")
-          .delete()
-          .eq("comment_id", commentId)
-          .eq("user_id", user.id);
-      } else {
-        await supabase
-          .from("comment_votes")
-          .update({ vote_type: voteType })
-          .eq("comment_id", commentId)
-          .eq("user_id", user.id);
-      }
+    const { error } = await toggleCommentVote({
+      commentId,
+      userId: user.id,
+      voteType,
+      existingVote,
+    });
+
+    if (error) {
+      toast.error("Gagal memperbarui reaksi komentar.");
     } else {
-      await supabase.from("comment_votes").insert({
-        comment_id: commentId,
-        user_id: user.id,
-        vote_type: voteType,
-      });
+      fetchPageData(false);
     }
-    fetchPageData(false);
   };
 
   const handlePageReaction = async (reactionType: string) => {
@@ -443,26 +304,13 @@ export default function CommentSection({
 
     const existingReaction = pageReactions.find((r) => r.user_id === user.id);
 
-    if (existingReaction) {
-      if (existingReaction.reaction_type === reactionType) {
-        await supabase
-          .from("page_reactions")
-          .delete()
-          .eq("id", existingReaction.id);
-      } else {
-        await supabase
-          .from("page_reactions")
-          .update({ reaction_type: reactionType })
-          .eq("id", existingReaction.id);
-      }
-    } else {
-      await supabase.from("page_reactions").insert({
-        page_slug: identifier,
-        user_id: user.id,
-        reaction_type: reactionType,
-      });
-    }
-    fetchPageData(false);
+    const { error } = await togglePageReaction({
+      identifier,
+      userId: user.id,
+      reactionType,
+      existingReaction,
+    });
+
   };
 
   const formatDate = (dateString: string) => {

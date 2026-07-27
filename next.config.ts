@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    // domains: ["sv1.imgkc1.my.id", "be.komikcast.cc"],
     remotePatterns: [
       {
         protocol: "https",
@@ -28,6 +29,18 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "kusonime.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "sv1.imgkc1.my.id",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "be.komikcast.cc",
         port: "",
         pathname: "/**",
       },

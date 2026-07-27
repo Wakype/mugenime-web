@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Home } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/auth-context";
 import { createClient } from "@/utils/supabase/client";
 import CommentSection from "./commentSection";
 import VideoPlayer from "./watch/videoPlayer";
@@ -42,6 +43,7 @@ export default function WatchView({
   episodeSlug,
   slug,
 }: Readonly<WatchViewProps>) {
+  const { user } = useAuth();
   const [currentVideoUrl, setCurrentVideoUrl] = useState<string>(
     episode?.defaultStreamingUrl || "",
   );
@@ -53,7 +55,7 @@ export default function WatchView({
   const isInvalid = !episode?.defaultStreamingUrl;
 
   const { addToHistory } = useStore();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   let parentAnimeSlug = slug;
   if (!parentAnimeSlug && episode.animeId) {
@@ -73,14 +75,10 @@ export default function WatchView({
     };
 
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (session) {
+      if (user) {
         await supabase.from("watch_history").upsert(
           {
-            user_id: session.user.id,
+            user_id: user.id,
             ...historyPayload,
             updated_at: new Date().toISOString(),
           },
@@ -99,7 +97,8 @@ export default function WatchView({
     parentAnimeSlug,
     episodeSlug,
     episode.title,
-    supabase.auth,
+    user,
+    supabase,
     addToHistory,
   ]);
 

@@ -358,6 +358,7 @@ export default function SearchInput({
             <Link
               key={komik.slug}
               href={`/komik/${komik.slug}`}
+              prefetch={false}
               onClick={handleLinkClick}
               className={itemBase}
             >

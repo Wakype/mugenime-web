@@ -33,8 +33,10 @@ import {
 import { toast } from "sonner";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/auth-context";
 
 export default function ProfilePage() {
+  const { logout, refreshProfile } = useAuth();
   const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -168,6 +170,7 @@ export default function ProfilePage() {
       setAvatarUrl(finalAvatarUrl);
       setSelectedFile(null);
       setPreviewUrl(null);
+      await refreshProfile();
       toast.success("Profil berhasil diperbarui!");
     } catch (error: unknown) {
       toast.error((error as Error).message || "Gagal menyimpan.");
@@ -177,7 +180,7 @@ export default function ProfilePage() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await logout();
     router.push("/");
   };
 

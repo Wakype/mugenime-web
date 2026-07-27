@@ -262,7 +262,7 @@ export default function ComicReader({
                       size="icon"
                       className="h-9 w-9 rounded-full cursor-pointer hover:bg-secondary"
                     >
-                      <Link href="/komik">
+                      <Link href="/komik" prefetch={false}>
                         <Home className="w-4 h-4" />
                       </Link>
                     </Button>
@@ -278,7 +278,7 @@ export default function ComicReader({
                       size="icon"
                       className="h-9 w-9 rounded-full cursor-pointer hover:bg-secondary"
                     >
-                      <Link href={`/komik/${slug}`}>
+                      <Link href={`/komik/${slug}`} prefetch={false}>
                         <Book className="w-4 h-4" />
                       </Link>
                     </Button>
@@ -317,6 +317,7 @@ export default function ComicReader({
                         <Link
                           key={ch.id}
                           href={`/komik/${slug}/chapter-${ch.chapterIndex}`}
+                          prefetch={false}
                           className={cn(
                             "px-2 py-3 rounded-xl flex justify-center items-center text-sm font-semibold transition-colors border",
                             ch.chapterIndex === data.chapterIndex
@@ -344,7 +345,7 @@ export default function ComicReader({
                       className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg cursor-pointer hover:bg-background/80"
                     >
                       {prevHref ? (
-                        <Link href={prevHref}>
+                        <Link href={prevHref} prefetch={false}>
                           <ChevronLeft className="w-5 h-5" />
                         </Link>
                       ) : (
@@ -393,7 +394,7 @@ export default function ComicReader({
                       className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg cursor-pointer hover:bg-background/80"
                     >
                       {nextHref ? (
-                        <Link href={nextHref}>
+                        <Link href={nextHref} prefetch={false}>
                           <ChevronRight className="w-5 h-5" />
                         </Link>
                       ) : (

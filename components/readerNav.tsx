@@ -51,7 +51,7 @@ export default function ReaderNav({
           size="icon"
           className="shrink-0 rounded-lg"
         >
-          <Link href={prevHref} title="Chapter Sebelumnya">
+          <Link href={prevHref} prefetch={false} title="Chapter Sebelumnya">
             <ChevronLeft className="w-5 h-5" />
           </Link>
         </Button>
@@ -91,7 +91,7 @@ export default function ReaderNav({
           size="icon"
           className="shrink-0 rounded-lg"
         >
-          <Link href={nextHref} title="Chapter Selanjutnya">
+          <Link href={nextHref} prefetch={false} title="Chapter Selanjutnya">
             <ChevronRight className="w-5 h-5" />
           </Link>
         </Button>

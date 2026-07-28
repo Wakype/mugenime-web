@@ -111,6 +111,7 @@ export default function ScheduleCard({
       <HoverCardTrigger asChild>
         <Link
           href={`/anime/${anime.slug}`}
+          prefetch={false}
           className="group relative block space-y-3"
         >
           {/* POSTER WRAPPER */}

@@ -35,6 +35,7 @@ export default function AnimeCard({
     >
       <Link
         href={`/anime/${anime.animeId}`}
+        prefetch={false}
         className="group block space-y-3 w-full h-full"
       >
         {/* --- CARD CONTAINER --- */}

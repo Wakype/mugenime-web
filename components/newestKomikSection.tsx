@@ -136,7 +136,7 @@ export default function NewestKomikSection({
               asChild
               className="rounded-full border-border hover:bg-secondary group h-9 px-4 text-xs font-semibold ml-2 cursor-pointer"
             >
-              <Link href="/update-komik">
+              <Link href="/update-komik" prefetch={false}>
                 Lihat Semua{" "}
                 <ArrowRight className="w-3.5 h-3.5 ml-1.5 transition-transform group-hover:translate-x-1" />
               </Link>

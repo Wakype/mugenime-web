@@ -32,6 +32,7 @@ export default function EpisodeSidebar({
               <Link
                 key={ep.episodeId}
                 href={`/watch/${parentSlug}/${ep.episodeId}`}
+                prefetch={false}
                 className={cn(
                   "group relative flex flex-col items-center justify-center py-2.5 rounded-xl border text-xs font-bold transition-all duration-300",
                   isCurrent

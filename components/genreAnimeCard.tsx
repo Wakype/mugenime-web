@@ -24,7 +24,7 @@ export default function GenreCard({ anime }: Readonly<{ anime: Anime }>) {
     : "";
 
   return (
-    <Link href={`/anime/${anime.animeId}`} className="group block h-full">
+    <Link href={`/anime/${anime.animeId}`} prefetch={false} className="group block h-full">
       <div className="flex flex-col h-full gap-3">
         {/* --- CARD CONTAINER (IMAGE) --- */}
         <div className="relative aspect-[3/4.2] overflow-hidden rounded-xl bg-muted border border-border shadow-sm transition-all duration-300 group-hover:shadow-xl group-hover:shadow-primary/5 group-hover:-translate-y-1">

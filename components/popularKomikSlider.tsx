@@ -70,7 +70,7 @@ export default function PopularSlider({
               asChild
               className="rounded-full border-border hover:bg-secondary group h-9 px-4 text-xs font-semibold ml-1 sm:ml-2"
             >
-              <Link href="/popular-komik">
+              <Link href="/popular-komik" prefetch={false}>
                 Lihat Semua{" "}
                 <ArrowRight className="w-3.5 h-3.5 ml-1.5 transition-transform group-hover:translate-x-1" />
               </Link>

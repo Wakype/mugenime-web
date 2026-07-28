@@ -149,6 +149,7 @@ export default async function CompletedPage({
               {pagination.hasPrevPage ? (
                 <Link
                   href={`/completed-anime?page=${pagination.prevPage}`}
+                  prefetch={false}
                   aria-label="Halaman Sebelumnya"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -174,7 +175,7 @@ export default async function CompletedPage({
                         : "text-muted-foreground hover:bg-muted",
                     )}
                   >
-                    <Link href={`/completed-anime?page=${page}`}>{page}</Link>
+                    <Link href={`/completed-anime?page=${page}`} prefetch={false}>{page}</Link>
                   </Button>
                 );
               })}
@@ -190,6 +191,7 @@ export default async function CompletedPage({
               {pagination.hasNextPage ? (
                 <Link
                   href={`/completed-anime?page=${pagination.nextPage}`}
+                  prefetch={false}
                   aria-label="Halaman Selanjutnya"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -209,7 +211,7 @@ export default async function CompletedPage({
               className="h-10 gap-2 border-border hover:bg-muted text-muted-foreground hover:text-foreground px-4"
             >
               {pagination.hasPrevPage ? (
-                <Link href={`/completed-anime?page=${pagination.prevPage}`}>
+                <Link href={`/completed-anime?page=${pagination.prevPage}`} prefetch={false}>
                   <ChevronLeft className="w-4 h-4" /> Sebelumnya
                 </Link>
               ) : (
@@ -242,10 +244,10 @@ export default async function CompletedPage({
                       "w-10 h-10 rounded-lg",
                       isCurrent
                         ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                        : "text-[muted-foreground] hover:bg-muted hover:text-foreground",
                     )}
                   >
-                    <Link href={`/completed-anime?page=${page}`}>{page}</Link>
+                    <Link href={`/completed-anime?page=${page}`} prefetch={false}>{page}</Link>
                   </Button>
                 );
               })}
@@ -258,7 +260,7 @@ export default async function CompletedPage({
               className="h-10 gap-2 border-border hover:bg-muted text-muted-foreground hover:text-foreground px-4"
             >
               {pagination.hasNextPage ? (
-                <Link href={`/completed-anime?page=${pagination.nextPage}`}>
+                <Link href={`/completed-anime?page=${pagination.nextPage}`} prefetch={false}>
                   Selanjutnya <ChevronRight className="w-4 h-4" />
                 </Link>
               ) : (

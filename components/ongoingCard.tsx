@@ -21,6 +21,7 @@ export default function OngoingCard({ anime }: Readonly<{ anime: Anime }>) {
   return (
     <Link
       href={`/anime/${anime.animeId}`}
+      prefetch={false}
       className="group block space-y-3 w-full"
     >
       {/* --- CARD CONTAINER --- */}

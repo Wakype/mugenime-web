@@ -157,6 +157,7 @@ export default async function GenreDetailPage({
               {pagination.hasPrevPage ? (
                 <Link
                   href={`/genre-anime/${genre}?page=${pagination.prevPage}`}
+                  prefetch={false}
                   aria-label="Sebelumnya"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -182,7 +183,7 @@ export default async function GenreDetailPage({
                         : "text-muted-foreground hover:bg-muted",
                     )}
                   >
-                    <Link href={`/genre-anime/${genre}?page=${p}`}>{p}</Link>
+                    <Link href={`/genre-anime/${genre}?page=${p}`} prefetch={false}>{p}</Link>
                   </Button>
                 );
               })}
@@ -198,6 +199,7 @@ export default async function GenreDetailPage({
               {pagination.hasNextPage ? (
                 <Link
                   href={`/genre-anime/${genre}?page=${pagination.nextPage}`}
+                  prefetch={false}
                   aria-label="Selanjutnya"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -219,6 +221,7 @@ export default async function GenreDetailPage({
               {pagination.hasPrevPage ? (
                 <Link
                   href={`/genre-anime/${genre}?page=${pagination.prevPage}`}
+                  prefetch={false}
                 >
                   <ChevronLeft className="w-4 h-4" /> Sebelumnya
                 </Link>
@@ -255,7 +258,7 @@ export default async function GenreDetailPage({
                         : "text-muted-foreground hover:bg-muted hover:text-foreground",
                     )}
                   >
-                    <Link href={`/genre-anime/${genre}?page=${p}`}>{p}</Link>
+                    <Link href={`/genre-anime/${genre}?page=${p}`} prefetch={false}>{p}</Link>
                   </Button>
                 );
               })}
@@ -270,6 +273,7 @@ export default async function GenreDetailPage({
               {pagination.hasNextPage ? (
                 <Link
                   href={`/genre-anime/${genre}?page=${pagination.nextPage}`}
+                  prefetch={false}
                 >
                   Selanjutnya <ChevronRight className="w-4 h-4" />
                 </Link>

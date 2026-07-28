@@ -93,7 +93,7 @@ export default function PlayerControls({
           asChild
         >
           {episode.prevEpisode ? (
-            <Link href={`/watch/${slug}/${episode.prevEpisode.episodeId}`}>
+            <Link href={`/watch/${slug}/${episode.prevEpisode.episodeId}`} prefetch={false}>
               <ChevronLeft className="w-4 h-4 sm:mr-1" />{" "}
               <span className="hidden sm:inline">Prev</span>
             </Link>
@@ -112,7 +112,7 @@ export default function PlayerControls({
           asChild
         >
           {episode.nextEpisode ? (
-            <Link href={`/watch/${slug}/${episode.nextEpisode.episodeId}`}>
+            <Link href={`/watch/${slug}/${episode.nextEpisode.episodeId}`} prefetch={false}>
               <span className="hidden sm:inline">Next</span>{" "}
               <ChevronRight className="w-4 h-4 sm:ml-1" />
             </Link>

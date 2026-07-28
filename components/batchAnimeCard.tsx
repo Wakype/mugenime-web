@@ -34,6 +34,7 @@ export default function BatchAnimeCard({
     >
       <Link
         href={`/batch-anime/${anime.slug}`}
+        prefetch={false}
         className="group flex flex-col gap-3 w-full h-full"
       >
         {/* --- IMAGE CONTAINER (16:9 Aspect Ratio) --- */}

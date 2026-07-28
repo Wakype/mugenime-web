@@ -102,7 +102,7 @@ export default async function BatchAnimePage({
             className="h-10 w-10 md:w-auto md:px-4 md:gap-2 border-border hover:bg-muted text-muted-foreground hover:text-foreground"
           >
             {hasPrevPage ? (
-              <Link href={`/batch-anime?page=${currentPage - 1}`}>
+              <Link href={`/batch-anime?page=${currentPage - 1}`} prefetch={false}>
                 <ChevronLeft className="w-4 h-4" />
                 <span className="hidden md:inline">Sebelumnya</span>
               </Link>
@@ -124,7 +124,7 @@ export default async function BatchAnimePage({
                 asChild
                 className="w-10 h-10 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-all hidden sm:inline-flex"
               >
-                <Link href={`/batch-anime?page=${currentPage - 2}`}>
+                <Link href={`/batch-anime?page=${currentPage - 2}`} prefetch={false}>
                   {currentPage - 2}
                 </Link>
               </Button>
@@ -138,7 +138,7 @@ export default async function BatchAnimePage({
                 asChild
                 className="w-10 h-10 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
               >
-                <Link href={`/batch-anime?page=${currentPage - 1}`}>
+                <Link href={`/batch-anime?page=${currentPage - 1}`} prefetch={false}>
                   {currentPage - 1}
                 </Link>
               </Button>
@@ -161,7 +161,7 @@ export default async function BatchAnimePage({
                 asChild
                 className="w-10 h-10 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
               >
-                <Link href={`/batch-anime?page=${currentPage + 1}`}>
+                <Link href={`/batch-anime?page=${currentPage + 1}`} prefetch={false}>
                   {currentPage + 1}
                 </Link>
               </Button>
@@ -175,7 +175,7 @@ export default async function BatchAnimePage({
                 asChild
                 className="w-10 h-10 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-all hidden sm:inline-flex"
               >
-                <Link href={`/batch-anime?page=${currentPage + 2}`}>
+                <Link href={`/batch-anime?page=${currentPage + 2}`} prefetch={false}>
                   {currentPage + 2}
                 </Link>
               </Button>
@@ -190,7 +190,7 @@ export default async function BatchAnimePage({
             className="h-10 w-10 md:w-auto md:px-4 md:gap-2 border-border hover:bg-muted text-muted-foreground hover:text-foreground"
           >
             {hasNextPage ? (
-              <Link href={`/batch-anime?page=${currentPage + 1}`}>
+              <Link href={`/batch-anime?page=${currentPage + 1}`} prefetch={false}>
                 <span className="hidden md:inline">Selanjutnya</span>
                 <ChevronRight className="w-4 h-4" />
               </Link>

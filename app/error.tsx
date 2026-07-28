@@ -70,7 +70,7 @@ export default function Error({
             size="lg"
             className="rounded-full border-border hover:bg-secondary text-muted-foreground hover:text-foreground"
           >
-            <Link href="/">
+            <Link href="/" prefetch={false}>
               <Home className="w-4 h-4 mr-2" />
               Kembali ke Beranda
             </Link>

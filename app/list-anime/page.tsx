@@ -120,6 +120,7 @@ export default async function ListAnimePage() {
                   <Link
                     key={anime.animeId}
                     href={`/anime/${anime.animeId}`}
+                    prefetch={false}
                     className="group flex items-start justify-between p-4 rounded-xl bg-card border border-border hover:border-primary/50 hover:bg-muted/30 hover:shadow-md transition-all duration-300"
                   >
                     <span className="text-sm font-medium text-foreground group-hover:text-primary line-clamp-2 leading-relaxed">

@@ -172,6 +172,7 @@ export default async function OngoingPage({
               {pagination.hasPrevPage ? (
                 <Link
                   href={`/ongoing-anime?page=${pagination.prevPage}`}
+                  prefetch={false}
                   aria-label="Halaman Sebelumnya"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -198,7 +199,7 @@ export default async function OngoingPage({
                         : "text-muted-foreground hover:bg-muted",
                     )}
                   >
-                    <Link href={`/ongoing-anime?page=${page}`}>{page}</Link>
+                    <Link href={`/ongoing-anime?page=${page}`} prefetch={false}>{page}</Link>
                   </Button>
                 );
               })}
@@ -215,6 +216,7 @@ export default async function OngoingPage({
               {pagination.hasNextPage ? (
                 <Link
                   href={`/ongoing-anime?page=${pagination.nextPage}`}
+                  prefetch={false}
                   aria-label="Halaman Selanjutnya"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -234,7 +236,7 @@ export default async function OngoingPage({
               className="h-10 gap-2 border-border hover:bg-muted text-muted-foreground hover:text-foreground px-4"
             >
               {pagination.hasPrevPage ? (
-                <Link href={`/ongoing-anime?page=${pagination.prevPage}`}>
+                <Link href={`/ongoing-anime?page=${pagination.prevPage}`} prefetch={false}>
                   <ChevronLeft className="w-4 h-4" /> Sebelumnya
                 </Link>
               ) : (
@@ -271,7 +273,7 @@ export default async function OngoingPage({
                         : "text-muted-foreground hover:bg-muted hover:text-foreground",
                     )}
                   >
-                    <Link href={`/ongoing-anime?page=${page}`}>{page}</Link>
+                    <Link href={`/ongoing-anime?page=${page}`} prefetch={false}>{page}</Link>
                   </Button>
                 );
               })}
@@ -284,7 +286,7 @@ export default async function OngoingPage({
               className="h-10 gap-2 border-border hover:bg-muted text-muted-foreground hover:text-foreground px-4"
             >
               {pagination.hasNextPage ? (
-                <Link href={`/ongoing-anime?page=${pagination.nextPage}`}>
+                <Link href={`/ongoing-anime?page=${pagination.nextPage}`} prefetch={false}>
                   Selanjutnya <ChevronRight className="w-4 h-4" />
                 </Link>
               ) : (

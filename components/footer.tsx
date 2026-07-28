@@ -15,6 +15,7 @@ import {
   Library,
   BookOpen,
   Tv,
+  Info,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
@@ -64,7 +65,11 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-6 mb-12">
           {/* BRAND */}
           <div className="lg:col-span-4 space-y-5">
-            <Link href="/" className="flex items-center gap-2.5 group w-fit">
+            <Link
+              href="/"
+              prefetch={false}
+              className="flex items-center gap-2.5 group w-fit"
+            >
               <div className="relative h-9 w-auto aspect-1142/249">
                 <Image
                   src="/assets/logo.png"
@@ -139,6 +144,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
+                    prefetch={false}
                     className="group flex items-center gap-2.5 text-[13.5px] text-foreground/50 hover:text-foreground transition-colors"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-primary/60 group-hover:bg-primary transition-colors shrink-0" />
@@ -162,15 +168,11 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
+                    prefetch={false}
                     className="group flex items-center gap-2.5 text-[13.5px] text-foreground/50 hover:text-foreground transition-colors"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-primary/60 group-hover:bg-primary transition-colors shrink-0" />
                     {link.name}
-                    {link.badge && (
-                      <span className="text-[9px] font-bold bg-violet-500/20 text-violet-500 dark:text-violet-300 px-1.5 py-0.5 rounded tracking-wide">
-                        NEW
-                      </span>
-                    )}
                   </Link>
                 </li>
               ))}
@@ -179,16 +181,21 @@ export default function Footer() {
 
           {/* PANDUAN LINKS */}
           <div className="lg:col-span-2 space-y-5">
-            <h3 className="text-[11px] font-bold uppercase tracking-widest text-foreground/30">
-              Panduan
-            </h3>
+            <div className="flex items-center gap-2">
+              <Info className="w-3.5 h-3.5 text-primary" />
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-foreground/30">
+                Panduan
+              </h3>
+            </div>
             <ul className="space-y-2.5">
               {panduanLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-[13.5px] text-foreground/50 hover:text-foreground transition-colors"
+                    prefetch={false}
+                    className="group flex items-center gap-2.5 text-[13.5px] text-foreground/50 hover:text-foreground transition-colors"
                   >
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary/60 group-hover:bg-primary transition-colors shrink-0" />
                     {link.name}
                   </Link>
                 </li>
@@ -266,6 +273,7 @@ export default function Footer() {
             {/* Report Button */}
             <Link
               href="/report"
+              prefetch={false}
               className="flex items-center gap-2.5 w-full px-4 py-2.5 rounded-xl border border-rose-500/20 bg-rose-500/6 text-rose-500 dark:text-rose-400 text-[13px] font-medium hover:bg-rose-500/12 hover:border-rose-500/30 transition-all"
             >
               <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
@@ -295,12 +303,14 @@ export default function Footer() {
           <div className="flex gap-5">
             <Link
               href="/terms"
+              prefetch={false}
               className="text-[12px] text-foreground/25 hover:text-foreground/60 transition-colors"
             >
               Terms
             </Link>
             <Link
               href="/privacy"
+              prefetch={false}
               className="text-[12px] text-foreground/25 hover:text-foreground/60 transition-colors"
             >
               Privacy

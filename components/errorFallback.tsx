@@ -69,7 +69,7 @@ export default function ErrorFallback({
               size="lg"
               className="w-full sm:w-auto rounded-full border-border hover:bg-muted text-muted-foreground transition-all cursor-pointer px-8"
             >
-              <Link href="/">
+              <Link href="/" prefetch={false}>
                 <Home className="w-4 h-4 mr-2" />
                 Ke Beranda
               </Link>

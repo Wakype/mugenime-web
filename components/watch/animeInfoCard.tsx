@@ -33,7 +33,7 @@ export default function AnimeInfoCard({ animeDetail, parentSlug }: Readonly<Anim
 
       <div className="flex-1 min-w-0 flex flex-col">
         <h2 className="text-xl md:text-2xl font-bold text-foreground hover:text-primary transition-colors line-clamp-2 leading-tight">
-          <Link href={`/anime/${parentSlug}`}>{animeDetail.title}</Link>
+          <Link href={`/anime/${parentSlug}`} prefetch={false}>{animeDetail.title}</Link>
         </h2>
 
         <div className="flex flex-wrap items-center gap-2 mt-3">

@@ -70,6 +70,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const title = `Nonton ${anime.title} Sub Indo Gratis - Mugenime`;
     const description = `Streaming anime ${anime.title} Subtitle Indonesia gratis resolusi 1080p, 720p, 480p. Download ${anime.title} sub indo lengkap di Mugenime.`;
 
+    const posterUrl = anime.poster?.startsWith("http")
+      ? anime.poster
+      : `https://${anime.poster}`;
+
     return {
       title: title,
       description: description,
@@ -79,15 +83,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       openGraph: {
         title: title,
         description: description,
-        images: [anime.poster],
-        type: "video.tv_show",
+        images: [
+          {
+            url: posterUrl,
+            width: 600,
+            height: 800,
+            alt: anime.title,
+          },
+        ],
+        type: "website",
         siteName: "Mugenime",
       },
       twitter: {
         card: "summary_large_image",
         title: title,
         description: description,
-        images: [anime.poster],
+        images: [posterUrl],
       },
     };
   } catch (e) {
@@ -185,7 +196,7 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
           size="lg"
           className="w-full rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12 transition-all"
         >
-          <Link href={`/watch/${slug}/${firstEpisode.episodeId}`}>
+          <Link href={`/watch/${slug}/${firstEpisode.episodeId}`} prefetch={false}>
             <Play className="w-5 h-5 mr-2 fill-current" />
             Mulai Nonton (Eps. 1)
           </Link>
@@ -256,6 +267,7 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
             <BreadcrumbLink asChild>
               <Link
                 href="/"
+                prefetch={false}
                 className="flex items-center gap-1 hover:text-primary transition-colors"
               >
                 <Home className="w-3.5 h-3.5" /> Beranda
@@ -267,6 +279,7 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
             <BreadcrumbLink asChild>
               <Link
                 href="/list-anime"
+                prefetch={false}
                 className="hover:text-primary transition-colors"
               >
                 Anime
@@ -294,7 +307,7 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
 
       <div className="flex flex-wrap justify-center lg:justify-start gap-2 pt-2">
         {genres.map((genre) => (
-          <Link key={genre.genreId} href={`/genre-anime/${genre.genreId}`}>
+          <Link key={genre.genreId} href={`/genre-anime/${genre.genreId}`} prefetch={false}>
             <Badge
               variant="secondary"
               className="px-3 py-1 text-sm bg-secondary text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer border border-transparent hover:border-primary/20"
@@ -340,6 +353,7 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
             <Link
               key={ep.episodeId}
               href={`/watch/${slug}/${ep.episodeId}`}
+              prefetch={false}
               className="group relative flex items-center justify-center p-3 h-16 bg-card border border-border hover:border-primary/50 rounded-lg transition-all hover:shadow-md hover:shadow-primary/5 overflow-hidden"
             >
               <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />

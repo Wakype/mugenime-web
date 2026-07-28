@@ -15,6 +15,7 @@ import {
   Home,
   MapPin,
   Flame,
+  Clock,
 } from "lucide-react";
 import {
   Breadcrumb,
@@ -30,7 +31,7 @@ import { Metadata } from "next";
 import CommentSection from "@/components/commentSection";
 import ShareButton from "@/components/shareButton";
 import BookmarkButton from "@/components/bookmarkButton";
-import { getFormatWithFlag } from "@/lib/utils";
+import { getFormatWithFlag, timeAgo } from "@/lib/utils";
 
 export const revalidate = 3600;
 
@@ -159,10 +160,13 @@ export default async function KomikDetailPage({ params }: Readonly<Props>) {
         unoptimized
         referrerPolicy="no-referrer"
       />
-      <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
+      <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
         <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/10 text-white text-sm font-bold shadow-lg">
           <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
           <span>{komik.rating || "N/A"}</span>
+        </div>
+        <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/10 text-white text-sm font-bold shadow-lg">
+          Mirror
         </div>
       </div>
     </div>
@@ -176,7 +180,10 @@ export default async function KomikDetailPage({ params }: Readonly<Props>) {
           size="lg"
           className="w-full rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12 transition-all"
         >
-          <Link href={`/komik/${slug}/chapter-${firstChapter.chapterIndex}`} prefetch={false}>
+          <Link
+            href={`/komik/${slug}/chapter-${firstChapter.chapterIndex}`}
+            prefetch={false}
+          >
             <BookOpen fill="white" className="w-5 h-5 mr-2" />
             Mulai Baca (Ch. {firstChapter.chapterIndex})
           </Link>
@@ -247,6 +254,7 @@ export default async function KomikDetailPage({ params }: Readonly<Props>) {
             <BreadcrumbLink asChild>
               <Link
                 href="/"
+                prefetch={false}
                 className="flex items-center gap-1 hover:text-primary transition-colors"
               >
                 <Home className="w-3.5 h-3.5" /> Beranda
@@ -258,6 +266,7 @@ export default async function KomikDetailPage({ params }: Readonly<Props>) {
             <BreadcrumbLink asChild>
               <Link
                 href="/komik"
+                prefetch={false}
                 className="hover:text-primary transition-colors"
               >
                 Komik
@@ -288,6 +297,7 @@ export default async function KomikDetailPage({ params }: Readonly<Props>) {
           <Link
             key={genre.id}
             href={`/genre-komik/${genre.data.name.toLowerCase()}`}
+            prefetch={false}
           >
             <Badge
               variant="secondary"
@@ -329,26 +339,31 @@ export default async function KomikDetailPage({ params }: Readonly<Props>) {
       </div>
 
       {chapterLists.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-          {/* Mapping original reversed (assuming API returns newest first) */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
           {chapterLists.map((ep) => (
             <Link
               key={ep.id}
               href={`/komik/${slug}/chapter-${ep.chapterIndex}`}
               prefetch={false}
-              className="group relative flex items-center justify-center p-3 h-16 bg-card border border-border hover:border-primary/50 rounded-lg transition-all hover:shadow-md hover:shadow-primary/5 overflow-hidden"
+              className="group relative flex items-center justify-between p-3.5 bg-card border border-border hover:border-primary/50 rounded-xl transition-all hover:shadow-md hover:shadow-primary/5 overflow-hidden"
             >
               <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative z-10 flex flex-col items-center">
+              <div className="relative z-10 flex flex-col items-start min-w-0 pr-1">
                 <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">
                   Chapter
                 </span>
-                <span className="text-lg font-bold text-foreground group-hover:text-primary">
+                <span className="text-base sm:text-lg font-bold text-foreground group-hover:text-primary leading-tight">
                   {ep.chapterIndex}
                 </span>
+                {ep.updatedAt && (
+                  <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mt-0.5 truncate">
+                    <Clock className="w-2.5 h-2.5 text-primary shrink-0" />
+                    {timeAgo(ep.updatedAt)}
+                  </span>
+                )}
               </div>
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:-translate-x-1">
-                <BookOpen className="w-3 h-3 text-primary" />
+              <div className="relative z-10 shrink-0 opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all">
+                <BookOpen className="w-4 h-4 text-primary" />
               </div>
             </Link>
           ))}

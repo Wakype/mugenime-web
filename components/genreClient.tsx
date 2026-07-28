@@ -187,6 +187,7 @@ export function GenreClient({ genres }: Readonly<{ genres: Genre[] }>) {
                 <Link
                   key={genre.genreId}
                   href={`/genre-anime/${genre.genreId}`}
+                  prefetch={false}
                   className="genre-card"
                   style={{
                     background: "hsl(var(--card))",

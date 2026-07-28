@@ -128,7 +128,7 @@ export function HeroSection({
               size="lg"
               className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12 px-8 transition-all text-base"
             >
-              <Link href={`/anime/${heroAnime.animeId}`}>Tonton Sekarang</Link>
+              <Link href={`/anime/${heroAnime.animeId}`} prefetch={false}>Tonton Sekarang</Link>
             </Button>
             <Button
               asChild
@@ -136,7 +136,7 @@ export function HeroSection({
               size="lg"
               className="rounded-full border-border bg-background/50 hover:bg-secondary text-foreground backdrop-blur-sm h-12 px-8 text-base transition-all"
             >
-              <Link href="/jadwal-anime">Jadwal Rilis</Link>
+              <Link href="/jadwal-anime" prefetch={false}>Jadwal Rilis</Link>
             </Button>
           </motion.div>
         </motion.div>

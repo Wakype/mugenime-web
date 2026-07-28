@@ -260,6 +260,7 @@ export default async function BatchAnimeDetailPage({
             <BreadcrumbLink asChild>
               <Link
                 href="/"
+                prefetch={false}
                 className="flex items-center gap-1 hover:text-primary transition-colors"
               >
                 <Home className="w-3.5 h-3.5" /> Beranda
@@ -271,6 +272,7 @@ export default async function BatchAnimeDetailPage({
             <BreadcrumbLink asChild>
               <Link
                 href="/batch-anime"
+                prefetch={false}
                 className="hover:text-primary transition-colors"
               >
                 Batch

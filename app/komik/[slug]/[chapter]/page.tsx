@@ -3,6 +3,7 @@ import { ReadKomikChapterResponse } from "@/lib/komikTypes";
 import { Metadata } from "next";
 import CommentSection from "@/components/commentSection";
 import ComicReader from "@/components/comicReader";
+import ReaderNav from "@/components/readerNav";
 
 export const revalidate = 3600;
 
@@ -61,8 +62,19 @@ export default async function ReadKomikPage({ params }: Readonly<Props>) {
       {/* Interactive Reader Component */}
       <ComicReader data={data} slug={slug} />
 
+      {/* Reader Navigation Bar (Next/Prev & Chapter Sheet) */}
+      <div className="pt-8 container mx-auto px-4 relative z-10">
+        <ReaderNav
+          slug={slug}
+          chapterIndex={data.chapterIndex}
+          prevChapterId={data.prevChapterId}
+          nextChapterId={data.nextChapterId}
+          chapterList={data.chapterList || []}
+        />
+      </div>
+
       {/* Comment Section at the bottom */}
-      <div className="pt-10 container mx-auto px-4 relative z-10">
+      <div className="pt-6 container mx-auto px-4 relative z-10">
         <CommentSection
           identifier={`komik-${slug}-ch-${data.chapterIndex}`}
           page_url={`/komik/${slug}/chapter-${data.chapterIndex}`}

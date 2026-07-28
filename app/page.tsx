@@ -153,7 +153,7 @@ export default async function HomePage() {
                 asChild
                 className="rounded-full border-border hover:bg-secondary group h-9 px-4 text-xs font-semibold"
               >
-                <Link href="/ongoing-anime">
+                <Link href="/ongoing-anime" prefetch={false}>
                   Lihat Semua{" "}
                   <ArrowRight className="w-3.5 h-3.5 ml-1.5 transition-transform group-hover:translate-x-1" />
                 </Link>
@@ -193,7 +193,7 @@ export default async function HomePage() {
                 asChild
                 className="rounded-full border-border hover:bg-secondary group h-9 px-4 text-xs font-semibold"
               >
-                <Link href="/completed-anime">
+                <Link href="/completed-anime" prefetch={false}>
                   Lihat Semua{" "}
                   <ArrowRight className="w-3.5 h-3.5 ml-1.5 transition-transform group-hover:translate-x-1" />
                 </Link>
@@ -229,7 +229,7 @@ export default async function HomePage() {
                   asChild
                   className="rounded-full border-border hover:bg-secondary group h-9 px-4 text-xs font-semibold"
                 >
-                  <Link href="/batch-anime">
+                  <Link href="/batch-anime" prefetch={false}>
                     Lihat Semua{" "}
                     <ArrowRight className="w-3.5 h-3.5 ml-1.5 transition-transform group-hover:translate-x-1" />
                   </Link>

@@ -203,22 +203,15 @@ export default function ComicReader({
 
   return (
     <div className="relative min-h-screen bg-background">
-      {/* Clickable Overlay to toggle UI - Fixed for a11y */}
-      <button
-        type="button"
-        aria-label="Toggle Navigation UI"
-        className="fixed inset-0 z-20 w-full h-full cursor-pointer bg-transparent border-none outline-none appearance-none"
-        onClick={handleOverlayClick}
-      />
-
       {/* --- READER CONTENT (Long Strip Default) --- */}
       <div
         ref={readerRef}
-        className="relative z-10 flex flex-col items-center justify-start min-h-screen"
+        className="relative flex flex-col items-center justify-start min-h-screen"
       >
         <div
-          className="flex flex-col items-center transition-all duration-300 mx-auto"
+          className="flex flex-col items-center transition-all duration-300 mx-auto cursor-pointer"
           style={containerStyle}
+          onClick={handleOverlayClick}
         >
           {data.images.map((imgUrl, index) => (
             <img
@@ -227,7 +220,7 @@ export default function ComicReader({
               alt={`Page ${index + 1}`}
               loading={index < 3 ? "eager" : "lazy"}
               referrerPolicy="no-referrer"
-              className="w-full h-auto block m-0 p-0"
+              className="w-full h-auto block m-0 p-0 select-none"
             />
           ))}
         </div>

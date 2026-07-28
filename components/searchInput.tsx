@@ -209,6 +209,7 @@ export default function SearchInput({
             <Link
               key={anime.slug}
               href={`/anime/${anime.slug}`}
+              prefetch={false}
               onClick={handleLinkClick}
               className={itemBase}
             >
@@ -287,6 +288,7 @@ export default function SearchInput({
             <Link
               key={anime.slug}
               href={`/batch-anime/${anime.slug}`}
+              prefetch={false}
               onClick={handleLinkClick}
               className={itemBase}
             >
@@ -648,6 +650,7 @@ export default function SearchInput({
           {hasAnyResults && !isLoading && (
             <Link
               href={`/search?q=${encodeURIComponent(query)}`}
+              prefetch={false}
               onClick={handleLinkClick}
               className="shrink-0 group flex items-center justify-center gap-2 p-4 text-sm font-semibold text-muted-foreground hover:text-primary bg-muted/10 hover:bg-primary/5 transition-all duration-200 border-t border-border/40"
             >

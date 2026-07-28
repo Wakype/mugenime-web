@@ -45,7 +45,7 @@ export default function NotFound() {
             size="lg"
             className="w-full sm:w-auto rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg shadow-primary/20"
           >
-            <Link href="/">
+            <Link href="/" prefetch={false}>
               <Home className="w-4 h-4 mr-2" />
               Kembali ke Beranda
             </Link>
@@ -57,7 +57,7 @@ export default function NotFound() {
             size="lg"
             className="w-full sm:w-auto rounded-full border-border hover:bg-secondary text-muted-foreground hover:text-foreground"
           >
-            <Link href="/ongoing-anime">
+            <Link href="/ongoing-anime" prefetch={false}>
               <Search className="w-4 h-4 mr-2" />
               Cari Anime Lain
             </Link>

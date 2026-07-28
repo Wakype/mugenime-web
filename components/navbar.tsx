@@ -246,6 +246,7 @@ export default function Navbar() {
         {/* Logo */}
         <Link
           href={logoHref}
+          prefetch={false}
           className="flex items-center gap-2 group shrink-0 relative z-50"
         >
           <div className="relative h-[35px] w-auto aspect-1142/249 group-hover:opacity-75 transition-opacity duration-200">
@@ -325,6 +326,7 @@ export default function Navbar() {
                 ) : (
                   <Link
                     href={link.href!}
+                    prefetch={false}
                     className={cn(
                       "relative px-3.5 py-1.5 text-sm rounded-lg flex items-center gap-1.5 transition-colors duration-150 font-medium",
                       showHighlight
@@ -380,7 +382,7 @@ export default function Navbar() {
                     size="icon"
                     className="w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
                   >
-                    <Link href="/history">
+                    <Link href="/history" prefetch={false}>
                       <History className="w-4 h-4" />
                     </Link>
                   </Button>
@@ -398,7 +400,7 @@ export default function Navbar() {
                     size="icon"
                     className="w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
                   >
-                    <Link href="/bookmark">
+                    <Link href="/bookmark" prefetch={false}>
                       <Bookmark className="w-4 h-4" />
                     </Link>
                   </Button>
@@ -488,7 +490,7 @@ export default function Navbar() {
                     asChild
                     className="cursor-pointer mx-1 rounded-lg"
                   >
-                    <Link href="/profile" className="flex items-center gap-2">
+                    <Link href="/profile" prefetch={false} className="flex items-center gap-2">
                       <Settings className="w-3.5 h-3.5" /> Pengaturan Profil
                     </Link>
                   </DropdownMenuItem>
@@ -499,6 +501,7 @@ export default function Navbar() {
                     >
                       <Link
                         href="/admin"
+                        prefetch={false}
                         className="flex items-center gap-2 text-primary focus:text-primary"
                       >
                         <ShieldAlert className="w-3.5 h-3.5" /> Dashboard Admin
@@ -605,6 +608,7 @@ export default function Navbar() {
                       </div>
                       <Link
                         href="/profile"
+                        prefetch={false}
                         onClick={() => setIsOpen(false)}
                         className="p-1.5 rounded-lg hover:bg-background transition-colors text-muted-foreground hover:text-foreground"
                       >
@@ -701,6 +705,7 @@ export default function Navbar() {
                                 <Link
                                   key={child.href}
                                   href={child.href}
+                                  prefetch={false}
                                   onClick={() => setIsOpen(false)}
                                   className={cn(
                                     "flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-medium transition-all border",
@@ -719,6 +724,7 @@ export default function Navbar() {
                       ) : (
                         <Link
                           href={link.href}
+                          prefetch={false}
                           onClick={() => setIsOpen(false)}
                           className={getMobileItemClass(link.href)}
                         >
@@ -739,6 +745,7 @@ export default function Navbar() {
                     <div className="space-y-0.5">
                       <Link
                         href="/history"
+                        prefetch={false}
                         onClick={() => setIsOpen(false)}
                         className={getMobileItemClass("/history")}
                       >
@@ -747,6 +754,7 @@ export default function Navbar() {
                       </Link>
                       <Link
                         href="/bookmark"
+                        prefetch={false}
                         onClick={() => setIsOpen(false)}
                         className={getMobileItemClass("/bookmark")}
                       >
@@ -829,6 +837,7 @@ export default function Navbar() {
                       >
                         <Link
                           href={child.href}
+                          prefetch={false}
                           onClick={() => setActiveMega(null)}
                           className={cn(
                             "group flex items-center gap-3 p-3 rounded-xl border transition-all duration-150",

@@ -41,6 +41,7 @@ export function HistoryCard({ group, onDelete }: Readonly<HistoryCardProps>) {
       {/* Anime Poster - Responsive sizing (Horizontal Layout) */}
       <Link
         href={`/anime/${group.anime_slug}`}
+        prefetch={false}
         className="relative w-[90px] min-w-[90px] sm:w-[130px] sm:min-w-[130px] aspect-3/4 rounded-2xl overflow-hidden shrink-0 bg-muted cursor-pointer block group/image"
       >
         <Image
@@ -100,6 +101,7 @@ export function HistoryCard({ group, onDelete }: Readonly<HistoryCardProps>) {
                   <TooltipTrigger asChild>
                     <Link
                       href={`/watch/${group.anime_slug}/${ep.episode_slug}`}
+                      prefetch={false}
                       className="group/btn flex items-center gap-2 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-secondary/50 hover:bg-primary border border-border/50 hover:border-primary transition-all cursor-pointer shrink-0 shadow-sm"
                     >
                       <div className="w-5 h-5 rounded-full bg-background/50 flex items-center justify-center group-hover/btn:bg-primary-foreground/20 transition-colors shrink-0">

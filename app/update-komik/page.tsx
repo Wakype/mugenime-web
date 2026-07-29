@@ -1,11 +1,9 @@
 import { fetchKomik } from "@/lib/api";
 import { LatestKomikResponse } from "@/lib/komikTypes";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import Link from "next/link";
-import { Calendar, ChevronLeft, ChevronRight, Zap } from "lucide-react";
+import { Calendar, Zap } from "lucide-react";
 import KomikCard from "@/components/komikCard";
-import { cn } from "@/lib/utils";
+import Pagination from "@/components/pagination";
 
 export const revalidate = 1800;
 
@@ -151,154 +149,13 @@ export default async function UpdateKomikPage({
         <Separator className="bg-border" />
 
         {/* --- PAGINATION CONTROL --- */}
-        <div className="w-full pb-4">
-          {/* A. MOBILE PAGINATION (Numbers + Arrows) */}
-          <div className="flex md:hidden items-center justify-between gap-1 w-full">
-            {/* Tombol Prev */}
-            <Button
-              variant="outline"
-              size="icon"
-              disabled={!hasPrevPage}
-              asChild={hasPrevPage}
-              className="h-9 w-9 shrink-0 rounded-lg border-border hover:bg-muted text-muted-foreground"
-            >
-              {hasPrevPage ? (
-                <Link
-                  href={`/update-komik?page=${prevPage}`}
-                  aria-label="Halaman Sebelumnya"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </Link>
-              ) : (
-                <ChevronLeft className="w-4 h-4 opacity-30" />
-              )}
-            </Button>
-
-            {/* Deretan Angka (Mobile Logic sekarang pakai generatePagination) */}
-            <div className="flex items-center justify-center gap-0.5 sm:gap-1 overflow-hidden">
-              {generatePagination().map((page, idx) => {
-                if (page === "...") {
-                  return (
-                    <span
-                      key={`mob-ellipsis-${idx}`}
-                      className="px-1 text-muted-foreground text-xs select-none"
-                    >
-                      ...
-                    </span>
-                  );
-                }
-
-                const isCurrent = page === currentPage;
-                return (
-                  <Button
-                    key={`mob-${page}`}
-                    variant={isCurrent ? "default" : "ghost"}
-                    size="icon"
-                    asChild
-                    className={cn(
-                      "h-8 w-8 sm:h-9 sm:w-9 rounded-lg text-xs font-bold transition-all",
-                      isCurrent
-                        ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-md"
-                        : "text-muted-foreground hover:bg-muted",
-                    )}
-                  >
-                    <Link href={`/update-komik?page=${page}`}>{page}</Link>
-                  </Button>
-                );
-              })}
-            </div>
-
-            {/* Tombol Next */}
-            <Button
-              variant="outline"
-              size="icon"
-              disabled={!hasNextPage}
-              asChild={hasNextPage}
-              className="h-9 w-9 shrink-0 rounded-lg border-border hover:bg-muted text-muted-foreground"
-            >
-              {hasNextPage ? (
-                <Link
-                  href={`/update-komik?page=${nextPage}`}
-                  aria-label="Halaman Selanjutnya"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </Link>
-              ) : (
-                <ChevronRight className="w-4 h-4 opacity-30" />
-              )}
-            </Button>
-          </div>
-
-          {/* B. DESKTOP PAGINATION (Full Logic) */}
-          <div className="hidden md:flex items-center justify-center gap-2">
-            <Button
-              variant="outline"
-              disabled={!hasPrevPage}
-              asChild={hasPrevPage}
-              className="h-10 gap-2 border-border hover:bg-muted text-muted-foreground hover:text-foreground px-4 cursor-pointer"
-            >
-              {hasPrevPage ? (
-                <Link href={`/update-komik?page=${prevPage}`}>
-                  <ChevronLeft className="w-4 h-4" /> Sebelumnya
-                </Link>
-              ) : (
-                <span className="flex items-center gap-1.5">
-                  <ChevronLeft className="w-4 h-4" /> Sebelumnya
-                </span>
-              )}
-            </Button>
-
-            <div className="flex items-center gap-1 mx-4">
-              {generatePagination().map((page, idx) => {
-                if (page === "...") {
-                  return (
-                    <span
-                      key={`desk-ellipsis-${idx}`}
-                      className="px-2 text-muted-foreground select-none"
-                    >
-                      ...
-                    </span>
-                  );
-                }
-
-                const isCurrent = page === currentPage;
-                return (
-                  <Button
-                    key={`desk-${page}`}
-                    variant={isCurrent ? "default" : "ghost"}
-                    size="icon"
-                    asChild
-                    className={cn(
-                      "w-10 h-10 rounded-lg transition-all cursor-pointer",
-                      isCurrent
-                        ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                    )}
-                  >
-                    <Link href={`/update-komik?page=${page}`}>{page}</Link>
-                  </Button>
-                );
-              })}
-            </div>
-
-            <Button
-              variant="outline"
-              disabled={!hasNextPage}
-              asChild={hasNextPage}
-              className="h-10 gap-2 border-border hover:bg-muted text-muted-foreground hover:text-foreground px-4 cursor-pointer"
-            >
-              {hasNextPage ? (
-                <Link href={`/update-komik?page=${nextPage}`}>
-                  Selanjutnya <ChevronRight className="w-4 h-4" />
-                </Link>
-              ) : (
-                <span className="flex items-center gap-1.5">
-                  Selanjutnya <ChevronRight className="w-4 h-4" />
-                </span>
-              )}
-            </Button>
-          </div>
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          hasPrevPage={hasPrevPage}
+          hasNextPage={hasNextPage}
+          pageUrlTemplate="/update-komik?page={page}"
+        />
       </div>
     </div>
   );

@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import BatchDownload from "@/components/batchDownload";
 import CommentSection from "@/components/commentSection";
@@ -70,10 +69,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const title = `Nonton ${anime.title} Sub Indo Gratis - Mugenime`;
     const description = `Streaming anime ${anime.title} Subtitle Indonesia gratis resolusi 1080p, 720p, 480p. Download ${anime.title} sub indo lengkap di Mugenime.`;
 
-    const posterUrl = anime.poster?.startsWith("http")
-      ? anime.poster
-      : `https://${anime.poster}`;
-
     return {
       title: title,
       description: description,
@@ -85,7 +80,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description: description,
         images: [
           {
-            url: posterUrl,
+            url: anime.poster,
             width: 600,
             height: 800,
             alt: anime.title,
@@ -98,7 +93,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         card: "summary_large_image",
         title: title,
         description: description,
-        images: [posterUrl],
+        images: [anime.poster],
       },
     };
   } catch (e) {
@@ -196,7 +191,10 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
           size="lg"
           className="w-full rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12 transition-all"
         >
-          <Link href={`/watch/${slug}/${firstEpisode.episodeId}`} prefetch={false}>
+          <Link
+            href={`/watch/${slug}/${firstEpisode.episodeId}`}
+            prefetch={false}
+          >
             <Play className="w-5 h-5 mr-2 fill-current" />
             Mulai Nonton (Eps. 1)
           </Link>
@@ -307,7 +305,11 @@ export default async function AnimeDetailPage({ params }: Readonly<Props>) {
 
       <div className="flex flex-wrap justify-center lg:justify-start gap-2 pt-2">
         {genres.map((genre) => (
-          <Link key={genre.genreId} href={`/genre-anime/${genre.genreId}`} prefetch={false}>
+          <Link
+            key={genre.genreId}
+            href={`/genre-anime/${genre.genreId}`}
+            prefetch={false}
+          >
             <Badge
               variant="secondary"
               className="px-3 py-1 text-sm bg-secondary text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer border border-transparent hover:border-primary/20"

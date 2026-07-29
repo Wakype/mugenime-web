@@ -1,24 +1,20 @@
 "use client";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import {
   Search,
   SlidersHorizontal,
   Check,
   RotateCcw,
   X,
-  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  Filter,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 import { Genre } from "@/lib/komikTypes";
 import { cn } from "@/lib/utils";
@@ -28,9 +24,9 @@ interface AdvanceSearchFilterProps {
 }
 
 const SORT_OPTIONS = [
-  { value: "latest", label: "Terbaru", desc: "Paling baru diupdate" },
-  { value: "popularity", label: "Terpopuler", desc: "Paling banyak dibaca" },
-  { value: "rating", label: "Rating Tertinggi", desc: "Skor tertinggi" },
+  { value: "latest", label: "Terbaru" },
+  { value: "popularity", label: "Terpopuler" },
+  { value: "rating", label: "Rating Tertinggi" },
 ];
 
 const ORDER_OPTIONS = [
@@ -52,27 +48,17 @@ const FORMAT_OPTIONS = [
   { value: "mangatoon", label: "Mangatoon", flag: "📱" },
 ];
 
-// Section wrapper with subtle divider
-function FilterSection({
-  title,
-  badge,
-  children,
-}: Readonly<{
-  title: string;
-  badge?: React.ReactNode;
-  children: React.ReactNode;
-}>) {
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/70">
-          {title}
-        </span>
-        {badge}
-      </div>
-      {children}
-    </div>
-  );
+// Breakpoint used to decide whether the panel should default to open.
+// Matches the `md` grid breakpoint already used further down.
+const DESKTOP_QUERY = "(min-width: 768px)";
+
+interface FilterState {
+  search: string;
+  sort: string;
+  sortOrder: string;
+  status: string[];
+  format: string[];
+  genres: string[];
 }
 
 export default function AdvanceSearchFilter({
@@ -81,8 +67,9 @@ export default function AdvanceSearchFilter({
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const [isPending, startTransition] = useTransition();
 
-  const [isOpen, setIsOpen] = useState(false);
+  // Controlled states for filter options
   const [searchQuery, setSearchQuery] = useState("");
   const [sort, setSort] = useState("latest");
   const [sortOrder, setSortOrder] = useState("desc");
@@ -91,16 +78,30 @@ export default function AdvanceSearchFilter({
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [genreSearch, setGenreSearch] = useState("");
 
+  // Panel starts closed (matches the server-rendered markup) so there is no
+  // hydration mismatch; on mount we open it automatically on wider screens.
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [readyForMotion, setReadyForMotion] = useState(false);
+
+  // Sync state with URL params
   useEffect(() => {
-    if (isOpen) {
-      setSearchQuery(searchParams.get("search") || "");
-      setSort(searchParams.get("sort") || "latest");
-      setSortOrder(searchParams.get("sortOrder") || "desc");
-      setSelectedStatus(searchParams.getAll("status"));
-      setSelectedFormats(searchParams.getAll("format"));
-      setSelectedGenres(searchParams.getAll("genreIds"));
-    }
-  }, [searchParams, isOpen]);
+    setSearchQuery(searchParams.get("search") || "");
+    setSort(searchParams.get("sort") || "latest");
+    setSortOrder(searchParams.get("sortOrder") || "desc");
+    setSelectedStatus(searchParams.getAll("status"));
+    setSelectedFormats(searchParams.getAll("format"));
+    setSelectedGenres(searchParams.getAll("genreIds"));
+  }, [searchParams]);
+
+  // Decide the initial open/closed state once, on the client only.
+  useEffect(() => {
+    const mq = window.matchMedia(DESKTOP_QUERY);
+    setIsExpanded(mq.matches);
+    // Defer enabling the collapse animation until after this first paint,
+    // so the initial state doesn't visibly animate in.
+    const raf = requestAnimationFrame(() => setReadyForMotion(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   const toggleArrayItem = (
     array: string[],
@@ -114,18 +115,47 @@ export default function AdvanceSearchFilter({
     );
   };
 
-  const applyFilters = () => {
-    const params = new URLSearchParams();
-    params.set("page", "1");
-    if (searchQuery.trim()) params.set("search", searchQuery.trim());
-    if (sort !== "latest") params.set("sort", sort);
-    if (sortOrder !== "desc") params.set("sortOrder", sortOrder);
-    selectedStatus.forEach((s) => params.append("status", s));
-    selectedFormats.forEach((f) => params.append("format", f));
-    selectedGenres.forEach((g) => params.append("genreIds", g));
-    router.push(`${pathname}?${params.toString()}`, { scroll: true });
-    setIsOpen(false);
-  };
+  const buildParams = useCallback(
+    (overrides: Partial<FilterState> = {}) => {
+      const state: FilterState = {
+        search: overrides.search ?? searchQuery,
+        sort: overrides.sort ?? sort,
+        sortOrder: overrides.sortOrder ?? sortOrder,
+        status: overrides.status ?? selectedStatus,
+        format: overrides.format ?? selectedFormats,
+        genres: overrides.genres ?? selectedGenres,
+      };
+
+      const params = new URLSearchParams();
+      params.set("page", "1");
+      if (state.search.trim()) params.set("search", state.search.trim());
+      if (state.sort !== "latest") params.set("sort", state.sort);
+      if (state.sortOrder !== "desc") params.set("sortOrder", state.sortOrder);
+      state.status.forEach((s) => params.append("status", s));
+      state.format.forEach((f) => params.append("format", f));
+      state.genres.forEach((g) => params.append("genreIds", g));
+      return params;
+    },
+    [
+      searchQuery,
+      sort,
+      sortOrder,
+      selectedStatus,
+      selectedFormats,
+      selectedGenres,
+    ],
+  );
+
+  const navigate = useCallback(
+    (params: URLSearchParams) => {
+      startTransition(() => {
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+      });
+    },
+    [pathname, router],
+  );
+
+  const applyFilters = () => navigate(buildParams());
 
   const resetFilters = () => {
     setSearchQuery("");
@@ -135,8 +165,39 @@ export default function AdvanceSearchFilter({
     setSelectedFormats([]);
     setSelectedGenres([]);
     setGenreSearch("");
-    router.push(pathname, { scroll: true });
-    setIsOpen(false);
+    startTransition(() => {
+      router.push(pathname, { scroll: false });
+    });
+  };
+
+  // Chips reflect filters that are already applied, so removing one should
+  // update the URL immediately instead of waiting for another "Terapkan" click.
+  const removeSearch = () => {
+    setSearchQuery("");
+    navigate(buildParams({ search: "" }));
+  };
+  const removeSort = () => {
+    setSort("latest");
+    navigate(buildParams({ sort: "latest" }));
+  };
+  const removeSortOrder = () => {
+    setSortOrder("desc");
+    navigate(buildParams({ sortOrder: "desc" }));
+  };
+  const removeStatus = (value: string) => {
+    const next = selectedStatus.filter((s) => s !== value);
+    setSelectedStatus(next);
+    navigate(buildParams({ status: next }));
+  };
+  const removeFormat = (value: string) => {
+    const next = selectedFormats.filter((f) => f !== value);
+    setSelectedFormats(next);
+    navigate(buildParams({ format: next }));
+  };
+  const removeGenre = (value: string) => {
+    const next = selectedGenres.filter((g) => g !== value);
+    setSelectedGenres(next);
+    navigate(buildParams({ genres: next }));
   };
 
   const activeFiltersCount =
@@ -152,341 +213,403 @@ export default function AdvanceSearchFilter({
   );
 
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetTrigger asChild>
-        <Button
-          variant="default"
-          className="relative gap-2 shadow-lg cursor-pointer pr-4 pl-3.5 h-9 rounded-xl font-medium text-sm transition-all"
-        >
-          <SlidersHorizontal className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Filter</span>
-          {activeFiltersCount > 0 && (
-            <span className="flex h-4.5 w-4.5 min-w-4.5 items-center justify-center rounded-full bg-primary-foreground text-[9px] font-black text-primary leading-none px-1">
-              {activeFiltersCount}
-            </span>
-          )}
-        </Button>
-      </SheetTrigger>
-
-      <SheetContent
-        side="right"
-        className="flex w-full flex-col gap-0 border-l border-border/50 p-0 sm:max-w-sm bg-background"
-        style={{ boxShadow: "-20px 0 60px -10px rgba(0,0,0,0.15)" }}
-      >
-        {/* ── Header ── */}
-        <SheetHeader className="shrink-0 px-6 pt-6 pb-5 text-left border-b border-border/50">
-          {/* Active filter chips row */}
-          {activeFiltersCount > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-4">
-              {searchQuery && (
-                <ActiveChip
-                  label={`"${searchQuery}"`}
-                  onRemove={() => setSearchQuery("")}
-                />
-              )}
-              {sort !== "latest" && (
-                <ActiveChip
-                  label={
-                    SORT_OPTIONS.find((o) => o.value === sort)?.label ?? sort
-                  }
-                  onRemove={() => setSort("latest")}
-                />
-              )}
-              {sortOrder !== "desc" && (
-                <ActiveChip
-                  label="Menaik ↑"
-                  onRemove={() => setSortOrder("desc")}
-                />
-              )}
-              {selectedStatus.map((s) => (
-                <ActiveChip
-                  key={s}
-                  label={STATUS_OPTIONS.find((o) => o.value === s)?.label ?? s}
-                  onRemove={() =>
-                    toggleArrayItem(selectedStatus, setSelectedStatus, s)
-                  }
-                />
-              ))}
-              {selectedFormats.map((f) => (
-                <ActiveChip
-                  key={f}
-                  label={FORMAT_OPTIONS.find((o) => o.value === f)?.label ?? f}
-                  onRemove={() =>
-                    toggleArrayItem(selectedFormats, setSelectedFormats, f)
-                  }
-                />
-              ))}
-              {selectedGenres.slice(0, 3).map((g) => (
-                <ActiveChip
-                  key={g}
-                  label={g}
-                  onRemove={() =>
-                    toggleArrayItem(selectedGenres, setSelectedGenres, g)
-                  }
-                />
-              ))}
-              {selectedGenres.length > 3 && (
-                <span className="text-[10px] text-muted-foreground px-1 self-center">
-                  +{selectedGenres.length - 3} genre
+    <div className="w-full rounded-3xl bg-card border border-border/80 shadow-md p-4 sm:p-6 space-y-4 transition-all">
+      {/* ── HEADER ── */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20 shrink-0">
+            <SlidersHorizontal className="w-4 h-4" />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight truncate">
+                Filter Pencarian
+              </h2>
+              {activeFiltersCount > 0 && (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary text-[10px] font-extrabold text-primary-foreground px-1.5 shadow-xs">
+                  {activeFiltersCount}
                 </span>
               )}
+              {isPending && (
+                <Loader2 className="w-3.5 h-3.5 text-muted-foreground animate-spin" />
+              )}
             </div>
+            <p className="text-xs text-muted-foreground hidden sm:block">
+              Pilih kriteria untuk mempersempit hasil pencarian komik
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 ml-auto shrink-0">
+          {activeFiltersCount > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={resetFilters}
+              className="h-8 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/60 px-2.5 rounded-lg"
+            >
+              <RotateCcw className="w-3 h-3 sm:mr-1.5" />
+              <span className="hidden sm:inline">Reset All</span>
+            </Button>
           )}
 
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <SheetTitle className="text-base font-bold tracking-tight">
-                Filter Pencarian
-              </SheetTitle>
-              <SheetDescription className="text-xs mt-0.5 text-muted-foreground/70">
-                Temukan komik yang tepat untukmu
-              </SheetDescription>
-            </div>
-            {activeFiltersCount > 0 && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsExpanded((v) => !v)}
+            aria-expanded={isExpanded}
+            aria-controls="advance-filter-panel"
+            className="h-8 text-xs font-semibold px-2.5 rounded-lg border-border/70 text-muted-foreground hover:text-foreground"
+          >
+            {isExpanded ? (
+              <>
+                <ChevronUp className="w-3.5 h-3.5 sm:mr-1" />
+                <span className="hidden sm:inline">Sembunyikan Panel</span>
+              </>
+            ) : (
+              <>
+                <ChevronDown className="w-3.5 h-3.5 sm:mr-1" />
+                <span className="hidden sm:inline">Buka Panel Filter</span>
+              </>
+            )}
+            <span className="sm:hidden">Filter</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* ── ACTIVE CHIPS BAR ── */}
+      {activeFiltersCount > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 mr-1">
+            Aktif:
+          </span>
+          {searchQuery && (
+            <ActiveChip label={`"${searchQuery}"`} onRemove={removeSearch} />
+          )}
+          {sort !== "latest" && (
+            <ActiveChip
+              label={SORT_OPTIONS.find((o) => o.value === sort)?.label ?? sort}
+              onRemove={removeSort}
+            />
+          )}
+          {sortOrder !== "desc" && (
+            <ActiveChip label="Menaik ↑" onRemove={removeSortOrder} />
+          )}
+          {selectedStatus.map((s) => (
+            <ActiveChip
+              key={s}
+              label={STATUS_OPTIONS.find((o) => o.value === s)?.label ?? s}
+              onRemove={() => removeStatus(s)}
+            />
+          ))}
+          {selectedFormats.map((f) => (
+            <ActiveChip
+              key={f}
+              label={FORMAT_OPTIONS.find((o) => o.value === f)?.label ?? f}
+              onRemove={() => removeFormat(f)}
+            />
+          ))}
+          {selectedGenres.map((g) => (
+            <ActiveChip key={g} label={g} onRemove={() => removeGenre(g)} />
+          ))}
+        </div>
+      )}
+
+      {/* ── ALWAYS-VISIBLE SEARCH BAR ── */}
+      <div className="space-y-1.5 pt-1">
+        <label
+          htmlFor="komik-search-input"
+          className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-1.5"
+        >
+          <Search className="w-3.5 h-3.5 text-primary" />
+          Kata Kunci Judul
+        </label>
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
+            <Input
+              id="komik-search-input"
+              placeholder="Cari judul komik..."
+              className="pl-9 h-10 text-sm bg-muted/30 border-border/60 focus-visible:ring-1 focus-visible:bg-background rounded-xl transition-all"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && applyFilters()}
+            />
+            {searchQuery && (
               <button
-                onClick={resetFilters}
-                className="text-[10px] font-semibold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 mt-0.5 shrink-0"
+                onClick={() => setSearchQuery("")}
+                aria-label="Hapus kata kunci"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-foreground p-1 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
               >
-                <RotateCcw className="w-3 h-3" /> Reset semua
+                <X className="w-4 h-4" />
               </button>
             )}
           </div>
-        </SheetHeader>
-
-        {/* ── Scrollable Body ── */}
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6 scrollbar-thin scrollbar-thumb-border/60 scrollbar-track-transparent">
-          {/* Search */}
-          <FilterSection title="Judul">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/60" />
-              <Input
-                placeholder="Cari judul komik..."
-                className="pl-9 h-9 text-sm bg-muted/40 border-border/50 focus-visible:ring-1 focus-visible:bg-background rounded-lg transition-colors"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && applyFilters()}
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-foreground transition-colors"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-          </FilterSection>
-
-          {/* Sort + Order in card grid */}
-          <FilterSection title="Pengurutan">
-            <div className="grid grid-cols-2 gap-2">
-              {/* Sort */}
-              <div className="space-y-1.5">
-                <p className="text-[10px] font-medium text-muted-foreground/60 pl-0.5">
-                  Kriteria
-                </p>
-                <div className="flex flex-col gap-1">
-                  {SORT_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      onClick={() => setSort(opt.value)}
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-2 rounded-lg text-left text-xs transition-all",
-                        sort === opt.value
-                          ? "bg-primary text-primary-foreground font-semibold shadow-sm"
-                          : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground",
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "w-1.5 h-1.5 rounded-full shrink-0 transition-colors",
-                          sort === opt.value
-                            ? "bg-primary-foreground"
-                            : "bg-muted-foreground/30",
-                        )}
-                      />
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Order */}
-              <div className="space-y-1.5">
-                <p className="text-[10px] font-medium text-muted-foreground/60 pl-0.5">
-                  Arah
-                </p>
-                <div className="flex flex-col gap-1">
-                  {ORDER_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      onClick={() => setSortOrder(opt.value)}
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-2 rounded-lg text-left text-xs transition-all",
-                        sortOrder === opt.value
-                          ? "bg-primary text-primary-foreground font-semibold shadow-sm"
-                          : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground",
-                      )}
-                    >
-                      <span className="font-mono text-[11px]">{opt.icon}</span>
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </FilterSection>
-
-          {/* Format */}
-          <FilterSection title="Format">
-            <div className="grid grid-cols-2 gap-1.5">
-              {FORMAT_OPTIONS.map((fmt) => {
-                const isSelected = selectedFormats.includes(fmt.value);
-                return (
-                  <button
-                    key={fmt.value}
-                    onClick={() =>
-                      toggleArrayItem(
-                        selectedFormats,
-                        setSelectedFormats,
-                        fmt.value,
-                      )
-                    }
-                    className={cn(
-                      "flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-all border",
-                      isSelected
-                        ? "bg-primary/10 border-primary/40 text-primary font-medium shadow-sm"
-                        : "bg-muted/30 border-transparent text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border/50",
-                    )}
-                  >
-                    <span className="text-base leading-none">{fmt.flag}</span>
-                    <span className="text-xs font-medium">{fmt.label}</span>
-                    {isSelected && (
-                      <Check className="w-3 h-3 ml-auto shrink-0 text-primary" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </FilterSection>
-
-          {/* Status */}
-          <FilterSection title="Status">
-            <div className="grid grid-cols-2 gap-1.5">
-              {STATUS_OPTIONS.map((st) => {
-                const isSelected = selectedStatus.includes(st.value);
-                return (
-                  <button
-                    key={st.value}
-                    onClick={() =>
-                      toggleArrayItem(
-                        selectedStatus,
-                        setSelectedStatus,
-                        st.value,
-                      )
-                    }
-                    className={cn(
-                      "flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs transition-all border",
-                      isSelected
-                        ? "bg-primary/10 border-primary/40 text-primary font-semibold shadow-sm"
-                        : "bg-muted/30 border-transparent text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border/50",
-                    )}
-                  >
-                    <span
-                      className={cn("w-2 h-2 rounded-full shrink-0", st.color)}
-                    />
-                    {st.label}
-                    {isSelected && (
-                      <Check className="w-3 h-3 ml-auto shrink-0 text-primary" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </FilterSection>
-
-          {/* Genre */}
-          <FilterSection
-            title="Genre"
-            badge={
-              selectedGenres.length > 0 ? (
-                <span className="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full tabular-nums">
-                  {selectedGenres.length} dipilih
-                </span>
-              ) : undefined
-            }
-          >
-            {/* Genre search */}
-            <div className="relative mb-2">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground/50" />
-              <Input
-                placeholder="Cari genre..."
-                className="pl-7 h-8 text-xs bg-muted/40 border-border/40 focus-visible:ring-1 rounded-lg"
-                value={genreSearch}
-                onChange={(e) => setGenreSearch(e.target.value)}
-              />
-            </div>
-            <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-border/50 pr-1">
-              {filteredGenres.map((genre) => {
-                const genreValue = genre.data.name;
-                const isSelected = selectedGenres.includes(genreValue);
-                return (
-                  <button
-                    key={genre.id}
-                    onClick={() =>
-                      toggleArrayItem(
-                        selectedGenres,
-                        setSelectedGenres,
-                        genreValue,
-                      )
-                    }
-                    className={cn(
-                      "inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all",
-                      isSelected
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground",
-                    )}
-                  >
-                    {isSelected && <Check className="w-2.5 h-2.5 shrink-0" />}
-                    {genreValue}
-                  </button>
-                );
-              })}
-              {filteredGenres.length === 0 && (
-                <p className="text-xs text-muted-foreground/50 py-2 w-full text-center">
-                  Genre tidak ditemukan
-                </p>
-              )}
-            </div>
-          </FilterSection>
-        </div>
-
-        {/* ── Footer ── */}
-        <div className="shrink-0 border-t border-border/50 bg-muted/20 px-6 py-4 flex items-center gap-2.5">
           <Button
-            variant="ghost"
-            size="sm"
-            className="shrink-0 text-muted-foreground hover:text-foreground h-9 px-3 rounded-lg"
-            onClick={resetFilters}
-          >
-            <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
-            Reset
-          </Button>
-          <Button
-            className="flex-1 h-9 rounded-lg font-semibold shadow-md text-sm gap-2 hover:shadow-primary/20 transition-all hover:scale-[1.01] active:scale-[0.99]"
             onClick={applyFilters}
+            disabled={isPending}
+            className="lg:hidden flex h-10 px-5 rounded-xl font-bold text-sm shadow-md gap-1.5 cursor-pointer shrink-0"
           >
-            Terapkan Filter
-            {activeFiltersCount > 0 && (
-              <span className="bg-primary-foreground/20 text-primary-foreground text-[10px] font-black px-1.5 py-0.5 rounded-md tabular-nums leading-none">
-                {activeFiltersCount}
-              </span>
+            {isPending ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Filter className="w-3.5 h-3.5" />
             )}
-            <ChevronRight className="w-3.5 h-3.5 ml-auto opacity-60" />
+            <span>Terapkan</span>
           </Button>
         </div>
-      </SheetContent>
-    </Sheet>
+      </div>
+
+      {/* ── COLLAPSIBLE ADVANCED FILTERS ── */}
+      {/* Grid-rows trick animates height smoothly (incl. to/from 0) without JS measuring. */}
+      <div
+        id="advance-filter-panel"
+        className={cn(
+          "grid",
+          readyForMotion &&
+            "transition-[grid-template-rows,opacity] duration-300 ease-in-out",
+          isExpanded
+            ? "grid-rows-[1fr] opacity-100"
+            : "grid-rows-[0fr] opacity-0",
+        )}
+      >
+        <div className="overflow-hidden">
+          <div className="space-y-5 pt-2">
+            {/* GRID FILTERS SECTION */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* 1. Pengurutan & Arah */}
+              <div className="space-y-2 bg-muted/20 p-3.5 rounded-2xl border border-border/40">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-1.5">
+                  Pengurutan
+                </label>
+
+                <div className="space-y-1">
+                  <span className="text-[10px] font-semibold text-muted-foreground/60">
+                    Kriteria:
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    {SORT_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setSort(opt.value)}
+                        aria-pressed={sort === opt.value}
+                        className={cn(
+                          "cursor-pointer px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+                          sort === opt.value
+                            ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
+                            : "bg-background/80 text-muted-foreground border-border/50 hover:bg-muted hover:text-foreground",
+                        )}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-1 pt-1">
+                  <span className="text-[10px] font-semibold text-muted-foreground/60">
+                    Arah Urutan:
+                  </span>
+                  <div className="flex gap-1">
+                    {ORDER_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setSortOrder(opt.value)}
+                        aria-pressed={sortOrder === opt.value}
+                        className={cn(
+                          "cursor-pointer flex-1 flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+                          sortOrder === opt.value
+                            ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
+                            : "bg-background/80 text-muted-foreground border-border/50 hover:bg-muted hover:text-foreground",
+                        )}
+                      >
+                        <span className="font-mono">{opt.icon}</span>
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Format & Status */}
+              <div className="space-y-3 bg-muted/20 p-3.5 rounded-2xl border border-border/40">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
+                    Format Komik
+                  </label>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {FORMAT_OPTIONS.map((fmt) => {
+                      const isSelected = selectedFormats.includes(fmt.value);
+                      return (
+                        <button
+                          key={fmt.value}
+                          onClick={() =>
+                            toggleArrayItem(
+                              selectedFormats,
+                              setSelectedFormats,
+                              fmt.value,
+                            )
+                          }
+                          aria-pressed={isSelected}
+                          className={cn(
+                            "cursor-pointer flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+                            isSelected
+                              ? "bg-primary/10 border-primary/40 text-primary font-bold shadow-xs"
+                              : "bg-background/80 border-border/50 text-muted-foreground hover:bg-muted hover:text-foreground",
+                          )}
+                        >
+                          <span className="text-sm">{fmt.flag}</span>
+                          <span>{fmt.label}</span>
+                          {isSelected && (
+                            <Check className="w-3 h-3 ml-auto text-primary" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5 pt-1">
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
+                    Status
+                  </label>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {STATUS_OPTIONS.map((st) => {
+                      const isSelected = selectedStatus.includes(st.value);
+                      return (
+                        <button
+                          key={st.value}
+                          onClick={() =>
+                            toggleArrayItem(
+                              selectedStatus,
+                              setSelectedStatus,
+                              st.value,
+                            )
+                          }
+                          aria-pressed={isSelected}
+                          className={cn(
+                            "cursor-pointer flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+                            isSelected
+                              ? "bg-primary/10 border-primary/40 text-primary font-bold shadow-xs"
+                              : "bg-background/80 border-border/50 text-muted-foreground hover:bg-muted hover:text-foreground",
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "w-2 h-2 rounded-full shrink-0",
+                              st.color,
+                            )}
+                          />
+                          <span>{st.label}</span>
+                          {isSelected && (
+                            <Check className="w-3 h-3 ml-auto text-primary" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. Genre Selector */}
+              <div className="space-y-2 bg-muted/20 p-3.5 rounded-2xl border border-border/40 md:col-span-2 lg:col-span-1">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
+                    Genre Komik
+                  </label>
+                  {selectedGenres.length > 0 && (
+                    <span className="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                      {selectedGenres.length} Dipilih
+                    </span>
+                  )}
+                </div>
+
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground/50" />
+                  <Input
+                    placeholder="Cari genre..."
+                    className="pl-7 h-7 text-xs bg-background/80 border-border/50 focus-visible:ring-1 rounded-lg"
+                    value={genreSearch}
+                    onChange={(e) => setGenreSearch(e.target.value)}
+                  />
+                  {genreSearch && (
+                    <button
+                      onClick={() => setGenreSearch("")}
+                      aria-label="Hapus pencarian genre"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto custom-scrollbar pr-1 pt-1">
+                  {filteredGenres.map((genre) => {
+                    const genreValue = genre.data.name;
+                    const isSelected = selectedGenres.includes(genreValue);
+                    return (
+                      <button
+                        key={genre.id}
+                        onClick={() =>
+                          toggleArrayItem(
+                            selectedGenres,
+                            setSelectedGenres,
+                            genreValue,
+                          )
+                        }
+                        aria-pressed={isSelected}
+                        className={cn(
+                          "cursor-pointer inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+                          isSelected
+                            ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
+                            : "bg-background/80 text-muted-foreground border-border/40 hover:bg-muted hover:text-foreground",
+                        )}
+                      >
+                        {isSelected && (
+                          <Check className="w-2.5 h-2.5 shrink-0" />
+                        )}
+                        {genreValue}
+                      </button>
+                    );
+                  })}
+                  {filteredGenres.length === 0 && (
+                    <p className="text-xs text-muted-foreground/50 py-2 w-full text-center">
+                      Genre tidak ditemukan
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* FOOTER ACTION BUTTONS */}
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/40">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={resetFilters}
+                className="h-9 text-xs text-muted-foreground hover:text-foreground px-3 rounded-xl"
+              >
+                <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
+                Reset Filter
+              </Button>
+
+              <Button
+                onClick={applyFilters}
+                disabled={isPending}
+                className="h-9 px-6 rounded-xl font-bold text-xs shadow-md gap-1.5 hover:shadow-primary/20 transition-all cursor-pointer"
+              >
+                {isPending ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Filter className="w-3.5 h-3.5" />
+                )}
+                Terapkan Filter
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -499,13 +622,14 @@ function ActiveChip({
   onRemove: () => void;
 }>) {
   return (
-    <span className="inline-flex items-center gap-1 bg-primary/10 text-primary text-[10px] font-semibold px-2 py-0.5 rounded-full border border-primary/20 max-w-[120px]">
+    <span className="inline-flex items-center gap-1 bg-primary/10 text-primary text-[11px] font-semibold px-2.5 py-0.5 rounded-full border border-primary/20 max-w-[140px] shadow-2xs">
       <span className="truncate">{label}</span>
       <button
         onClick={onRemove}
-        className="shrink-0 hover:bg-primary/20 rounded-full p-0.5 transition-colors"
+        aria-label={`Hapus filter ${label}`}
+        className="shrink-0 hover:bg-primary/20 rounded-full p-0.5 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
       >
-        <X className="w-2.5 h-2.5" />
+        <X className="w-3 h-3" />
       </button>
     </span>
   );

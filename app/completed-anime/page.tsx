@@ -1,10 +1,8 @@
 import { fetchAnime } from "@/lib/api";
 import { CompleteAnimeResponse } from "@/lib/types";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { CheckCircle2 } from "lucide-react";
 import CompletedCard from "@/components/completedAnimeCard";
+import Pagination from "@/components/pagination";
 
 export const revalidate = 3600;
 
@@ -135,142 +133,15 @@ export default async function CompletedPage({
           </div>
         )}
 
-        {/* --- PAGINATION CONTROL --- */}
-        <div className="w-full pb-4">
-          {/* A. MOBILE PAGINATION (Numbers + Arrows) */}
-          <div className="flex md:hidden items-center justify-between gap-1 w-full">
-            <Button
-              variant="outline"
-              size="icon"
-              disabled={!pagination.hasPrevPage}
-              asChild={pagination.hasPrevPage}
-              className="h-9 w-9 shrink-0 rounded-lg border-border hover:bg-muted text-muted-foreground"
-            >
-              {pagination.hasPrevPage ? (
-                <Link
-                  href={`/completed-anime?page=${pagination.prevPage}`}
-                  prefetch={false}
-                  aria-label="Halaman Sebelumnya"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </Link>
-              ) : (
-                <ChevronLeft className="w-4 h-4 opacity-30" />
-              )}
-            </Button>
-
-            <div className="flex items-center justify-center gap-1 overflow-hidden">
-              {generateMobilePagination().map((page) => {
-                const isCurrent = page === currentPage;
-                return (
-                  <Button
-                    key={page}
-                    variant={isCurrent ? "default" : "ghost"}
-                    size="icon"
-                    asChild
-                    className={cn(
-                      "h-9 w-9 rounded-lg text-xs font-bold transition-all",
-                      isCurrent
-                        ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-md"
-                        : "text-muted-foreground hover:bg-muted",
-                    )}
-                  >
-                    <Link href={`/completed-anime?page=${page}`} prefetch={false}>{page}</Link>
-                  </Button>
-                );
-              })}
-            </div>
-
-            <Button
-              variant="outline"
-              size="icon"
-              disabled={!pagination.hasNextPage}
-              asChild={pagination.hasNextPage}
-              className="h-9 w-9 shrink-0 rounded-lg border-border hover:bg-muted text-muted-foreground"
-            >
-              {pagination.hasNextPage ? (
-                <Link
-                  href={`/completed-anime?page=${pagination.nextPage}`}
-                  prefetch={false}
-                  aria-label="Halaman Selanjutnya"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </Link>
-              ) : (
-                <ChevronRight className="w-4 h-4 opacity-30" />
-              )}
-            </Button>
-          </div>
-
-          {/* B. DESKTOP PAGINATION (Full Logic) */}
-          <div className="hidden md:flex items-center justify-center gap-2">
-            <Button
-              variant="outline"
-              disabled={!pagination.hasPrevPage}
-              asChild={pagination.hasPrevPage}
-              className="h-10 gap-2 border-border hover:bg-muted text-muted-foreground hover:text-foreground px-4"
-            >
-              {pagination.hasPrevPage ? (
-                <Link href={`/completed-anime?page=${pagination.prevPage}`} prefetch={false}>
-                  <ChevronLeft className="w-4 h-4" /> Sebelumnya
-                </Link>
-              ) : (
-                <span className="flex items-center gap-1.5">
-                  <ChevronLeft className="w-4 h-4" /> Sebelumnya
-                </span>
-              )}
-            </Button>
-
-            <div className="flex items-center gap-1 mx-4">
-              {generateDesktopPagination().map((page, idx) => {
-                if (page === "...") {
-                  return (
-                    <span
-                      key={`el-${idx}`}
-                      className="px-2 text-muted-foreground select-none"
-                    >
-                      ...
-                    </span>
-                  );
-                }
-                const isCurrent = page === currentPage;
-                return (
-                  <Button
-                    key={idx}
-                    variant={isCurrent ? "default" : "ghost"}
-                    size="icon"
-                    asChild
-                    className={cn(
-                      "w-10 h-10 rounded-lg",
-                      isCurrent
-                        ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20"
-                        : "text-[muted-foreground] hover:bg-muted hover:text-foreground",
-                    )}
-                  >
-                    <Link href={`/completed-anime?page=${page}`} prefetch={false}>{page}</Link>
-                  </Button>
-                );
-              })}
-            </div>
-
-            <Button
-              variant="outline"
-              disabled={!pagination.hasNextPage}
-              asChild={pagination.hasNextPage}
-              className="h-10 gap-2 border-border hover:bg-muted text-muted-foreground hover:text-foreground px-4"
-            >
-              {pagination.hasNextPage ? (
-                <Link href={`/completed-anime?page=${pagination.nextPage}`} prefetch={false}>
-                  Selanjutnya <ChevronRight className="w-4 h-4" />
-                </Link>
-              ) : (
-                <span className="flex items-center gap-1.5">
-                  Selanjutnya <ChevronRight className="w-4 h-4" />
-                </span>
-              )}
-            </Button>
-          </div>
-        </div>
+        {animeList && animeList.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            hasPrevPage={pagination.hasPrevPage}
+            hasNextPage={pagination.hasNextPage}
+            pageUrlTemplate="/completed-anime?page={page}"
+          />
+        )}
       </div>
     </div>
   );

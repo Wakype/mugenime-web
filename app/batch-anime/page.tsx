@@ -1,9 +1,8 @@
 import { fetchKS } from "@/lib/api";
 import { KS_LatestResponse } from "@/lib/batchAnimeTypes";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, PackageOpen } from "lucide-react";
-import Link from "next/link";
+import { PackageOpen } from "lucide-react";
 import BatchAnimeCard from "@/components/batchAnimeCard";
+import Pagination from "@/components/pagination";
 
 export const revalidate = 1800;
 
@@ -92,116 +91,15 @@ export default async function BatchAnimePage({
           </div>
         )}
 
-        {/* --- PAGINATION CONTROL --- */}
-        <div className="w-full pb-4 pt-6 flex items-center justify-center gap-2">
-          {/* Button Prev */}
-          <Button
-            variant="outline"
-            disabled={!hasPrevPage}
-            asChild={hasPrevPage}
-            className="h-10 w-10 md:w-auto md:px-4 md:gap-2 border-border hover:bg-muted text-muted-foreground hover:text-foreground"
-          >
-            {hasPrevPage ? (
-              <Link href={`/batch-anime?page=${currentPage - 1}`} prefetch={false}>
-                <ChevronLeft className="w-4 h-4" />
-                <span className="hidden md:inline">Sebelumnya</span>
-              </Link>
-            ) : (
-              <span className="opacity-50 cursor-not-allowed">
-                <ChevronLeft className="w-4 h-4" />
-                <span className="hidden md:inline">Sebelumnya</span>
-              </span>
-            )}
-          </Button>
-
-          {/* Numbers Page (-2, -1, 0, +1, +2) */}
-          <div className="flex items-center gap-1 mx-2">
-            {/* Halaman Sebelumnya - 2 */}
-            {currentPage > 2 && (
-              <Button
-                variant="ghost"
-                size="icon"
-                asChild
-                className="w-10 h-10 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-all hidden sm:inline-flex"
-              >
-                <Link href={`/batch-anime?page=${currentPage - 2}`} prefetch={false}>
-                  {currentPage - 2}
-                </Link>
-              </Button>
-            )}
-
-            {/* Halaman Sebelumnya - 1 */}
-            {currentPage > 1 && (
-              <Button
-                variant="ghost"
-                size="icon"
-                asChild
-                className="w-10 h-10 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
-              >
-                <Link href={`/batch-anime?page=${currentPage - 1}`} prefetch={false}>
-                  {currentPage - 1}
-                </Link>
-              </Button>
-            )}
-
-            {/* Halaman Saat Ini */}
-            <Button
-              variant="default"
-              size="icon"
-              className="w-10 h-10 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20 font-bold pointer-events-none"
-            >
-              {currentPage}
-            </Button>
-
-            {/* Halaman Selanjutnya + 1 */}
-            {hasNextPage && (
-              <Button
-                variant="ghost"
-                size="icon"
-                asChild
-                className="w-10 h-10 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
-              >
-                <Link href={`/batch-anime?page=${currentPage + 1}`} prefetch={false}>
-                  {currentPage + 1}
-                </Link>
-              </Button>
-            )}
-
-            {/* Halaman Selanjutnya + 2 */}
-            {hasNextPage && (
-              <Button
-                variant="ghost"
-                size="icon"
-                asChild
-                className="w-10 h-10 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-all hidden sm:inline-flex"
-              >
-                <Link href={`/batch-anime?page=${currentPage + 2}`} prefetch={false}>
-                  {currentPage + 2}
-                </Link>
-              </Button>
-            )}
-          </div>
-
-          {/* Button Next */}
-          <Button
-            variant="outline"
-            disabled={!hasNextPage}
-            asChild={hasNextPage}
-            className="h-10 w-10 md:w-auto md:px-4 md:gap-2 border-border hover:bg-muted text-muted-foreground hover:text-foreground"
-          >
-            {hasNextPage ? (
-              <Link href={`/batch-anime?page=${currentPage + 1}`} prefetch={false}>
-                <span className="hidden md:inline">Selanjutnya</span>
-                <ChevronRight className="w-4 h-4" />
-              </Link>
-            ) : (
-              <span className="opacity-50 cursor-not-allowed">
-                <span className="hidden md:inline">Selanjutnya</span>
-                <ChevronRight className="w-4 h-4" />
-              </span>
-            )}
-          </Button>
-        </div>
+        {animeList.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={999}
+            hasPrevPage={hasPrevPage}
+            hasNextPage={hasNextPage}
+            pageUrlTemplate="/batch-anime?page={page}"
+          />
+        )}
       </div>
     </div>
   );

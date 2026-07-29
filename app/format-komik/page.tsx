@@ -1,12 +1,10 @@
 import { fetchKomik } from "@/lib/api";
 import { AdvanceSearchKomikResponse } from "@/lib/komikTypes";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import Link from "next/link";
-import { ChevronLeft, ChevronRight, Layers } from "lucide-react";
+import { Layers } from "lucide-react";
 import KomikCard from "@/components/komikCard";
 import FormatFilter from "@/components/formatKomikFilter";
-import { cn } from "@/lib/utils";
+import Pagination from "@/components/pagination";
 
 export const revalidate = 1800;
 
@@ -60,12 +58,10 @@ export default async function FormatKomikPage({
   const prevPage = currentPage - 1;
   const nextPage = currentPage + 1;
 
-  const createPageUrl = (page: number | string) => {
-    const urlParams = new URLSearchParams();
-    urlParams.set("page", page.toString());
-    selectedFormats.forEach((f) => urlParams.append("format", f));
-    return `/format-komik?${urlParams.toString()}`;
-  };
+  const urlParams = new URLSearchParams();
+  selectedFormats.forEach((f) => urlParams.append("format", f));
+  const searchStr = urlParams.toString();
+  const pageUrlTemplate = `/format-komik?${searchStr ? searchStr + "&" : ""}page={page}`;
 
   const generatePagination = () => {
     const pages = [];
@@ -161,162 +157,15 @@ export default async function FormatKomikPage({
         )}
 
         {/* --- PAGINATION CONTROL --- */}
-        {komikList &&
-          komikList.length > 0 &&
-          (totalPages > 1 || hasNextPageAPI) && (
-            <div className="w-full pb-4">
-              {/* A. MOBILE PAGINATION (Numbers + Arrows) */}
-              <div className="flex md:hidden items-center justify-between gap-1 w-full">
-                {/* Tombol Prev */}
-                <Button
-                  variant="outline"
-                  size="icon"
-                  disabled={!hasPrevPage}
-                  asChild={hasPrevPage}
-                  className="h-9 w-9 shrink-0 rounded-lg border-border hover:bg-muted text-muted-foreground"
-                >
-                  {hasPrevPage ? (
-                    <Link
-                      href={createPageUrl(prevPage)}
-                      aria-label="Halaman Sebelumnya"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </Link>
-                  ) : (
-                    <button disabled>
-                      <ChevronLeft className="w-4 h-4 opacity-30" />
-                    </button>
-                  )}
-                </Button>
-
-                {/* Deretan Angka (Mobile Logic) */}
-                <div className="flex items-center justify-center gap-0.5 sm:gap-1 overflow-hidden">
-                  {generatePagination().map((page, idx) => {
-                    if (page === "...") {
-                      return (
-                        <span
-                          key={`mob-ellipsis-${idx}`}
-                          className="px-1 text-muted-foreground text-xs select-none"
-                        >
-                          ...
-                        </span>
-                      );
-                    }
-
-                    const isCurrent = page === currentPage;
-                    return (
-                      <Button
-                        key={`mob-${page}`}
-                        variant={isCurrent ? "default" : "ghost"}
-                        size="icon"
-                        asChild
-                        className={cn(
-                          "h-8 w-8 sm:h-9 sm:w-9 rounded-lg text-xs font-bold transition-all",
-                          isCurrent
-                            ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-md"
-                            : "text-muted-foreground hover:bg-muted",
-                        )}
-                      >
-                        <Link href={createPageUrl(page)}>{page}</Link>
-                      </Button>
-                    );
-                  })}
-                </div>
-
-                {/* Tombol Next */}
-                <Button
-                  variant="outline"
-                  size="icon"
-                  disabled={!hasNextPage}
-                  asChild={hasNextPage}
-                  className="h-9 w-9 shrink-0 rounded-lg border-border hover:bg-muted text-muted-foreground"
-                >
-                  {hasNextPage ? (
-                    <Link
-                      href={createPageUrl(nextPage)}
-                      aria-label="Halaman Selanjutnya"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </Link>
-                  ) : (
-                    <button disabled>
-                      <ChevronRight className="w-4 h-4 opacity-30" />
-                    </button>
-                  )}
-                </Button>
-              </div>
-
-              {/* B. DESKTOP PAGINATION (Full Logic) */}
-              <div className="hidden md:flex items-center justify-center gap-2">
-                <Button
-                  variant="outline"
-                  disabled={!hasPrevPage}
-                  asChild={hasPrevPage}
-                  className="h-10 gap-2 border-border hover:bg-muted text-muted-foreground hover:text-foreground px-4 cursor-pointer"
-                >
-                  {hasPrevPage ? (
-                    <Link href={createPageUrl(prevPage)}>
-                      <ChevronLeft className="w-4 h-4" /> Sebelumnya
-                    </Link>
-                  ) : (
-                    <span className="flex items-center gap-1.5 opacity-50">
-                      <ChevronLeft className="w-4 h-4" /> Sebelumnya
-                    </span>
-                  )}
-                </Button>
-
-                <div className="flex items-center gap-1 mx-4">
-                  {generatePagination().map((page, idx) => {
-                    if (page === "...") {
-                      return (
-                        <span
-                          key={`desk-ellipsis-${idx}`}
-                          className="px-2 text-muted-foreground select-none"
-                        >
-                          ...
-                        </span>
-                      );
-                    }
-
-                    const isCurrent = page === currentPage;
-                    return (
-                      <Button
-                        key={`desk-${page}`}
-                        variant={isCurrent ? "default" : "ghost"}
-                        size="icon"
-                        asChild
-                        className={cn(
-                          "w-10 h-10 rounded-lg transition-all cursor-pointer",
-                          isCurrent
-                            ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20"
-                            : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                        )}
-                      >
-                        <Link href={createPageUrl(page)}>{page}</Link>
-                      </Button>
-                    );
-                  })}
-                </div>
-
-                <Button
-                  variant="outline"
-                  disabled={!hasNextPage}
-                  asChild={hasNextPage}
-                  className="h-10 gap-2 border-border hover:bg-muted text-muted-foreground hover:text-foreground px-4 cursor-pointer"
-                >
-                  {hasNextPage ? (
-                    <Link href={createPageUrl(nextPage)}>
-                      Selanjutnya <ChevronRight className="w-4 h-4" />
-                    </Link>
-                  ) : (
-                    <span className="flex items-center gap-1.5 opacity-50">
-                      Selanjutnya <ChevronRight className="w-4 h-4" />
-                    </span>
-                  )}
-                </Button>
-              </div>
-            </div>
-          )}
+        {komikList && komikList.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            hasPrevPage={hasPrevPage}
+            hasNextPage={hasNextPage}
+            pageUrlTemplate={pageUrlTemplate}
+          />
+        )}
       </div>
     </div>
   );

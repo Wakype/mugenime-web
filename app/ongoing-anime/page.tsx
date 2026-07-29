@@ -1,11 +1,9 @@
 import { fetchAnime } from "@/lib/api";
 import { OngoingResponse } from "@/lib/types";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import Link from "next/link";
-import { Calendar, ChevronLeft, ChevronRight, Zap } from "lucide-react";
+import { Calendar, Zap } from "lucide-react";
 import OngoingCard from "@/components/ongoingCard";
-import { cn } from "@/lib/utils";
+import Pagination from "@/components/pagination";
 
 export const revalidate = 1800;
 
@@ -44,50 +42,6 @@ export default async function OngoingPage({
 
   const { pagination, animeList } = response;
   const { totalPages } = pagination;
-
-  const generateDesktopPagination = () => {
-    const pages = [];
-    const maxVisible = 5;
-
-    if (totalPages <= maxVisible) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else if (currentPage <= 3) {
-      pages.push(1, 2, 3, "...", totalPages);
-    } else if (currentPage >= totalPages - 2) {
-      pages.push(1, "...", totalPages - 2, totalPages - 1, totalPages);
-    } else {
-      pages.push(
-        1,
-        "...",
-        currentPage - 1,
-        currentPage,
-        currentPage + 1,
-        "...",
-        totalPages,
-      );
-    }
-    return pages;
-  };
-
-  const generateMobilePagination = () => {
-    const pages = [];
-    let start = Math.max(1, currentPage - 2);
-    let end = Math.min(totalPages, currentPage + 2);
-
-    if (currentPage <= 3) {
-      end = Math.min(5, totalPages);
-    }
-    if (currentPage >= totalPages - 2) {
-      start = Math.max(1, totalPages - 4);
-    }
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    return pages;
-  };
 
   return (
     <div className="min-h-screen pb-20 py-10 bg-background">
@@ -150,153 +104,21 @@ export default async function OngoingPage({
           </div>
         ) : (
           <div className="text-center py-20 text-muted-foreground">
-            Data tidak ditemukan. Silakan coba refresh atau kembali ke halaman
-            1.
+            Data tidak ditemukan. Silakan coba refresh atau kembali ke halaman 1.
           </div>
         )}
 
         <Separator className="bg-border" />
 
-        {/* --- PAGINATION CONTROL --- */}
-        <div className="w-full pb-4">
-          {/* A. MOBILE PAGINATION (Numbers + Arrows) */}
-          <div className="flex md:hidden items-center justify-between gap-1 w-full">
-            {/* Tombol Prev */}
-            <Button
-              variant="outline"
-              size="icon"
-              disabled={!pagination.hasPrevPage}
-              asChild={pagination.hasPrevPage}
-              className="h-9 w-9 shrink-0 rounded-lg border-border hover:bg-muted text-muted-foreground"
-            >
-              {pagination.hasPrevPage ? (
-                <Link
-                  href={`/ongoing-anime?page=${pagination.prevPage}`}
-                  prefetch={false}
-                  aria-label="Halaman Sebelumnya"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </Link>
-              ) : (
-                <ChevronLeft className="w-4 h-4 opacity-30" />
-              )}
-            </Button>
-
-            {/* Deretan Angka (Mobile Logic) */}
-            <div className="flex items-center justify-center gap-1 overflow-hidden">
-              {generateMobilePagination().map((page) => {
-                const isCurrent = page === currentPage;
-                return (
-                  <Button
-                    key={page}
-                    variant={isCurrent ? "default" : "ghost"}
-                    size="icon"
-                    asChild
-                    className={cn(
-                      "h-9 w-9 rounded-lg text-xs font-bold transition-all",
-                      isCurrent
-                        ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-md"
-                        : "text-muted-foreground hover:bg-muted",
-                    )}
-                  >
-                    <Link href={`/ongoing-anime?page=${page}`} prefetch={false}>{page}</Link>
-                  </Button>
-                );
-              })}
-            </div>
-
-            {/* Tombol Next */}
-            <Button
-              variant="outline"
-              size="icon"
-              disabled={!pagination.hasNextPage}
-              asChild={pagination.hasNextPage}
-              className="h-9 w-9 shrink-0 rounded-lg border-border hover:bg-muted text-muted-foreground"
-            >
-              {pagination.hasNextPage ? (
-                <Link
-                  href={`/ongoing-anime?page=${pagination.nextPage}`}
-                  prefetch={false}
-                  aria-label="Halaman Selanjutnya"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </Link>
-              ) : (
-                <ChevronRight className="w-4 h-4 opacity-30" />
-              )}
-            </Button>
-          </div>
-
-          {/* B. DESKTOP PAGINATION (Full Logic) */}
-          <div className="hidden md:flex items-center justify-center gap-2">
-            <Button
-              variant="outline"
-              disabled={!pagination.hasPrevPage}
-              asChild={pagination.hasPrevPage}
-              className="h-10 gap-2 border-border hover:bg-muted text-muted-foreground hover:text-foreground px-4"
-            >
-              {pagination.hasPrevPage ? (
-                <Link href={`/ongoing-anime?page=${pagination.prevPage}`} prefetch={false}>
-                  <ChevronLeft className="w-4 h-4" /> Sebelumnya
-                </Link>
-              ) : (
-                <span className="flex items-center gap-1.5">
-                  <ChevronLeft className="w-4 h-4" /> Sebelumnya
-                </span>
-              )}
-            </Button>
-
-            <div className="flex items-center gap-1 mx-4">
-              {generateDesktopPagination().map((page, idx) => {
-                if (page === "...") {
-                  return (
-                    <span
-                      key={`ellipsis-${idx}`}
-                      className="px-2 text-muted-foreground select-none"
-                    >
-                      ...
-                    </span>
-                  );
-                }
-
-                const isCurrent = page === currentPage;
-                return (
-                  <Button
-                    key={idx}
-                    variant={isCurrent ? "default" : "ghost"}
-                    size="icon"
-                    asChild
-                    className={cn(
-                      "w-10 h-10 rounded-lg transition-all",
-                      isCurrent
-                        ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                    )}
-                  >
-                    <Link href={`/ongoing-anime?page=${page}`} prefetch={false}>{page}</Link>
-                  </Button>
-                );
-              })}
-            </div>
-
-            <Button
-              variant="outline"
-              disabled={!pagination.hasNextPage}
-              asChild={pagination.hasNextPage}
-              className="h-10 gap-2 border-border hover:bg-muted text-muted-foreground hover:text-foreground px-4"
-            >
-              {pagination.hasNextPage ? (
-                <Link href={`/ongoing-anime?page=${pagination.nextPage}`} prefetch={false}>
-                  Selanjutnya <ChevronRight className="w-4 h-4" />
-                </Link>
-              ) : (
-                <span className="flex items-center gap-1.5">
-                  Selanjutnya <ChevronRight className="w-4 h-4" />
-                </span>
-              )}
-            </Button>
-          </div>
-        </div>
+        {animeList && animeList.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            hasPrevPage={pagination.hasPrevPage}
+            hasNextPage={pagination.hasNextPage}
+            pageUrlTemplate="/ongoing-anime?page={page}"
+          />
+        )}
       </div>
     </div>
   );

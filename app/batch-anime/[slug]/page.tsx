@@ -10,7 +10,6 @@ import {
   Clock,
   Layers,
   Tv,
-  Download,
   Home,
   Film,
   Disc,
@@ -27,11 +26,11 @@ import {
 } from "@/components/ui/breadcrumb";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import ShareButton from "@/components/shareButton";
 import BookmarkButton from "@/components/bookmarkButton";
 import CommentSection from "@/components/commentSection";
+import ScrollToDownloadButton from "@/components/scrollToDownloadButton";
 
 export const revalidate = 1800;
 
@@ -254,8 +253,8 @@ export default async function BatchAnimeDetailPage({
 
   const HeaderBlock = (
     <div className="space-y-4 flex flex-col items-center lg:items-start text-center lg:text-left w-full overflow-hidden">
-      <Breadcrumb className="text-muted-foreground/80 w-full">
-        <BreadcrumbList className="flex flex-nowrap items-center justify-center lg:justify-start whitespace-nowrap overflow-hidden text-ellipsis">
+      <Breadcrumb className="text-muted-foreground/80 w-full flex justify-center lg:justify-start">
+        <BreadcrumbList className="justify-center lg:justify-start">
           <BreadcrumbItem className="shrink-0">
             <BreadcrumbLink asChild>
               <Link
@@ -281,14 +280,14 @@ export default async function BatchAnimeDetailPage({
           </BreadcrumbItem>
           <BreadcrumbSeparator className="shrink-0" />
           <BreadcrumbItem className="truncate min-w-0">
-            <BreadcrumbPage className="font-medium text-foreground truncate block">
+            <BreadcrumbPage className="font-medium text-foreground line-clamp-1 max-w-[200px] sm:max-w-none">
               {anime.title}
             </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
 
-      <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-foreground leading-[1.15]">
+      <h1 className="text-3xl md:text-5xl font-black text-foreground leading-[1.15]">
         {anime.title}
       </h1>
 
@@ -473,16 +472,10 @@ export default async function BatchAnimeDetailPage({
 
   const ActionBlock = (
     <div className="space-y-3">
-      <Button
-        asChild
-        size="lg"
-        className="w-full cursor-pointer rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12 shadow-lg shadow-primary/20 transition-all"
-      >
-        <a href="#download-section">
-          <Download className="w-5 h-5 mr-2" />
-          Download Batch
-        </a>
-      </Button>
+      {/* Sembunyikan tombol Download Batch di Desktop view (hanya muncul di Mobile) */}
+      <div className="lg:hidden">
+        <ScrollToDownloadButton />
+      </div>
 
       {/* Grid Button Share dan Bookmark */}
       <div className="grid grid-cols-2 gap-3">
@@ -495,13 +488,13 @@ export default async function BatchAnimeDetailPage({
   return (
     <div className="relative min-h-screen bg-background pb-20">
       {/* --- HERO BACKGROUND --- */}
-      <div className="absolute top-0 left-0 z-0 w-full h-[40vh] md:h-[50vh] overflow-hidden pointer-events-none">
+      <div className="absolute top-0 left-0 z-0 w-full h-[50vh] md:h-[60vh] overflow-hidden pointer-events-none">
         <div className="absolute inset-0">
           <Image
             src={anime.poster ?? ""}
             alt="Background"
             fill
-            className="object-cover opacity-50 dark:opacity-20 blur-xl scale-110"
+            className="object-cover opacity-50 dark:opacity-20 blur scale-110"
             priority
             unoptimized
             referrerPolicy="no-referrer"
@@ -514,12 +507,12 @@ export default async function BatchAnimeDetailPage({
       {/* --- MAIN CONTENT CONTAINER --- */}
       <div className="container mx-auto px-4 pt-[5vh] md:pt-[10vh] relative z-10">
         {/* MOBILE LAYOUT */}
-        <div className="flex flex-col gap-8 lg:hidden">
-          <div className="max-w-full w-full mx-auto">{PosterBlock}</div>
+        <div className="flex flex-col gap-6 lg:hidden">
+          <div className="w-full mx-auto">{PosterBlock}</div>
           {HeaderBlock}
-          {InfoBlock}
-          {ActionBlock}
           {SynopsisBlock}
+          {ActionBlock}
+          {InfoBlock}
           {DownloadBlock}
           {TagsBlock}
           <div className="pt-4">
@@ -532,8 +525,8 @@ export default async function BatchAnimeDetailPage({
 
         {/* DESKTOP LAYOUT */}
         <div className="hidden lg:grid grid-cols-12 gap-10">
-          {/* CONTENT AREA (Kiri) */}
-          <div className="col-span-8 space-y-10">
+          {/* CONTENT AREA (Kiri/Utama - 8 kolom) */}
+          <div className="col-span-8 space-y-8">
             {PosterBlock}
             {HeaderBlock}
             {SynopsisBlock}
@@ -547,8 +540,8 @@ export default async function BatchAnimeDetailPage({
             </div>
           </div>
 
-          {/* SIDEBAR AREA (Kanan) */}
-          <div className="col-span-4 space-y-6 lg:sticky lg:top-24 h-fit">
+          {/* SIDEBAR AREA (Kanan - 4 kolom) */}
+          <div className="col-span-4 space-y-6 sticky top-24 h-fit self-start">
             {InfoBlock}
             {ActionBlock}
           </div>

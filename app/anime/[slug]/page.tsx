@@ -78,14 +78,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       openGraph: {
         title: title,
         description: description,
-        images: [
-          {
-            url: anime.poster,
-            width: 600,
-            height: 800,
-            alt: anime.title,
-          },
-        ],
+        images: [anime.poster],
         type: "website",
         siteName: "Mugenime",
       },

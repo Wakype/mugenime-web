@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { CN, KR, JP } from "country-flag-icons/react/3x2";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -13,14 +14,60 @@ export function getCountryFromFormat(format?: string): string {
   return format || "Unknown";
 }
 
-// Map format to include country flag emoji
-export function getFormatWithFlag(format?: string): string {
+// Map format to include country flag SVG icon
+export function getFormatWithFlag(format?: string): React.ReactNode {
   const f = format?.toLowerCase();
-  if (f === "manhua") return "🇨🇳 Manhua";
-  if (f === "manhwa") return "🇰🇷 Manhwa";
-  if (f === "manga") return "🇯🇵 Manga";
-  // Fallback if the format is not matched
-  return `🏳️ ${format || "Comic"}`;
+
+  let label = "Comic";
+  let icon: React.ReactNode = (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-3.5 h-3.5 shrink-0 inline-block"
+    >
+      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+      <line x1="4" x2="4" y1="22" y2="15" />
+    </svg>
+  );
+
+  if (f === "manhua") {
+    label = "Manhua";
+    icon = (
+      <CN
+        title="China"
+        className="w-4 h-3 rounded-[2px] overflow-hidden shrink-0 inline-block border border-black/10"
+      />
+    );
+  } else if (f === "manhwa") {
+    label = "Manhwa";
+    icon = (
+      <KR
+        title="South Korea"
+        className="w-4 h-3 rounded-[2px] overflow-hidden shrink-0 inline-block border border-black/10"
+      />
+    );
+  } else if (f === "manga") {
+    label = "Manga";
+    icon = (
+      <JP
+        title="Japan"
+        className="w-4 h-3 rounded-[2px] overflow-hidden shrink-0 inline-block border border-black/10"
+      />
+    );
+  } else if (format) {
+    label = format;
+  }
+
+  return (
+    <span className="inline-flex items-center gap-1.5 align-middle">
+      {icon}
+      <span>{label}</span>
+    </span>
+  );
 }
 
 // Convert date string to relative time
@@ -52,60 +99,37 @@ export function getFormatDisplay(format?: string): {
 } {
   const f = format?.toLowerCase();
 
-  // China Flag SVG (Manhua)
   if (f === "manhua") {
     return {
       name: "Manhua",
       icon: (
-        <svg
-          viewBox="0 0 640 480"
-          className="w-3.5 h-3.5 rounded-[2px] overflow-hidden"
-        >
-          <path fill="#de2910" d="M0 0h640v480H0z" />
-          <path
-            fill="#ffde00"
-            d="M119.6 79.9l22.6 69.4H215l-59 42.8 22.5 69.4-58.9-42.8-58.9 42.8 22.5-69.4-59-42.8h72.8zM245.9 59.4l11.4 34.8h36.6l-29.6 21.5 11.3 34.8-29.6-21.5-29.6 21.5 11.4-34.8-29.6-21.5h36.5zM292.8 131.5l11.3 34.8h36.6l-29.6 21.5 11.3 34.8-29.5-21.5-29.6 21.5 11.3-34.8-29.6-21.5H281zM286.9 238l11.4 34.7h36.5l-29.5 21.5 11.3 34.8-29.6-21.5-29.6 21.5 11.4-34.8-29.6-21.5h36.6zM228.6 303.4l11.3 34.8h36.6l-29.6 21.5 11.4 34.8-29.6-21.5-29.6 21.5 11.3-34.8-29.6-21.5h36.6z"
-          />
-        </svg>
+        <CN
+          title="China"
+          className="w-4 h-3 rounded-[2px] overflow-hidden shrink-0 inline-block border border-black/10"
+        />
       ),
     };
   }
 
-  // Korea Flag SVG (Manhwa)
   if (f === "manhwa") {
     return {
       name: "Manhwa",
       icon: (
-        <svg
-          viewBox="0 0 640 480"
-          className="w-3.5 h-3.5 rounded-[2px] overflow-hidden bg-white"
-        >
-          <path fill="#fff" d="M0 0h640v480H0z" />
-          <g transform="rotate(33.69 320 240)">
-            <path fill="#cd2e3a" d="M545.2 240a225.2 225.2 0 0 1-450.4 0z" />
-            <path fill="#0047a0" d="M94.8 240a225.2 225.2 0 0 0 450.4 0z" />
-            <circle cx="207.4" cy="240" r="56.3" fill="#cd2e3a" />
-            <circle cx="432.6" cy="240" r="56.3" fill="#0047a0" />
-          </g>
-          <g fill="#000">
-            <path d="M110 131.3h87v14.4h-87zM110 160h87v14.4h-87zM110 188.8h87v14.4h-87zM110 276.8h87v14.4h-87zM110 334.4h87v14.4h-87zM110 305.6h38.2v14.4H110zM158.8 305.6h38.2v14.4h-38.2zM443 131.3h87v14.4h-87zM443 188.8h87v14.4h-87zM443 160h38.2v14.4H443zM491.8 160h38.2v14.4h-38.2zM443 276.8h38.2v14.4H443zM491.8 276.8h38.2v14.4h-38.2zM443 305.6h38.2v14.4H443zM491.8 305.6h38.2v14.4h-38.2zM443 334.4h38.2v14.4H443zM491.8 334.4h38.2v14.4h-38.2z" />
-          </g>
-        </svg>
+        <KR
+          title="South Korea"
+          className="w-4 h-3 rounded-[2px] overflow-hidden shrink-0 inline-block border border-black/10"
+        />
       ),
     };
   }
 
-  // Default: Japan Flag SVG (Manga)
   return {
     name: "Manga",
     icon: (
-      <svg
-        viewBox="0 0 640 480"
-        className="w-3.5 h-3.5 rounded-[2px] overflow-hidden bg-white"
-      >
-        <path fill="#fff" d="M0 0h640v480H0z" />
-        <circle cx="320" cy="240" r="144" fill="#bc002d" />
-      </svg>
+      <JP
+        title="Japan"
+        className="w-4 h-3 rounded-[2px] overflow-hidden shrink-0 inline-block border border-black/10"
+      />
     ),
   };
 }

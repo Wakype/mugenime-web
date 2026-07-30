@@ -109,17 +109,40 @@ export default function ComicReader({
   }, [isAutoScrolling]);
 
   // --- AUTO SCROLL EXECUTION LOGIC ---
+  const lastTimeRef = useRef<number | null>(null);
+  const scrollAccumulatorRef = useRef<number>(0);
+
   useEffect(() => {
     let animationFrameId: number;
 
-    const scroll = () => {
+    const scroll = (timestamp: number) => {
       if (isAutoScrolling) {
-        window.scrollBy({ top: settings.autoScrollSpeed, behavior: "auto" });
+        if (lastTimeRef.current === null) {
+          lastTimeRef.current = timestamp;
+        }
+        const deltaTime = Math.min(
+          (timestamp - lastTimeRef.current) / 1000,
+          0.1,
+        );
+        lastTimeRef.current = timestamp;
+
+        // Base speed scale: 100px/s * speed multiplier
+        const scrollAmount = settings.autoScrollSpeed * 100 * deltaTime;
+        scrollAccumulatorRef.current += scrollAmount;
+
+        const pixelsToScroll = Math.floor(scrollAccumulatorRef.current);
+        if (pixelsToScroll >= 1) {
+          window.scrollBy({ top: pixelsToScroll, behavior: "auto" });
+          scrollAccumulatorRef.current -= pixelsToScroll;
+        }
+
         animationFrameId = requestAnimationFrame(scroll);
       }
     };
 
     if (isAutoScrolling) {
+      lastTimeRef.current = null;
+      scrollAccumulatorRef.current = 0;
       animationFrameId = requestAnimationFrame(scroll);
     }
 
@@ -177,16 +200,12 @@ export default function ComicReader({
         case "ArrowRight":
           goToNextChapter();
           break;
-        case " ":
-          e.preventDefault();
-          toggleAutoScroll();
-          break;
       }
     };
 
     globalThis.addEventListener("keydown", handleKeyDown);
     return () => globalThis.removeEventListener("keydown", handleKeyDown);
-  }, [goToNextChapter, goToPrevChapter, toggleAutoScroll]);
+  }, [goToNextChapter, goToPrevChapter]);
 
   // --- RENDER HELPERS ---
   const handleOverlayClick = () => {
@@ -423,15 +442,12 @@ export default function ComicReader({
 
                   <div className="space-y-6 pb-10 max-w-lg mx-auto">
                     {/* Shortcuts Hint */}
-                    <div className="bg-secondary/50 rounded-xl p-3 text-xs text-muted-foreground flex flex-wrap justify-between gap-2 items-center">
+                    <div className="bg-secondary/50 rounded-xl p-3 text-xs text-muted-foreground flex flex-wrap justify-around gap-2 items-center">
                       <span>
                         <b>↑ / ↓</b> Scroll
                       </span>
                       <span>
                         <b>← / →</b> Ganti Chapter
-                      </span>
-                      <span>
-                        <b>Spasi</b> Autoplay
                       </span>
                     </div>
 

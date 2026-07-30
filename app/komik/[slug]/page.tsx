@@ -169,6 +169,11 @@ export default async function KomikDetailPage({ params }: Readonly<Props>) {
           Mirror
         </div>
       </div>
+      <div className="absolute top-3 right-3 z-10">
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/10 text-white text-sm font-bold shadow-lg">
+          {getFormatWithFlag(komik.format)}
+        </div>
+      </div>
     </div>
   );
 

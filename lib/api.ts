@@ -47,11 +47,11 @@ async function enqueueRequest<T>(fn: () => Promise<T>): Promise<T> {
   }
 }
 
-const inFlightMap = new Map<string, Promise<any>>();
+const inFlightMap = new Map<string, Promise<unknown>>();
 
 async function fetchWithQueueAndDedup<T>(
   url: string,
-  fetcherFn: () => Promise<T>
+  fetcherFn: () => Promise<T>,
 ): Promise<T> {
   if (inFlightMap.has(url)) {
     return inFlightMap.get(url) as Promise<T>;

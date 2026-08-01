@@ -547,7 +547,7 @@ export default function SearchInput({
       {isOpen && query.length >= 3 && (
         <div
           ref={dropdownRef}
-          className="absolute top-full mt-3 bg-popover border border-border/60 rounded-2xl shadow-2xl shadow-black/20 z-50 flex flex-col overflow-hidden w-full md:w-[800px] max-h-[85vh] md:max-h-[80vh]"
+          className="absolute top-full mt-3 bg-popover border border-border/60 rounded-2xl shadow-2xl shadow-black/20 z-50 flex flex-col overflow-hidden w-full md:w-[900px] max-h-[85vh] md:max-h-[80vh]"
         >
           {/* Header */}
           <div className="px-5 py-3.5 border-b border-border/40 flex items-center justify-between bg-muted/20 shrink-0">

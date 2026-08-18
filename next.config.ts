@@ -49,6 +49,11 @@ const nextConfig: NextConfig = {
         hostname: "wzytosfptgmdhyygsrzh.supabase.co",
         pathname: "/storage/v1/object/public/**",
       },
+      {
+        protocol: "https",
+        hostname: "cvr.voratoon.id",
+        pathname: "/**",
+      },
     ],
   },
 };
